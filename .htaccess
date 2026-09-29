@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Lindungi file-file sensitif agar tidak bisa dibaca publik di Shared Hosting
+    <FilesMatch "^\.(env|git|editorconfig|gitattributes|gitignore)|(composer\.(json|lock)|package\.(json|lock)|phpunit\.xml|vite\.config\.js|tailwind\.config\.js|artisan)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # 2. Blokir akses langsung ke folder sensitif
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage/app|tests|vendor)(/.*)?$ - [F,L]
+
+    # 3. Teruskan seluruh request yang menuju root ke folder public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Keamanan Header Tambahan
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
