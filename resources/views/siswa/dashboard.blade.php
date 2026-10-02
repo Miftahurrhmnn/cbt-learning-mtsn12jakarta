@@ -1,236 +1,447 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h2 class="font-extrabold text-2xl text-slate-900 leading-tight">
-                    {{ __('Dashboard Siswa') }}
-                </h2>
-                <p class="text-sm text-slate-500 mt-0.5">Selamat datang, <span class="font-bold text-indigo-600">{{ Auth::user()->name }}</span>. Selamat belajar dan mengerjakan ujian!</p>
-            </div>
-            <div class="inline-flex items-center px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100 text-xs font-bold text-indigo-700">
-                <span class="w-2 h-2 mr-2 bg-indigo-500 rounded-full animate-ping"></span>
-                Portal CBT Aktif
-            </div>
-        </div>
-    </x-slot>
+<x-app-layout :hide-nav="true">
+    @php
+        $completedSessions = $mySessions->filter(fn($s) => $s->isCompleted());
+        $avgScore = $completedSessions->count() > 0 ? $completedSessions->avg('score') : 0;
+        $ongoingSession = $mySessions->first(fn($s) => $s->status === 'ongoing');
+    @endphp
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div x-data="{ 
+            activeTab: 'home', 
+            mobileMenuOpen: false, 
+            tokenModalOpen: false,
+            profileModalOpen: false,
+            inputTokenExamId: '{{ $activeExams->first()?->id ?? '' }}',
+            inputTokenCode: ''
+         }" 
+         class="min-h-screen bg-slate-100/70 font-sans text-slate-800 antialiased pb-24 md:pb-12">
 
-            @if(session('success'))
-                <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl shadow-xs">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-2.5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                        <span class="font-medium text-sm">{{ session('success') }}</span>
+        <!-- ==================== TOP BLUE APP HEADER (Sesuai Foto Simaster) ==================== -->
+        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#2B77DE] to-[#1F67CB] text-white pt-4 pb-14 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
+            <!-- Background Decorative Circles -->
+            <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="absolute top-1/2 -left-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+
+            <div class="max-w-4xl mx-auto relative z-10">
+                <!-- Profile Section inside Header (Sesuai Foto) -->
+                <div class="flex items-center gap-4 pt-1 pb-2">
+                    <!-- Circular Avatar Silhouette -->
+                    <div class="relative shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white/60 flex items-center justify-center text-white overflow-hidden shadow-inner">
+                            <svg class="w-10 h-10 text-white/90 translate-y-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- User Name, NISN, and Class Info -->
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-base sm:text-lg font-bold text-white truncate leading-tight">
+                            {{ Auth::user()->name }}
+                        </h2>
+                        <p class="text-xs font-mono text-white/80 mt-0.5 truncate tracking-wide">
+                            {{ Auth::user()->nisn ?? '17/310790/SV/456738' }}
+                        </p>
+                        <p class="text-[11px] font-medium text-white/75 truncate mt-0.5">
+                            {{ Auth::user()->classroom->name ?? 'Kelas X-A' }} &bull; MTsN 12 Jakarta
+                        </p>
                     </div>
                 </div>
-            @endif
+            </div>
+        </header>
 
-            @if(session('info'))
-                <div class="p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl shadow-xs">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-2.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                        <span class="font-medium text-sm">{{ session('info') }}</span>
+        <!-- ==================== FLOATING STAT CARD (Sesuai Foto 3 Kolom) ==================== -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-9 relative z-20">
+            <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-4 sm:p-5 flex items-center justify-around text-center divide-x divide-slate-100">
+                <!-- Col 1: Exams / Ujian -->
+                <div class="flex-1 px-2">
+                    <span class="block text-xl sm:text-2xl font-black text-slate-800 font-mono">
+                        {{ $activeExams->count() }}
+                    </span>
+                    <span class="text-[11px] sm:text-xs font-semibold text-slate-400 mt-0.5 block">
+                        Ujian CBT
+                    </span>
+                </div>
+
+                <!-- Col 2: Assignment / Selesai -->
+                <div class="flex-1 px-2">
+                    <span class="block text-xl sm:text-2xl font-black text-slate-800 font-mono">
+                        {{ $completedSessions->count() }}
+                    </span>
+                    <span class="text-[11px] sm:text-xs font-semibold text-slate-400 mt-0.5 block">
+                        Diselesaikan
+                    </span>
+                </div>
+
+                <!-- Col 3: Score / Nilai Rata-rata -->
+                <div class="flex-1 px-2">
+                    <span class="block text-xl sm:text-2xl font-black text-slate-800 font-mono">
+                        {{ number_format($avgScore, 0) }}
+                    </span>
+                    <span class="text-[11px] sm:text-xs font-semibold text-slate-400 mt-0.5 block">
+                        Rata-rata Nilai
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MAIN CONTENT BODY ==================== -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-7 space-y-7">
+
+            <!-- Alerts Notifikasi -->
+            @if(session('success'))
+                <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl shadow-xs flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        <span>{{ session('success') }}</span>
                     </div>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl shadow-xs">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-2.5 text-rose-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                        <span class="font-medium text-sm">{{ session('error') }}</span>
+                <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl shadow-xs flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                        <span>{{ session('error') }}</span>
                     </div>
                 </div>
             @endif
 
-            @php
-                $completedSessions = $mySessions->filter(fn($s) => $s->isCompleted());
-                $avgScore = $completedSessions->count() > 0 ? $completedSessions->avg('score') : 0;
-            @endphp
-
-            <!-- Statistik Siswa -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                        <x-heroicon-o-signal class="h-5 w-5 text-emerald-600" />
+            <!-- Banner Sesi Berjalan (Jika Ada Ujian yang Sedang Dikerjakan) -->
+            @if($ongoingSession)
+                <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 text-white shadow-md flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                            <span class="w-3 h-3 bg-white rounded-full animate-ping"></span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-black tracking-widest text-white/90">Ujian Sedang Berlangsung</span>
+                            <h4 class="text-sm font-bold">{{ $ongoingSession->exam->title ?? $ongoingSession->exam->subject->name }}</h4>
+                        </div>
                     </div>
+                    <a href="{{ route('siswa.ujian.show', $ongoingSession->exam_id) }}" 
+                       class="px-4 py-2 bg-white text-orange-600 rounded-xl text-xs font-bold shadow-xs hover:bg-orange-50 transition shrink-0">
+                        Lanjutkan
+                    </a>
+                </div>
+            @endif
+
+            <!-- ==================== SECTION 1: DAFTAR UJIAN CBT ==================== -->
+            <div id="section-exams" class="pt-2 space-y-3.5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ujian Aktif</span>
-                        <h4 class="text-2xl font-black text-slate-900 mt-0.5">{{ $activeExams->count() }}</h4>
+                        <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Ujian CBT Tersedia</h3>
+                        <p class="text-[11px] text-slate-400">Pilih ujian untuk memasukkan token dan memulai pengerjaan.</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">
-                        <x-heroicon-s-check class="h-5 w-5" />
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ujian Diselesaikan</span>
-                        <h4 class="text-2xl font-black text-slate-900 mt-0.5">{{ $completedSessions->count() }}</h4>
-                    </div>
-                </div>
+                <!-- Filter Hari & Pencarian untuk Siswa -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+                    <!-- Form Filter Hari -->
+                    <form method="GET" action="{{ route('siswa.dashboard') }}#section-exams" class="space-y-2.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                Filter Jadwal Berdasarkan Hari:
+                            </span>
+                            @if(request()->hasAny(['day', 'search']))
+                                <a href="{{ route('siswa.dashboard') }}" class="text-[11px] font-bold text-blue-600 hover:underline">
+                                    Reset Semua
+                                </a>
+                            @endif
+                        </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">
-                        <x-heroicon-s-star class="h-5 w-5" />
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rata-Rata Nilai</span>
-                        <h4 class="text-2xl font-black text-purple-700 mt-0.5">{{ number_format($avgScore, 1) }}</h4>
-                    </div>
-                </div>
-            </div>
+                        <!-- Horizontal Scrollable Day Chips -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                            <a href="{{ route('siswa.dashboard') }}#section-exams"
+                               class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ !request('day') ? 'bg-[#2B77DE] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                Semua Hari
+                            </a>
+                            @foreach($daysList as $d)
+                                <a href="{{ route('siswa.dashboard', ['day' => $d, 'search' => request('search')]) }}#section-exams"
+                                   class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ request('day') == $d ? 'bg-[#2B77DE] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                    {{ $d }}
+                                </a>
+                            @endforeach
+                        </div>
 
-            <!-- Section 1: Daftar Ujian yang Sedang Dibuka Guru -->
-            <div>
-                <div class="flex ml-4 sm:ml-0 md:ml-0 items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-lg sm:text-xl font-black text-slate-900">Ujian Yang Tersedia</h3>
-                        <p class="text-xs text-slate-500">Pilih ujian untuk mulai mengerjakan. Waktu standar 1 jam.</p>
-                    </div>
+                        <!-- Search Bar -->
+                        <div class="relative pt-1">
+                            <span class="absolute inset-y-0 left-0 pt-1 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            </span>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari mata pelajaran / ujian..."
+                                   class="w-full pl-8 pr-16 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50/50">
+                            @if(request('day'))
+                                <input type="hidden" name="day" value="{{ request('day') }}">
+                            @endif
+                            <button type="submit" class="absolute right-1 top-2 bottom-1 px-3 bg-[#2B77DE] text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 transition">
+                                Cari
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
                 @if($activeExams->isEmpty())
-                    <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-xs border border-slate-200/80 text-center">
-                        <div class="w-14 h-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 text-2xl">
-                            📂
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2 text-xl">
+                            <x-heroicon-o-folder class="w-6 h-6 text-blue-500" />
                         </div>
-                        <h4 class="text-base font-bold text-slate-900">Belum Ada Ujian yang Dibuka</h4>
-                        <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">Saat ini belum ada jadwal ujian yang dibuka oleh guru Anda. Silakan hubungi guru atau cek kembali berkala.</p>
+                        <h4 class="font-bold text-sm text-slate-800">Belum Ada Ujian untuk Kelas {{ Auth::user()->classroom->name ?? 'Anda' }}</h4>
+                        <p class="text-xs text-slate-400 mt-1">Hanya ujian yang sesuai dengan kelas Anda ({{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}) yang akan ditampilkan di sini.</p>
                     </div>
                 @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($activeExams as $exam)
-                            @php
-                                $session = $mySessions->get($exam->id);
-                            @endphp
-                            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between gap-2 mb-3">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700">
-                                            {{ $exam->subject->name ?? 'Mata Pelajaran' }}
-                                        </span>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">
-                                            {{ $exam->classroom->name ?? 'Semua Kelas' }}
-                                        </span>
-                                    </div>
+                    <!-- ==================== RESPONSIVE CAROUSEL CARDS ==================== -->
+                    <div x-data="{
+                        scrollLeft: 0,
+                        maxScroll: 0,
+                        init() {
+                            this.$nextTick(() => { this.updateScrollInfo(); });
+                        },
+                        updateScrollInfo() {
+                            const el = this.$refs.carousel;
+                            if (!el) return;
+                            this.scrollLeft = el.scrollLeft;
+                            this.maxScroll = el.scrollWidth - el.clientWidth;
+                        },
+                        scroll(direction) {
+                            const el = this.$refs.carousel;
+                            if (!el) return;
+                            const cardWidth = el.querySelector('div[data-carousel-card]')?.offsetWidth || 300;
+                            const scrollAmount = cardWidth + 16;
+                            el.scrollBy({
+                                left: direction === 'next' ? scrollAmount : -scrollAmount,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }" class="relative group">
 
-                                    <h4 class="font-bold text-base sm:text-lg text-slate-900 leading-snug">
-                                        {{ $exam->title ?? 'Ujian ' . $exam->subject->name }}
-                                    </h4>
+                        <!-- Left Nav Button (Desktop) -->
+                        <button type="button" 
+                                @click="scroll('prev')" 
+                                x-show="scrollLeft > 10" 
+                                x-transition
+                                class="hidden md:flex absolute -left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 text-slate-700 shadow-md border border-slate-200/80 items-center justify-center hover:bg-slate-50 hover:scale-105 active:scale-95 transition"
+                                aria-label="Sebelumnya">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
 
-                                    <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-                                        <div class="flex items-center justify-between">
-                                            <span class="flex items-center text-slate-500">
-                                                <svg class="w-4 h-4 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                Waktu Pengerjaan:
-                                            </span>
-                                            <strong class="text-slate-900 font-semibold">{{ $exam->duration }} Menit (1 Jam)</strong>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <span class="flex items-center text-slate-500">
-                                                <svg class="w-4 h-4 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                Jumlah Soal:
-                                            </span>
-                                            <strong class="text-slate-900 font-semibold">{{ $exam->questions_count }} Soal</strong>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Right Nav Button (Desktop) -->
+                        <button type="button" 
+                                @click="scroll('next')" 
+                                x-show="maxScroll > 10 && scrollLeft < (maxScroll - 10)" 
+                                x-transition
+                                class="hidden md:flex absolute -right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 text-slate-700 shadow-md border border-slate-200/80 items-center justify-center hover:bg-slate-50 hover:scale-105 active:scale-95 transition"
+                                aria-label="Selanjutnya">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </button>
 
-                                <div class="p-5 bg-slate-50/70 border-t border-slate-100">
-                                    @if(!$session)
-                                        <a href="{{ route('siswa.ujian.token', $exam->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition" onclick="return confirm('Mulai ujian sekarang? Waktu 60 menit akan langsung berjalan.')">
-                                            Mulai Kerjakan Ujian
-                                        </a>
-                                    @elseif($session->isCompleted())
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-xs font-bold text-emerald-700 flex items-center">
-                                                <svg class="w-4 h-4 mr-1 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                                                Selesai
+                        <!-- Carousel Track Container -->
+                        <div x-ref="carousel"
+                             @scroll.passive="updateScrollInfo()"
+                             class="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scroll-smooth scrollbar-none"
+                             style="-webkit-overflow-scrolling: touch;">
+                            @foreach($activeExams as $exam)
+                                @php
+                                    $sess = $mySessions->get($exam->id);
+                                @endphp
+                                <div data-carousel-card 
+                                     class="snap-start shrink-0 w-[84%] sm:w-[50%] md:w-[46%] lg:w-[40%] bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition p-4 sm:p-5 flex flex-col justify-between space-y-4">
+                                    <div>
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
+                                                {{ $exam->subject->name ?? 'Mapel' }}
                                             </span>
-                                            <a href="{{ route('siswa.ujian.hasil', $exam->id) }}" class="inline-flex items-center px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-black transition">
-                                                Nilai: {{ number_format($session->score, 1) }} &rarr;
-                                            </a>
-                                        </div>
-                                    @else
-                                        <div class="space-y-2">
-                                            <div class="text-xs text-amber-700 font-bold flex items-center">
-                                                <span class="w-2 h-2 mr-1.5 bg-amber-500 rounded-full animate-ping"></span>
-                                                Sedang Dikerjakan
+                                            <div class="flex items-center gap-1.5">
+                                                @if($exam->day_of_week)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
+                                                        📅 {{ $exam->day_of_week }}
+                                                    </span>
+                                                @endif
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600">
+                                                    🏫 {{ $exam->classroom->name ?? 'Kelas' }}
+                                                </span>
                                             </div>
-                                            <a href="{{ route('siswa.ujian.show', $exam->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition">
-                                                Lanjutkan Ujian &rarr;
-                                            </a>
                                         </div>
-                                    @endif
+
+                                        <h4 class="font-bold text-sm sm:text-base text-slate-900 leading-snug line-clamp-2">
+                                            {{ $exam->title ?? 'Ujian ' . $exam->subject->name }}
+                                        </h4>
+
+                                        <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500 pt-2 border-t border-slate-100">
+                                            <div class="flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                <span><strong>{{ $exam->duration }}</strong> Menit</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                <span><strong>{{ $exam->questions_count }}</strong> Soal</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-2">
+                                        @if(!$sess)
+                                            <a href="{{ route('siswa.ujian.token', $exam->id) }}" 
+                                               class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2B77DE] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                                <span>Mulai Ujian (Token)</span>
+                                            </a>
+                                        @elseif($sess->isCompleted())
+                                            <div class="flex items-center justify-between gap-2 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+                                                <span class="text-xs font-bold text-emerald-800 flex items-center gap-1">
+                                                    Selesai ({{ number_format($sess->score, 1) }})
+                                                </span>
+                                                <a href="{{ route('siswa.ujian.hasil', $exam->id) }}" 
+                                                   class="text-xs font-black text-emerald-700 hover:underline">
+                                                    Lihat Pembahasan
+                                                </a>
+                                            </div>
+                                        @else
+                                            <a href="{{ route('siswa.ujian.show', $exam->id) }}" 
+                                               class="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition animate-pulse">
+                                                <span>Lanjutkan Pengerjaan</span>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
+
+                        <!-- Mobile Scroll Helper Hint -->
+                        <div class="flex items-center justify-between pt-1 px-1 text-[11px] text-slate-400 md:hidden">
+                            <span>&larr; Geser kartu untuk melihat lainnya</span>
+                            <span class="font-semibold">{{ $activeExams->count() }} Paket Ujian</span>
+                        </div>
                     </div>
                 @endif
             </div>
+        </main>
 
-            <!-- Section 2: Riwayat Nilai Ujian yang Telah Diselesaikan -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
-                <div class="p-6 border-b border-slate-100">
-                    <h3 class="text-base sm:text-lg font-bold text-slate-900">Riwayat Nilai Ujian Saya</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Nilai hanya muncul jika ujian telah diselesaikan secara tuntas.</p>
+        <!-- ==================== MODAL QUICK INPUT TOKEN ==================== -->
+        <div x-show="tokenModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" @click="tokenModalOpen = false">
+            <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative" @click.stop>
+                <div class="text-center space-y-2">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </div>
+                    <h3 class="font-black text-lg text-slate-900">Masukkan Token Ujian</h3>
+                    <p class="text-xs text-slate-500">Minta token ujian kepada guru pengawas sebelum memulai.</p>
                 </div>
 
-                @if($completedSessions->isEmpty())
-                    <div class="p-8 text-center text-slate-400 text-xs font-medium">
-                        Belum ada riwayat ujian yang telah selesai.
-                    </div>
-                @else
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-100">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Judul Ujian</th>
-                                    <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Mata Pelajaran</th>
-                                    <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Waktu Selesai</th>
-                                    <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Jawaban Benar</th>
-                                    <th class="px-6 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Nilai Akhir</th>
-                                    <th class="px-6 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Rincian</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                @foreach($completedSessions as $s)
-                                    <tr class="hover:bg-slate-50/60 transition">
-                                        <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 text-sm">
-                                            {{ $s->exam->title ?? 'Ujian ' . $s->exam->subject->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-600">
-                                            <span class="px-2 py-0.5 rounded bg-slate-100 font-medium">
-                                                {{ $s->exam->subject->name ?? '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-500">
-                                            {{ $s->end_time ? $s->end_time->format('d M Y, H:i') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-bold text-slate-700">
-                                            {{ $s->correct_answers }} / {{ $s->total_questions }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                                            <span class="text-base font-black {{ $s->score >= 75 ? 'text-emerald-600' : 'text-indigo-600' }}">
-                                                {{ number_format($s->score, 1) }}
-                                            </span>
-                                            <span class="text-xs text-slate-400">/ 100</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                                            <a href="{{ route('siswa.ujian.hasil', $s->exam_id) }}" class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-800">
-                                                Lihat Hasil  <x-heroicon-s-arrow-right class="h-3 w-3" /> 
-                                            </a>
-                                        </td>
-                                    </tr>
+                @if($activeExams->isNotEmpty())
+                    <form method="POST" :action="'/siswa/ujian/' + inputTokenExamId + '/verify-token'" class="mt-5 space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pilih Ujian</label>
+                            <select x-model="inputTokenExamId" class="w-full text-xs font-medium rounded-xl border-slate-300 py-2.5">
+                                @foreach($activeExams as $ex)
+                                    <option value="{{ $ex->id }}">{{ $ex->title ?? $ex->subject->name }} ({{ $ex->classroom->name }})</option>
                                 @endforeach
-                            </tbody>
-                        </table>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kode Token</label>
+                            <input type="text" name="token" x-model="inputTokenCode" required maxlength="15"
+                                   placeholder="Contoh: MTK24"
+                                   @input="inputTokenCode = inputTokenCode.toUpperCase()"
+                                   class="w-full text-center font-mono font-black text-lg tracking-widest uppercase rounded-xl border-slate-300 py-2.5 text-indigo-700 focus:border-indigo-500">
+                        </div>
+
+                        <div class="pt-2 flex items-center gap-2">
+                            <button type="button" @click="tokenModalOpen = false" class="w-1/2 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">
+                                Batal
+                            </button>
+                            <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#2B77DE] hover:bg-blue-700 text-white text-xs font-bold shadow-sm">
+                                Masuk Ujian
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div class="mt-4 text-center text-xs text-slate-500">
+                        Belum ada paket ujian yang aktif saat ini.
                     </div>
                 @endif
             </div>
-
         </div>
+
+        <!-- ==================== MODAL PROFIL SISWA ==================== -->
+        <div x-show="profileModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" @click="profileModalOpen = false">
+            <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4" @click.stop>
+                <div class="w-16 h-16 rounded-full bg-[#2B77DE] text-white flex items-center justify-center mx-auto text-xl font-black shadow-md">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                </div>
+
+                <div>
+                    <h3 class="font-extrabold text-base text-slate-900">{{ Auth::user()->name }}</h3>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">{{ Auth::user()->email }}</p>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-4 text-left text-xs space-y-2 border border-slate-100">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">NISN / No. Induk:</span>
+                        <strong class="text-slate-700 font-mono">{{ Auth::user()->nisn ?? '-' }}</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Kelas:</span>
+                        <strong class="text-blue-700">{{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Sekolah:</span>
+                        <strong class="text-slate-700">MTsN 12 Jakarta</strong>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center gap-2">
+                    <form method="POST" action="{{ route('logout') }}" class="w-full inline">
+                        @csrf
+                        <button type="submit" class="w-full py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">
+                            Log Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== FLOATING BOTTOM APP NAVIGATION DOCK (Persis seperti Foto) ==================== -->
+        <nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2 shadow-2xl">
+            <div class="max-w-md mx-auto flex items-center justify-around relative">
+                <!-- 1. Home Icon -->
+                <button @click="activeTab = 'home'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
+                        :class="activeTab === 'home' ? 'text-[#2B77DE]' : ''">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                </button>
+
+                <!-- 2. Book / Exam Icon -->
+                <button @click="activeTab = 'exams'; document.getElementById('section-exams')?.scrollIntoView({ behavior: 'smooth' })" 
+                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
+                        :class="activeTab === 'exams' ? 'text-[#2B77DE]' : ''">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </button>
+
+                <!-- 4. Result / Folder Icon -->
+                <button @click="activeTab = 'results'; document.getElementById('section-results')?.scrollIntoView({ behavior: 'smooth' })" 
+                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
+                        :class="activeTab === 'results' ? 'text-[#2B77DE]' : ''">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                    </svg>
+                </button>
+
+                <!-- 5. User Profile Icon -->
+                <button @click="profileModalOpen = true" 
+                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
     </div>
 </x-app-layout>

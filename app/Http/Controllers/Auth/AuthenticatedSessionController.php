@@ -31,6 +31,10 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+        if ($user && $user->isAdmin()) {
+            return redirect()->route('admin.siswa.index');
+        }
+
         if ($user && $user->isGuru()) {
             return redirect()->route('guru.ujian.index');
         }

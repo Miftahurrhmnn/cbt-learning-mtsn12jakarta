@@ -46,15 +46,6 @@
                     <h1 class="text-sm sm:text-base font-bold text-slate-900 line-clamp-1">
                         {{ $exam->title ?? 'Ujian ' . $exam->subject->name }}
                     </h1>
-                    <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium">
-                            {{ $exam->subject->name }}
-                        </span>
-                        <span class="hidden sm:inline">&bull;</span>
-                        <span class="hidden sm:inline">{{ $exam->classroom->name }}</span>
-                        <span>&bull;</span>
-                        <span class="font-semibold text-slate-700">{{ Auth::user()->name }}</span>
-                    </div>
                 </div>
             </div>
 
@@ -327,40 +318,63 @@
                 class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6 sm:p-8">
                 
                 <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-emerald-100 sm:mx-0 sm:h-12 sm:w-12 text-emerald-600">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
+                    <template x-if="unansweredCount === 0">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-emerald-100 sm:mx-0 sm:h-12 sm:w-12 text-emerald-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </template>
+                    <template x-if="unansweredCount > 0">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-rose-100 sm:mx-0 sm:h-12 sm:w-12 text-rose-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                    </template>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                         <h3 class="text-lg leading-6 font-bold text-slate-900" id="modal-title">
-                            Konfirmasi Selesai Ujian
+                            <span x-show="unansweredCount === 0">Konfirmasi Selesai Ujian</span>
+                            <span x-show="unansweredCount > 0" class="text-rose-600">Ujian Belum Dapat Diselesaikan!</span>
                         </h3>
                         <div class="mt-2 text-sm text-slate-600 space-y-2.5">
-                            <p>
-                                Anda telah menjawab <strong class="text-emerald-600" x-text="answeredCount"></strong> dari <strong x-text="totalQuestions"></strong> soal.
-                            </p>
+                            <template x-if="unansweredCount === 0">
+                                <p>
+                                    Luar biasa! Seluruh <strong class="text-emerald-600" x-text="totalQuestions"></strong> butir soal telah berhasil Anda jawab. Apakah Anda yakin ingin menyelesaikan ujian sekarang?
+                                </p>
+                            </template>
+
                             <template x-if="unansweredCount > 0">
-                                <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs">
-                                    ⚠️ Masih ada <strong x-text="unansweredCount"></strong> soal yang <strong>belum dijawab</strong> (kotak merah). Anda disarankan untuk memeriksa kembali.
+                                <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs leading-relaxed space-y-1">
+                                    <p class="font-bold">⚠️ Masih ada <span x-text="unansweredCount"></span> soal yang belum dikerjakan (kotak merah)!</p>
+                                    <p>Sistem mewajibkan seluruh soal dijawab terlebih dahulu sebelum Anda diizinkan untuk menyelesaikan ujian.</p>
                                 </div>
                             </template>
-                            <p class="text-xs text-slate-500">
-                                Setelah Anda menekan "Kirim & Selesaikan", sesi ujian Anda akan ditutup dan nilai akhir akan otomatis dikalkulasi.
+
+                            <p class="text-xs text-slate-400">
+                                Setelah dikirim, sesi pengerjaan akan ditutup dan nilai akhir akan otomatis dikalkulasi.
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
-                    <form :action="finishUrl" method="POST" class="inline">
-                        @csrf
-                        <button type="submit"
-                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 transition">
-                            Ya, Kirim & Selesaikan
+                    <template x-if="unansweredCount === 0">
+                        <form :action="finishUrl" method="POST" class="w-full sm:w-auto">
+                            @csrf
+                            <button type="submit"
+                                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 transition">
+                                Ya, Kirim & Selesaikan
+                            </button>
+                        </form>
+                    </template>
+
+                    <template x-if="unansweredCount > 0">
+                        <button type="button" @click="goToFirstUnanswered()"
+                            class="w-full inline-flex justify-center items-center gap-1.5 rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700 transition">
+                            Cari Soal Yang Belum &rarr;
                         </button>
-                    </form>
+                    </template>
+
                     <button type="button" @click="showFinishModal = false"
-                        class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-xs px-5 py-2.5 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        Periksa Lagi
+                        class="mt-3 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-xl border border-slate-300 shadow-xs px-5 py-2.5 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        Tutup
                     </button>
                 </div>
             </div>
@@ -375,15 +389,6 @@
             </button>
             <img :src="modalImage" class="max-h-[85vh] max-w-full rounded-xl object-contain bg-white shadow-2xl">
         </div>
-    </div>
-
-    <!-- Floating Action Button untuk Mobile Number Palette -->
-    <div class="lg:hidden fixed bottom-5 right-5 z-20">
-        <button type="button" @click="mobileDrawer = true"
-            class="flex items-center space-x-2 px-4 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition text-xs font-bold">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            <span>Daftar Soal (<span x-text="answeredCount + '/' + totalQuestions"></span>)</span>
-        </button>
     </div>
 
     <!-- Alpine.js Application Logic -->
@@ -446,6 +451,19 @@
                         this.currentIndex = index;
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
+                },
+
+                goToFirstUnanswered() {
+                    for (let i = 0; i < this.totalQuestions; i++) {
+                        const q = this.questions[i];
+                        if (q && (!this.answers[q.id] || this.answers[q.id] === '')) {
+                            this.goToQuestion(i);
+                            this.showFinishModal = false;
+                            this.mobileDrawer = false;
+                            return;
+                        }
+                    }
+                    this.showFinishModal = false;
                 },
 
                 prevQuestion() {

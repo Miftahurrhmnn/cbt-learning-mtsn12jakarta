@@ -1,188 +1,9 @@
 <x-app-layout :hide-nav="true">
     <div x-data="{ sidebarOpen: false }" class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
 
-        <!-- ==================== MOBILE BACKDROP OVERLAY ==================== -->
-        <div 
-            x-show="sidebarOpen" 
-            x-transition:enter="transition-opacity ease-out duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-in duration-200"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            @click="sidebarOpen = false" 
-            class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs md:hidden"
-            style="display: none;">
-        </div>
+        <!-- Guru Sidebar Component (Desktop Sticky & Mobile Drawer) -->
+        <x-guru-sidebar :exam-count="$exams->total()" />
 
-        <!-- ==================== MOBILE OFF-CANVAS SIDEBAR ==================== -->
-        <aside 
-            x-show="sidebarOpen"
-            x-transition:enter="transition ease-out duration-300 transform"
-            x-transition:enter-start="-translate-x-full"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-200 transform"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full"
-            @keydown.escape.window="sidebarOpen = false"
-            class="fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col justify-between shadow-2xl md:hidden overflow-y-auto"
-            style="display: none;">
-            
-            <div class="p-5">
-                <!-- Mobile Brand Header with Close Button -->
-                <div class="flex items-center justify-between pb-5 border-b border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100 font-black text-base">
-                            CBT
-                        </div>
-                        <div>
-                            <span class="font-extrabold text-slate-900 text-base leading-tight block">MTsN 12 Jakarta</span>
-                            <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1.5 mt-0.5">
-                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Portal Pendidik
-                            </span>
-                        </div>
-                    </div>
-                    <button @click="sidebarOpen = false" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition" aria-label="Tutup Menu">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Mobile Navigation Links -->
-                <nav class="mt-6 space-y-1.5">
-                    <p class="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Menu Utama</p>
-                    
-                    <a href="{{ route('guru.ujian.index') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('guru.ujian.index') ? 'bg-indigo-50 text-indigo-700 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('guru.ujian.index') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <span>Daftar Ujian</span>
-                    </a>
-
-                    <a href="{{ route('guru.ujian.create') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('guru.ujian.create') ? 'bg-indigo-50 text-indigo-700 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('guru.ujian.create') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span>Buat Ujian Baru</span>
-                    </a>
-
-                    <p class="px-3 pt-5 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Akun & Sistem</p>
-
-                    <a href="{{ route('profile.edit') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        <span>Pengaturan Akun</span>
-                    </a>
-                </nav>
-            </div>
-
-            <!-- Mobile User Profile & Logout -->
-            <div class="p-4 border-t border-slate-100 bg-slate-50/70">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white font-extrabold text-xs shadow-xs">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
-                        </div>
-                        <div class="truncate">
-                            <p class="text-xs font-bold text-slate-800 truncate">{{ Auth::user()->name }}</p>
-                            <span class="inline-flex items-center text-[10px] font-medium text-slate-400">Guru Pengajar</span>
-                        </div>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" title="Keluar dari akun" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </aside>
-
-        <!-- ==================== DESKTOP FIXED/STICKY SIDEBAR ==================== -->
-        <aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-white border-r border-slate-200/80 z-30 shadow-xs justify-between">
-            <div class="p-6">
-                <!-- Brand Header Desktop -->
-                <div class="flex items-center gap-3.5 pb-6 border-b border-slate-100">
-                    <img src="{{ asset('images/favicon.ico') }}" alt="Logo">
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-black text-slate-900 text-base leading-tight">MTsN 12 Jakarta</span>
-                        </div>
-                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Portal Guru & Ujian</p>
-                    </div>
-                </div>
-
-                <!-- Navigation List Desktop -->
-                <nav class="mt-6 space-y-1.5">
-                    <p class="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Manajemen Ujian</p>
-                    
-                    <a href="{{ route('guru.ujian.index') }}" 
-                       class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition group {{ request()->routeIs('guru.ujian.index') ? 'bg-indigo-50 text-indigo-700 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 {{ request()->routeIs('guru.ujian.index') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            <span>Daftar Ujian</span>
-                        </div>
-                        <span class="px-2 py-0.5 text-[10px] font-black rounded-lg {{ request()->routeIs('guru.ujian.index') ? 'bg-indigo-200/60 text-indigo-800' : 'bg-slate-100 text-slate-500' }}">
-                            {{ $exams->total() }}
-                        </span>
-                    </a>
-
-                    <a href="{{ route('guru.ujian.create') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition group {{ request()->routeIs('guru.ujian.create') ? 'bg-indigo-50 text-indigo-700 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('guru.ujian.create') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span>Buat Ujian Baru</span>
-                    </a>
-
-                    <p class="px-3 pt-6 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Pengaturan & Bantuan</p>
-
-                    <a href="{{ route('profile.edit') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition group">
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        <span>Pengaturan Akun</span>
-                    </a>
-                </nav>
-            </div>
-
-            <!-- Desktop User Profile & Logout -->
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-                <div class="flex items-center justify-between gap-3 px-2">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white font-extrabold text-xs shadow-xs">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
-                        </div>
-                        <div class="truncate">
-                            <p class="text-xs font-bold text-slate-800 truncate">{{ Auth::user()->name }}</p>
-                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600">
-                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                Guru Aktif
-                            </span>
-                        </div>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" title="Keluar (Log Out)" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </aside>
 
         <!-- ==================== MAIN CONTENT AREA ==================== -->
         <div class="flex-1 min-w-0 flex flex-col min-h-screen">
@@ -195,20 +16,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
                     </button>
-                    <div class="flex items-center gap-2">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-xs">
-                            CBT
-                        </div>
-                        <span class="font-extrabold text-slate-800 text-sm">MTsN 12</span>
-                    </div>
                 </div>
-
-                <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    <span>Buat</span>
-                </a>
             </header>
 
             <!-- Desktop Sticky Sub-Top Header -->
@@ -278,7 +86,6 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Manajemen & Daftar Ujian</h1>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-1">Kelola pembuatan soal, pengaturan waktu pengerjaan, dan kontrol status publikasi untuk siswa.</p>
                     </div>
                 </div>
 
@@ -333,11 +140,70 @@
                 <!-- Exam Content Card (Responsive Table on Desktop & Cards on Mobile) -->
                 <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs">
                     
-                    <!-- Table Card Header -->
-                    <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/40">
-                        <div class="flex items-center gap-2.5">
-                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Daftar Pelaksanaan Ujian</h3>
+                    <!-- Table Card Header & Filters -->
+                    <div class="p-6 border-b border-slate-100 bg-slate-50/40 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <h3 class="text-sm font-extrabold text-slate-900 uppercase">Daftar Pelaksanaan Ujian</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Filter berdasarkan kelas atau hari pelaksanaan ujian.</p>
+                            </div>
+                            <span class="text-xs font-bold text-slate-500 font-mono">
+                                Total: {{ $exams->total() }} Ujian
+                            </span>
                         </div>
+
+                        <!-- Form Filter Guru (Kelas, Hari, Status, Search) -->
+                        <form method="GET" action="{{ route('guru.ujian.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+                            <!-- Filter Pencarian -->
+                            <div class="sm:col-span-4">
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    </span>
+                                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari judul ujian / mapel..."
+                                           class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white">
+                                </div>
+                            </div>
+
+                            <!-- Filter Kelas untuk Guru -->
+                            <div class="sm:col-span-3">
+                                <select name="classroom_id" onchange="this.form.submit()"
+                                        class="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white">
+                                    <option value="">Semua Kelas</option>
+                                    @foreach($classrooms as $cls)
+                                        <option value="{{ $cls->id }}" {{ request('classroom_id') == $cls->id ? 'selected' : '' }}>
+                                            🏫 {{ $cls->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Filter Hari untuk Guru -->
+                            <div class="sm:col-span-3">
+                                <select name="day" onchange="this.form.submit()"
+                                        class="w-full py-2 px-3 rounded-xl border border-slate-200 text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white">
+                                    <option value="">Semua Hari</option>
+                                    @foreach($daysList as $dayName)
+                                        <option value="{{ $dayName }}" {{ request('day') == $dayName ? 'selected' : '' }}>
+                                            📅 Hari {{ $dayName }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Tombol Reset / Submit -->
+                            <div class="sm:col-span-2 flex items-center gap-1.5">
+                                <button type="submit" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs">
+                                    Filter
+                                </button>
+                                @if(request()->hasAny(['search', 'classroom_id', 'day', 'status']))
+                                    <a href="{{ route('guru.ujian.index') }}" title="Reset Filter"
+                                       class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition">
+                                        Reset
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
                     </div>
 
                     @if($exams->isEmpty())
@@ -382,16 +248,21 @@
                                                 <div class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition">
                                                     {{ $exam->title ?? 'Ujian ' . ($exam->subject->name ?? '-') }}
                                                 </div>
-                                                <div class="mt-1 flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[11px]">
+                                                <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px]">
                                                         Mapel: {{ $exam->subject->name ?? '-' }}
                                                     </span>
+                                                    @if($exam->day_of_week)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold">
+                                                            📅 {{ $exam->day_of_week }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </td>
 
                                             <!-- Kelas -->
                                             <td class="px-5 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center rounded-xl border border-blue-200/80 bg-blue-50/80 px-2.5 py-1 text-xs font-bold text-blue-700">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black">
                                                     {{ $exam->classroom->name ?? '-' }}
                                                 </span>
                                             </td>
@@ -408,7 +279,7 @@
 
                                             <!-- Jumlah Soal -->
                                             <td class="px-5 py-4 whitespace-nowrap text-center">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black {{ $exam->questions_count > 0 ? 'bg-slate-100 text-slate-800' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black">
                                                     {{ $exam->questions_count }} Soal
                                                 </span>
                                             </td>

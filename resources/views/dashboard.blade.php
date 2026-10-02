@@ -14,7 +14,7 @@
                         <p class="text-sm text-gray-500 mt-1">Kelola bank soal, ujian untuk kelas, dan tinjau rekap nilai siswa.</p>
                         <div class="mt-6">
                             <a href="{{ route('guru.ujian.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-semibold text-sm">
-                                Buka Manajemen Ujian & Soal &rarr;
+                                Buka Manajemen Ujian & Soal
                             </a>
                         </div>
                     </div>
@@ -24,7 +24,7 @@
                         <p class="text-sm text-gray-500 mt-1">Lihat ujian aktif yang tersedia dan kerjakan soal ujian Anda.</p>
                         <div class="mt-6">
                             <a href="{{ route('siswa.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-semibold text-sm">
-                                Buka Daftar Ujian Saya &rarr;
+                                Buka Daftar Ujian Saya
                             </a>
                         </div>
                     </div>

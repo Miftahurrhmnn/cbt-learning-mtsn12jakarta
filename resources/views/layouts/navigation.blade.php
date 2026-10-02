@@ -42,7 +42,15 @@
                             <p class="text-xs font-bold text-slate-800 truncate">{{ Auth::user()->email }}</p>
                         </div>
 
-                        @if(Auth::user()->isGuru())
+                        @if(Auth::user()->isAdmin())
+                            <x-dropdown-link :href="route('admin.siswa.index')" class="text-xs font-semibold py-2">
+                                {{ __('Kelola Data Siswa') }}
+                            </x-dropdown-link>
+
+                            <x-dropdown-link :href="route('admin.siswa.create')" class="text-xs font-semibold py-2">
+                                {{ __('+ Tambah Siswa Baru') }}
+                            </x-dropdown-link>
+                        @elseif(Auth::user()->isGuru())
                             <x-dropdown-link :href="route('guru.ujian.index')" class="text-xs font-semibold py-2">
                                 {{ __('Daftar Ujian') }}
                             </x-dropdown-link>
@@ -50,7 +58,7 @@
                             <x-dropdown-link :href="route('guru.ujian.create')" class="text-xs font-semibold py-2">
                                 {{ __('Buat Ujian Baru') }}
                             </x-dropdown-link>
-                         @else
+                        @else
                             <a href="{{ route('siswa.dashboard') }}"
                                 class="inline-flex items-center px-3.5 py-2 text-sm font-semibold rounded-xl transition-all duration-150 {{ request()->routeIs('siswa.dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -87,7 +95,16 @@
     <!-- Responsive Mobile Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur-md">
         <div class="pt-2 pb-3 space-y-1 px-4">
-            @if(Auth::user()->isGuru())
+            @if(Auth::user()->isAdmin())
+                <a href="{{ route('admin.siswa.index') }}"
+                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    👥 Kelola Data Siswa
+                </a>
+                <a href="{{ route('admin.siswa.create') }}"
+                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.create') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    + Tambah Siswa Baru
+                </a>
+            @elseif(Auth::user()->isGuru())
                 <a href="{{ route('guru.ujian.index') }}"
                     class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('guru.ujian.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
                      Daftar Ujian & Soal

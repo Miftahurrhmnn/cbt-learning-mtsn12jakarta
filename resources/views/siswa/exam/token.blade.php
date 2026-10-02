@@ -32,7 +32,6 @@
                 </div>
 
                 <div class="p-6 sm:p-7">
-
                     <div class="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
                             Ujian
@@ -58,6 +57,7 @@
                     <form
                         method="POST"
                         action="{{ route('siswa.ujian.verify-token', $exam->id) }}"
+                        class="mt-4"
                     >
                         @csrf
 
@@ -100,21 +100,6 @@
                             class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             Masuk ke Ujian
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                class="h-5 w-5"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                                />
-                            </svg>
                         </button>
                     </form>
 

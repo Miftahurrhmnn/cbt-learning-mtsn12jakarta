@@ -8,17 +8,20 @@ use App\Models\Exam;
 use App\Models\ExamSession;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Services\DocxQuestionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExamController extends Controller
 {
     /**
      * Tampilkan daftar seluruh ujian yang relevan dengan mata pelajaran guru
+     * Dilengkapi fitur filter kelas, filter hari, pencarian, dan status
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $guru = auth()->user();
         $query = Exam::with(['subject', 'classroom', 'teacher'])
@@ -33,9 +36,39 @@ class ExamController extends Controller
             });
         }
 
-        $exams = $query->latest()->paginate(10);
+        // FITUR FILTER KELAS UNTUK GURU
+        if ($request->filled('classroom_id')) {
+            $query->where('classroom_id', $request->classroom_id);
+        }
 
-        return view('guru.exam.index', compact('exams'));
+        // FITUR FILTER BERDASARKAN HARI (Mata Pelajaran / Jadwal Ujian)
+        if ($request->filled('day')) {
+            $query->where('day_of_week', $request->day);
+        }
+
+        // Filter Status (draft / published)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter Search (Judul / Mapel)
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('subject', function ($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $exams = $query->latest()->paginate(10)->withQueryString();
+
+        // Data untuk dropdown filter
+        $classrooms = Classroom::orderBy('name')->get();
+        $daysList = Exam::daysList();
+
+        return view('guru.exam.index', compact('exams', 'classrooms', 'daysList'));
     }
 
     /**
@@ -54,8 +87,9 @@ class ExamController extends Controller
         }
 
         $classrooms = Classroom::orderBy('name')->get();
+        $daysList = Exam::daysList();
 
-        return view('guru.exam.create', compact('subjects', 'classrooms'));
+        return view('guru.exam.create', compact('subjects', 'classrooms', 'daysList'));
     }
 
     /**
@@ -71,12 +105,12 @@ class ExamController extends Controller
             'classroom_id' => 'required|exists:classrooms,id',
             'duration' => 'required|integer|min:5|max:300',
             'status' => 'required|in:draft,published',
+            'day_of_week' => 'nullable|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'exam_date' => 'nullable|date',
             'token' => [
-                'required',
+                'nullable',
                 'string',
-                'size:7',
-                'regex:/^[A-Za-z0-9]{7}$/',
-                'unique:exams,token',
+                'max:20',
             ],
         ]);
 
@@ -89,6 +123,24 @@ class ExamController extends Controller
             }
         }
 
+        $token = $request->filled('token') ? strtoupper(trim($request->token)) : Exam::generateToken();
+
+        // Jika hari belum dipilih tapi tanggal diisi, otomatis deteksi hari dalam Bahasa Indonesia
+        $dayOfWeek = $request->day_of_week;
+        if (!$dayOfWeek && $request->filled('exam_date')) {
+            $carbonDate = \Carbon\Carbon::parse($request->exam_date);
+            $dayOfWeek = match ($carbonDate->dayOfWeekIso) {
+                1 => 'Senin',
+                2 => 'Selasa',
+                3 => 'Rabu',
+                4 => 'Kamis',
+                5 => 'Jumat',
+                6 => 'Sabtu',
+                7 => 'Minggu',
+                default => null,
+            };
+        }
+
         $exam = Exam::create([
             'title' => $request->title,
             'subject_id' => $request->subject_id,
@@ -96,11 +148,13 @@ class ExamController extends Controller
             'user_id' => $guru->id,
             'duration' => $request->duration,
             'status' => $request->status,
-            'token' => strtoupper($request->token),
+            'day_of_week' => $dayOfWeek,
+            'exam_date' => $request->exam_date,
+            'token' => $token,
         ]);
 
         return redirect()->route('guru.ujian.show', $exam->id)
-            ->with('success', "Ujian berhasil dibuat dengan Token! Silakan tambahkan butir soal.");
+            ->with('success', "Ujian berhasil dibuat dengan Token [ {$token} ]! Silakan tambahkan butir soal.");
     }
 
     /**
@@ -187,7 +241,63 @@ class ExamController extends Controller
     }
 
     /**
+     * Unduh template dokumen Word (.docx) untuk pengisian soal secara massal
+     */
+    public function downloadDocxTemplate(DocxQuestionService $docxService): BinaryFileResponse
+    {
+        $tempPath = $docxService->createTemplateFile();
+
+        return response()->download($tempPath, 'template_soal_cbt_mtsn12.docx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Impor soal secara massal dari file template dokumen Word (.docx)
+     */
+    public function questionImportDocx(Request $request, int $examId, DocxQuestionService $docxService): RedirectResponse
+    {
+        $guru = auth()->user();
+        $exam = Exam::findOrFail($examId);
+
+        // Validasi Otorisasi: Pastikan guru berhak mengelola ujian ini
+        if ($guru->subjects()->exists()) {
+            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
+            if ($exam->user_id !== $guru->id && !in_array((int)$exam->subject_id, $allowedSubjectIds)) {
+                return redirect()->route('guru.ujian.show', $examId)
+                    ->with('error', 'Akses ditolak! Anda tidak memiliki izin untuk mengimpor soal pada ujian mata pelajaran ini.');
+            }
+        }
+
+        $request->validate([
+            'docx_file' => 'required|file|mimes:docx|max:15360', // max 15MB
+        ], [
+            'docx_file.required' => 'Silakan pilih file dokumen Word (.docx) yang akan diimpor.',
+            'docx_file.mimes' => 'Format file harus dokumen Microsoft Word (.docx).',
+            'docx_file.max' => 'Ukuran file dokumen Word tidak boleh melebihi 15MB.',
+        ]);
+
+        $result = $docxService->importFromDocx($request->file('docx_file'), $exam);
+
+        if (!$result['success']) {
+            return redirect()->route('guru.ujian.show', $examId)
+                ->with('error', $result['message'])
+                ->with('import_errors', $result['errors'] ?? []);
+        }
+
+        $flashMessage = $result['message'];
+        if (!empty($result['errors'])) {
+            $flashMessage .= ' (Catatan: ' . count($result['errors']) . ' baris dilewati karena format tidak lengkap).';
+        }
+
+        return redirect()->route('guru.ujian.show', $examId)
+            ->with('success', $flashMessage)
+            ->with('import_warnings', $result['errors'] ?? []);
+    }
+
+    /**
      * Hapus soal
+
      */
     public function questionDestroy(int $id): RedirectResponse
     {

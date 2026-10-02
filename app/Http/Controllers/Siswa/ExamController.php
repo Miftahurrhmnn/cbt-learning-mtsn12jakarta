@@ -18,26 +18,53 @@ class ExamController extends Controller
 {
     /**
      * Dashboard Siswa: Menampilkan Ujian Aktif dan Riwayat Ujian yang telah selesai
+     * Dilengkapi fitur filter mata pelajaran berdasarkan hari
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $userId = Auth::id();
+        $user = Auth::user();
 
-        // Ujian yang sedang aktif/published
-        $activeExams = Exam::with(['subject', 'classroom'])
+        // PEMBATASAN KELAS SISWA:
+        // Hanya tampilkan ujian yang statusnya 'published' dan kelas ujian sama dengan kelas siswa
+        $activeExamsQuery = Exam::with(['subject', 'classroom'])
             ->where('status', 'published')
-            ->withCount('questions')
-            ->latest()
-            ->get();
+            ->withCount('questions');
+
+        if ($user->classroom_id) {
+            $activeExamsQuery->where('classroom_id', $user->classroom_id);
+        } else {
+            // Jika siswa belum memiliki kelas terdaftar di profilnya, jangan tampilkan ujian kelas lain
+            $activeExamsQuery->whereRaw('1 = 0');
+        }
+
+        // FITUR FILTER BERDASARKAN HARI UNTUK SISWA
+        if ($request->filled('day')) {
+            $activeExamsQuery->where('day_of_week', $request->day);
+        }
+
+        // Filter Pencarian Judul/Mapel
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $activeExamsQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('subject', function ($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $activeExams = $activeExamsQuery->latest()->get();
 
         // Sesi ujian yang pernah diikuti siswa ini
         $mySessions = ExamSession::with(['exam.subject', 'exam.classroom'])
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->keyBy('exam_id');
 
-        return view('siswa.dashboard', compact('activeExams', 'mySessions'));
+        $daysList = Exam::daysList();
+
+        return view('siswa.dashboard', compact('activeExams', 'mySessions', 'daysList'));
     }
 
     /**
@@ -46,17 +73,28 @@ class ExamController extends Controller
      */
     public function show(int $id): View|RedirectResponse
     {
-        $userId = Auth::id();
+        $user = Auth::user();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
 
-        if (!session()->get("exam_token_verified_{$exam->id}", false)) {
+        // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
+        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
+        }
+
+        $hasOngoingSession = ExamSession::where('user_id', $user->id)
+            ->where('exam_id', $exam->id)
+            ->where('status', 'ongoing')
+            ->exists();
+
+        if (!empty($exam->token) && !$hasOngoingSession && !session()->get("exam_token_verified_{$exam->id}", false)) {
             return redirect()->route('siswa.ujian.token', $exam->id);
         }
 
         // Ambil atau buat sesi ujian baru untuk user yang login
         $session = ExamSession::firstOrCreate(
             [
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'exam_id' => $exam->id,
             ],
             [
@@ -108,7 +146,14 @@ class ExamController extends Controller
 
     public function token(int $id): View|RedirectResponse
     {
+        $user = Auth::user();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
+
+        // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
+        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
+        }
 
         if ($exam->status !== 'published') {
             return redirect()->route('siswa.dashboard')
@@ -119,7 +164,14 @@ class ExamController extends Controller
 
     public function verifyToken(Request $request, int $id): RedirectResponse
     {
-        $exam = Exam::findOrFail($id);
+        $user = Auth::user();
+        $exam = Exam::with('classroom')->findOrFail($id);
+
+        // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
+        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
+        }
 
         $request->validate([
             'token' => [
@@ -226,6 +278,77 @@ class ExamController extends Controller
             return redirect()->route('siswa.ujian.hasil', $exam->id);
         }
 
+        /*
+        * Ambil soal yang sama dengan soal yang ditampilkan
+        * pada halaman ruang ujian.
+        */
+        $questions = Question::where('exam_id', $exam->id)
+            ->orWhere(function ($query) use ($exam) {
+                $query->whereNull('exam_id')
+                    ->where('subject_id', $exam->subject_id);
+            })
+            ->select(['id'])
+            ->orderBy('id')
+            ->get();
+
+        /*
+        * Jika tidak ada soal, jangan lanjutkan proses
+        * penyelesaian ujian.
+        */
+        if ($questions->isEmpty()) {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Belum ada soal yang tersedia untuk ujian ini.');
+        }
+
+        /*
+        * Ambil ID soal yang memang termasuk dalam ujian ini.
+        */
+        $questionIds = $questions->pluck('id');
+
+        /*
+        * Hitung berapa soal yang sudah dijawab siswa.
+        *
+        * Hanya jawaban untuk soal yang benar-benar termasuk
+        * dalam ujian ini yang dihitung.
+        */
+        $answeredCount = ExamAnswer::where('exam_session_id', $session->id)
+            ->whereIn('question_id', $questionIds)
+            ->whereNotNull('selected_answer')
+            ->where('selected_answer', '!=', '')
+            ->count();
+
+        $totalQuestions = $questions->count();
+
+        $unansweredCount = $totalQuestions - $answeredCount;
+
+
+        /*
+        * Cek apakah waktu ujian masih tersedia.
+        *
+        * Jika waktu masih ada, siswa wajib menjawab
+        * seluruh soal sebelum dapat menyelesaikan ujian.
+        *
+        * Jika waktu sudah habis, ujian tetap boleh
+        * difinalisasi secara otomatis.
+        */
+        $remainingSeconds = $session->remaining_seconds;
+
+        if ($remainingSeconds > 0 && $unansweredCount > 0) {
+            return redirect()
+                ->route('siswa.ujian.show', $exam->id)
+                ->with(
+                    'error',
+                    "Ujian belum dapat diselesaikan. Masih ada {$unansweredCount} soal yang belum dijawab."
+                );
+        }
+
+
+        /*
+        * Semua soal sudah dijawab atau waktu ujian
+        * sudah habis.
+        *
+        * Lanjutkan proses perhitungan nilai.
+        */
         $this->finalizeExamSession($session, $exam);
 
         return redirect()->route('siswa.ujian.hasil', $exam->id)
@@ -252,14 +375,31 @@ class ExamController extends Controller
                 'session' => $session,
                 'isCompleted' => false,
                 'score' => null, // Nilai tidak keluar sama sekali
+                'questions' => collect(),
+                'userAnswers' => collect(),
             ]);
         }
+
+        // Ambil butir soal dan kunci jawaban untuk review pembahasan siswa
+        $questions = Question::where('exam_id', $exam->id)
+            ->orWhere(function ($query) use ($exam) {
+                $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
+            })
+            ->orderBy('id')
+            ->get();
+
+        // Ambil jawaban yang telah disimpan oleh siswa pada sesi ini
+        $userAnswers = ExamAnswer::where('exam_session_id', $session->id)
+            ->get()
+            ->keyBy('question_id');
 
         return view('siswa.exam.result', [
             'exam' => $exam,
             'session' => $session,
             'isCompleted' => true,
             'score' => $session->score,
+            'questions' => $questions,
+            'userAnswers' => $userAnswers,
         ]);
     }
 

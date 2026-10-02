@@ -16,11 +16,23 @@ Route::get('/', function () {
 // Role-based dashboard redirect
 Route::get('/dashboard', function () {
     $user = Auth::user();
+    if ($user->isAdmin()) {
+        return redirect()->route('admin.siswa.index');
+    }
     if ($user->isGuru()) {
         return redirect()->route('guru.ujian.index');
     }
     return redirect()->route('siswa.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// ==================== ADMIN ROUTES (KHUSUS ROLE ADMIN) ====================
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect()->route('admin.siswa.index');
+    })->name('dashboard');
+
+    Route::resource('siswa', \App\Http\Controllers\Admin\StudentController::class);
+});
 
 // ==================== GURU ROUTES ====================
 Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(function () {
@@ -37,9 +49,12 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
     Route::delete('/ujian/{id}', [GuruExamController::class, 'destroy'])->name('ujian.destroy');
 
     // Input Soal Teks / Gambar & Kunci Jawaban
+    Route::get('/ujian/soal/template-docx', [GuruExamController::class, 'downloadDocxTemplate'])->name('ujian.soal.template');
     Route::get('/ujian/{examId}/soal/create', [GuruExamController::class, 'questionCreate'])->name('ujian.soal.create');
     Route::post('/ujian/{examId}/soal', [GuruExamController::class, 'questionStore'])->name('ujian.soal.store');
+    Route::post('/ujian/{examId}/soal/import-docx', [GuruExamController::class, 'questionImportDocx'])->name('ujian.soal.import_docx');
     Route::delete('/soal/{id}', [GuruExamController::class, 'questionDestroy'])->name('soal.destroy');
+
 
     // Rekapitulasi Nilai Siswa
     Route::get('/ujian/{examId}/nilai', [GuruExamController::class, 'scores'])->name('ujian.scores');

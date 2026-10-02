@@ -17,11 +17,19 @@ class Exam extends Model
         'token',
         'duration',
         'status',
+        'day_of_week',
+        'exam_date',
     ];
 
     protected $casts = [
         'duration' => 'integer',
+        'exam_date' => 'date',
     ];
+
+    public static function daysList(): array
+    {
+        return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    }
 
     public function subject(): BelongsTo
     {
@@ -63,6 +71,18 @@ class Exam extends Model
         $className = $this->classroom ? $this->classroom->name : 'Kelas';
 
         return "Ujian {$subjectName} ({$className})";
+    }
+
+    /**
+     * Generate token acak 6-7 karakter unik untuk ujian
+     */
+    public static function generateToken(): string
+    {
+        do {
+            $token = strtoupper(Str::random(6));
+        } while (self::where('token', $token)->exists());
+
+        return $token;
     }
 
     /**

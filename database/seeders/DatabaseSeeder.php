@@ -17,21 +17,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // 0. Akun Administrator
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@cbt.test'],
+            [
+                'name' => 'Administrator CBT',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
+
         // 1. Akun Guru & Siswa
         $guru = User::updateOrCreate(
             ['email' => 'guru@cbt.test'],
             [
                 'name' => 'Bapak Budi, S.Pd. (Guru)',
-                'password' => Hash::make('password'),
-                'role' => 'guru',
-            ]
-        );
-
-        // Akun Miftah (Guru Matematika sesuai request user)
-        $guruMiftah = User::updateOrCreate(
-            ['email' => 'miftah@cbt.test'],
-            [
-                'name' => 'Miftah, S.Pd. (Guru Matematika)',
                 'password' => Hash::make('password'),
                 'role' => 'guru',
             ]
@@ -50,10 +50,17 @@ class DatabaseSeeder extends Seeder
         // Update user guru@gmail.com jika ada dari percobaan sebelumnya
         User::where('email', 'guru@gmail.com')->update(['role' => 'guru']);
 
+        // Data Master Kelas
+        $kelasXA = Classroom::firstOrCreate(['name' => 'Kelas X-A']);
+        $kelasXB = Classroom::firstOrCreate(['name' => 'Kelas X-B']);
+        $kelasXIA = Classroom::firstOrCreate(['name' => 'Kelas XI-A']);
+
         $siswa = User::updateOrCreate(
             ['email' => 'siswa@cbt.test'],
             [
                 'name' => 'Ahmad Fauzi (Siswa)',
+                'nisn' => '41524110008',
+                'classroom_id' => $kelasXA->id,
                 'password' => Hash::make('password'),
                 'role' => 'siswa',
             ]
@@ -67,15 +74,9 @@ class DatabaseSeeder extends Seeder
         // Tugaskan Guru ke Mata Pelajaran Masing-Masing
         // Bapak Budi & Miftah HANYA mengajar Matematika
         $guru->subjects()->sync([$mapelMatematika->id]);
-        $guruMiftah->subjects()->sync([$mapelMatematika->id]);
 
         // Ibu Siti HANYA mengajar IPA
         $guruIPA->subjects()->sync([$mapelIPA->id]);
-
-        // 3. Data Master Kelas
-        $kelasXA = Classroom::firstOrCreate(['name' => 'Kelas X-A']);
-        $kelasXB = Classroom::firstOrCreate(['name' => 'Kelas X-B']);
-        $kelasXIA = Classroom::firstOrCreate(['name' => 'Kelas XI-A']);
 
         // 4. Contoh Ujian yang sudah Aktif (Published) dengan Token
         $examMatematika = Exam::firstOrCreate(
