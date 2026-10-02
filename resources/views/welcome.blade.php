@@ -122,7 +122,6 @@
                         class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         Masuk Sekarang
-                        <x-heroicon-s-arrow-right class="h-4 w-4" />
                     </button>
                 </form>
                 

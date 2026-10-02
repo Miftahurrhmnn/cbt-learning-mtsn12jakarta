@@ -84,7 +84,7 @@
 
             <!-- Section 1: Daftar Ujian yang Sedang Dibuka Guru -->
             <div>
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex ml-4 sm:ml-0 md:ml-0 items-center justify-between mb-4">
                     <div>
                         <h3 class="text-lg sm:text-xl font-black text-slate-900">Ujian Yang Tersedia</h3>
                         <p class="text-xs text-slate-500">Pilih ujian untuk mulai mengerjakan. Waktu standar 1 jam.</p>
@@ -140,7 +140,7 @@
 
                                 <div class="p-5 bg-slate-50/70 border-t border-slate-100">
                                     @if(!$session)
-                                        <a href="{{ route('siswa.ujian.show', $exam->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition" onclick="return confirm('Mulai ujian sekarang? Waktu 60 menit akan langsung berjalan.')">
+                                        <a href="{{ route('siswa.ujian.token', $exam->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition" onclick="return confirm('Mulai ujian sekarang? Waktu 60 menit akan langsung berjalan.')">
                                             Mulai Kerjakan Ujian
                                         </a>
                                     @elseif($session->isCompleted())

@@ -66,19 +66,6 @@ class Exam extends Model
     }
 
     /**
-     * Generate token ujian acak 6 karakter unik tanpa karakter ambigu
-     */
-    public static function generateToken(int $length = 6): string
-    {
-        $pool = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-        $token = '';
-        for ($i = 0; $i < $length; $i++) {
-            $token .= $pool[random_int(0, strlen($pool) - 1)];
-        }
-        return $token;
-    }
-
-    /**
      * Periksa apakah token yang dimasukkan siswa cocok
      */
     public function isValidToken(?string $inputToken): bool

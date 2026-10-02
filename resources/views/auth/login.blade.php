@@ -49,7 +49,7 @@
 
         <div class="pt-2">
             <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white rounded-xl text-sm font-bold uppercase tracking-wider shadow-sm transition duration-150 hover:shadow-md">
-                Masuk Sekarang &rarr;
+                Masuk Sekarang
             </button>
         </div>
     </form>

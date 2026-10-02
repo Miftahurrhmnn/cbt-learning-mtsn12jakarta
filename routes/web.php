@@ -52,15 +52,29 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
 
 // ==================== SISWA ROUTES ====================
 Route::middleware(['auth', 'is_siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    Route::get('/dashboard', [SiswaExamController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [SiswaExamController::class, 'index'])
+        ->name('dashboard');
+
+    // Verifikasi token sebelum masuk ruang ujian
+    Route::get('/ujian/{id}/token', [SiswaExamController::class, 'token'])
+        ->name('ujian.token');
+
+    Route::post('/ujian/{id}/verify-token', [SiswaExamController::class, 'verifyToken'])
+        ->name('ujian.verify-token');
 
     // Ruang Ujian: Timer 1 jam, Kotak nomor merah -> hijau, AJAX simpan jawaban
-    Route::get('/ujian/{id}', [SiswaExamController::class, 'show'])->name('ujian.show');
+    Route::get('/ujian/{id}', [SiswaExamController::class, 'show'])
+        ->name('ujian.show');
+
     Route::post('/ujian/{id}/simpan-jawaban', [SiswaExamController::class, 'saveAnswer'])
         ->middleware('throttle:120,1')
         ->name('ujian.simpan_jawaban');
-    Route::post('/ujian/{id}/selesai', [SiswaExamController::class, 'finish'])->name('ujian.selesai');
-    Route::get('/ujian/{id}/hasil', [SiswaExamController::class, 'result'])->name('ujian.hasil');
+
+    Route::post('/ujian/{id}/selesai', [SiswaExamController::class, 'finish'])
+        ->name('ujian.selesai');
+
+    Route::get('/ujian/{id}/hasil', [SiswaExamController::class, 'result'])
+        ->name('ujian.hasil');
 });
 
 // Profile Management (Laravel Breeze)

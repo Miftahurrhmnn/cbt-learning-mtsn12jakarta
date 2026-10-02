@@ -54,9 +54,8 @@ class ExamController extends Controller
         }
 
         $classrooms = Classroom::orderBy('name')->get();
-        $defaultToken = Exam::generateToken();
 
-        return view('guru.exam.create', compact('subjects', 'classrooms', 'defaultToken'));
+        return view('guru.exam.create', compact('subjects', 'classrooms'));
     }
 
     /**
@@ -72,7 +71,13 @@ class ExamController extends Controller
             'classroom_id' => 'required|exists:classrooms,id',
             'duration' => 'required|integer|min:5|max:300',
             'status' => 'required|in:draft,published',
-            'token' => 'nullable|string|max:20',
+            'token' => [
+                'required',
+                'string',
+                'size:7',
+                'regex:/^[A-Za-z0-9]{7}$/',
+                'unique:exams,token',
+            ],
         ]);
 
         // VALIDASI KEAMANAN OTORISASI:
@@ -84,8 +89,6 @@ class ExamController extends Controller
             }
         }
 
-        $token = $request->filled('token') ? strtoupper(trim($request->token)) : Exam::generateToken();
-
         $exam = Exam::create([
             'title' => $request->title,
             'subject_id' => $request->subject_id,
@@ -93,11 +96,11 @@ class ExamController extends Controller
             'user_id' => $guru->id,
             'duration' => $request->duration,
             'status' => $request->status,
-            'token' => $token,
+            'token' => strtoupper($request->token),
         ]);
 
         return redirect()->route('guru.ujian.show', $exam->id)
-            ->with('success', "Ujian berhasil dibuat dengan Token [ {$token} ]! Silakan tambahkan butir soal.");
+            ->with('success', "Ujian berhasil dibuat dengan Token! Silakan tambahkan butir soal.");
     }
 
     /**

@@ -97,6 +97,36 @@
                         @enderror
                     </div>
 
+                    <div>
+                        <label for="token" class="block text-sm font-semibold text-slate-700">
+                            Token Ujian
+                        </label>
+
+                        <p class="mt-1 text-xs text-slate-500">
+                            Buat token sendiri dengan tepat 7 karakter. Gunakan kombinasi huruf dan angka.
+                        </p>
+
+                        <input
+                            id="token"
+                            name="token"
+                            type="text"
+                            value="{{ old('token') }}"
+                            maxlength="7"
+                            minlength="7"
+                            required
+                            autocomplete="off"
+                            class="mt-2 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="Contoh: MTK2026"
+                            oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7)"
+                        >
+
+                        @error('token')
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
                     <!-- Status Awal Ujian -->
                     <div>
                         <label for="status" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -125,7 +155,7 @@
                             Batal
                         </a>
                         <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition hover:shadow-md">
-                            Simpan & Lanjut Tambah Soal &rarr;
+                            Simpan & Lanjut Tambah Soal
                         </button>
                     </div>
                 </form>

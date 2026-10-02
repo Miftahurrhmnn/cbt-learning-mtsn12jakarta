@@ -57,12 +57,6 @@
 
                     <div>
                         <a href="{{ route('guru.ujian.soal.create', $exam->id) }}" class="inline-flex items-center px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition">
-                            Mulai Ujian Sekarang
-                        </a>
-                        <a href="{{ route('guru.ujian.soal.create', $exam->id) }}" class="inline-flex items-center px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition">
-                            Rekap Nilai
-                        </a>
-                        <a href="{{ route('guru.ujian.soal.create', $exam->id) }}" class="inline-flex items-center px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition">
                             + Tambah Soal Baru
                         </a>
                     </div>

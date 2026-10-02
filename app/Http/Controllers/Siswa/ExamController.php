@@ -49,9 +49,8 @@ class ExamController extends Controller
         $userId = Auth::id();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
 
-        if ($exam->status !== 'published') {
-            return redirect()->route('siswa.dashboard')
-                ->with('error', 'Ujian ini sedang tidak aktif atau belum dibuka oleh Guru.');
+        if (!session()->get("exam_token_verified_{$exam->id}", false)) {
+            return redirect()->route('siswa.ujian.token', $exam->id);
         }
 
         // Ambil atau buat sesi ujian baru untuk user yang login
@@ -105,6 +104,53 @@ class ExamController extends Controller
             ->toArray();
 
         return view('siswa.exam.room', compact('exam', 'session', 'questions', 'userAnswers', 'remainingSeconds'));
+    }
+
+    public function token(int $id): View|RedirectResponse
+    {
+        $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
+
+        if ($exam->status !== 'published') {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Ujian ini sedang tidak aktif atau belum dibuka oleh Guru.');
+        }
+        return view('siswa.exam.token', compact('exam'));
+    }
+
+    public function verifyToken(Request $request, int $id): RedirectResponse
+    {
+        $exam = Exam::findOrFail($id);
+
+        $request->validate([
+            'token' => [
+                'required',
+                'string',
+                'size:7',
+                'regex:/^[A-Za-z0-9]{7}$/',
+            ],
+        ], [
+            'token.required' => 'Token ujian wajib diisi.',
+            'token.size' => 'Token ujian harus tepat 7 karakter.',
+            'token.regex' => 'Token hanya boleh menggunakan huruf dan angka.',
+        ]);
+
+        if ($exam->status !== 'published') {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Ujian ini sedang tidak aktif atau belum dibuka oleh Guru.');
+        }
+
+        if (!$exam->isValidToken($request->token)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'token' => 'Token ujian yang Anda masukkan tidak sesuai.',
+                ]);
+        }
+
+        // Tandai bahwa siswa sudah berhasil melewati verifikasi token
+        session()->put("exam_token_verified_{$exam->id}", true);
+
+        return redirect()->route('siswa.ujian.show', $exam->id);
     }
 
     /**

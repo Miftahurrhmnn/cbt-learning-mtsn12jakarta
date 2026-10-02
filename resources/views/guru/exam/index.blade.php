@@ -370,6 +370,7 @@
                                         <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Durasi</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Soal</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status Akses</th>
+                                        <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Token</th>
                                         <th scope="col" class="px-6 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Aksi Guru</th>
                                     </tr>
                                 </thead>
@@ -427,6 +428,14 @@
                                                         Draft
                                                     </span>
                                                 @endif
+                                            </td>
+
+                                            <td class="whitespace-nowrap px-5 py-4">
+                                                <div class="inline-flex items-center gap-2">
+                                                    <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-mono text-sm font-bold tracking-widest text-slate-800">
+                                                        {{ $exam->token }}
+                                                    </span>
+                                                </div>
                                             </td>
 
                                             <!-- Aksi Guru -->
