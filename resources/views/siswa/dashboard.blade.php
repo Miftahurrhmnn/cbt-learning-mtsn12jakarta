@@ -254,11 +254,11 @@
                                             <div class="flex items-center gap-1.5">
                                                 @if($exam->day_of_week)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
-                                                        📅 {{ $exam->day_of_week }}
+                                                        <x-heroicon-o-calendar /> {{ $exam->day_of_week }}
                                                     </span>
                                                 @endif
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600">
-                                                    🏫 {{ $exam->classroom->name ?? 'Kelas' }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700" title="Kelas Sasaran Ujian: {{ $exam->all_classroom_names }}">
+                                                    Kelas: {{ $exam->all_classroom_names }}
                                                 </span>
                                             </div>
                                         </div>
@@ -269,11 +269,11 @@
 
                                         <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500 pt-2 border-t border-slate-100">
                                             <div class="flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                <span><strong>{{ $exam->duration }}</strong> Menit</span>
+                                                <svg class="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                <span class="truncate">Jam: <strong class="text-slate-800">{{ $exam->formatted_time_range }}</strong></span>
                                             </div>
                                             <div class="flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                 <span><strong>{{ $exam->questions_count }}</strong> Soal</span>
                                             </div>
                                         </div>
@@ -293,7 +293,7 @@
                                                 </span>
                                                 <a href="{{ route('siswa.ujian.hasil', $exam->id) }}" 
                                                    class="text-xs font-black text-emerald-700 hover:underline">
-                                                    Lihat Pembahasan
+                                                    Lihat Nilai
                                                 </a>
                                             </div>
                                         @else
@@ -305,12 +305,6 @@
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
-
-                        <!-- Mobile Scroll Helper Hint -->
-                        <div class="flex items-center justify-between pt-1 px-1 text-[11px] text-slate-400 md:hidden">
-                            <span>&larr; Geser kartu untuk melihat lainnya</span>
-                            <span class="font-semibold">{{ $activeExams->count() }} Paket Ujian</span>
                         </div>
                     </div>
                 @endif
@@ -335,7 +329,7 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pilih Ujian</label>
                             <select x-model="inputTokenExamId" class="w-full text-xs font-medium rounded-xl border-slate-300 py-2.5">
                                 @foreach($activeExams as $ex)
-                                    <option value="{{ $ex->id }}">{{ $ex->title ?? $ex->subject->name }} ({{ $ex->classroom->name }})</option>
+                                    <option value="{{ $ex->id }}">{{ $ex->title ?? $ex->subject->name }} ({{ $ex->all_classroom_names }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -412,24 +406,6 @@
                         :class="activeTab === 'home' ? 'text-[#2B77DE]' : ''">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                </button>
-
-                <!-- 2. Book / Exam Icon -->
-                <button @click="activeTab = 'exams'; document.getElementById('section-exams')?.scrollIntoView({ behavior: 'smooth' })" 
-                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
-                        :class="activeTab === 'exams' ? 'text-[#2B77DE]' : ''">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                </button>
-
-                <!-- 4. Result / Folder Icon -->
-                <button @click="activeTab = 'results'; document.getElementById('section-results')?.scrollIntoView({ behavior: 'smooth' })" 
-                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
-                        :class="activeTab === 'results' ? 'text-[#2B77DE]' : ''">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
                     </svg>
                 </button>
 

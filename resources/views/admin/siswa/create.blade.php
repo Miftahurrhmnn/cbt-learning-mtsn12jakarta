@@ -73,7 +73,7 @@
                             <option value="">-- Pilih Kelas Siswa --</option>
                             @foreach($classrooms as $cls)
                                 <option value="{{ $cls->id }}" {{ old('classroom_id') == $cls->id ? 'selected' : '' }}>
-                                    🏫 {{ $cls->name }}
+                                    {{ $cls->name }}
                                 </option>
                             @endforeach
                         </select>

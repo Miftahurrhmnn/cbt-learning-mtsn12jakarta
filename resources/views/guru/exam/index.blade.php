@@ -172,7 +172,7 @@
                                     <option value="">Semua Kelas</option>
                                     @foreach($classrooms as $cls)
                                         <option value="{{ $cls->id }}" {{ request('classroom_id') == $cls->id ? 'selected' : '' }}>
-                                            🏫 {{ $cls->name }}
+                                            {{ $cls->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -185,7 +185,7 @@
                                     <option value="">Semua Hari</option>
                                     @foreach($daysList as $dayName)
                                         <option value="{{ $dayName }}" {{ request('day') == $dayName ? 'selected' : '' }}>
-                                            📅 Hari {{ $dayName }}
+                                            Hari {{ $dayName }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -232,8 +232,8 @@
                                 <thead>
                                     <tr class="bg-slate-50/70">
                                         <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Judul</th>
-                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Kelas</th>
-                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Durasi</th>
+                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Kelas Sasaran (Akses)</th>
+                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status Jam</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Soal</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status Akses</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Token</th>
@@ -254,26 +254,43 @@
                                                     </span>
                                                     @if($exam->day_of_week)
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold">
-                                                            📅 {{ $exam->day_of_week }}
+                                                            <x-heroicon-o-calendar /> {{ $exam->day_of_week }}
                                                         </span>
                                                     @endif
                                                 </div>
                                             </td>
 
-                                            <!-- Kelas -->
-                                            <td class="px-5 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black">
-                                                    {{ $exam->classroom->name ?? '-' }}
-                                                </span>
+                                            <!-- Kelas Sasaran (Akses) -->
+                                            <td class="px-5 py-4">
+                                                <div class="flex flex-col gap-1 max-w-xs">
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @php
+                                                            $pivotClassrooms = $exam->classrooms;
+                                                            $allCls = collect();
+                                                            if ($exam->classroom) { $allCls->push($exam->classroom); }
+                                                            foreach ($pivotClassrooms as $cls) {
+                                                                if (!$allCls->contains('id', $cls->id)) { $allCls->push($cls); }
+                                                            }
+                                                        @endphp
+                                                        @forelse($allCls as $c)
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                                {{ $c->name }}
+                                                            </span>
+                                                        @empty
+                                                            <span class="text-xs text-slate-400">-</span>
+                                                        @endforelse
+                                                    </div>
+                                                    <span class="text-[10px] text-slate-400 font-medium">Khusus kelas ini</span>
+                                                </div>
                                             </td>
 
-                                            <!-- Durasi -->
+                                            <!-- Status Jam Pelaksanaan -->
                                             <td class="px-5 py-4 whitespace-nowrap text-xs font-medium text-slate-600">
-                                                <div class="flex items-center gap-1.5">
-                                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                                                    <svg class="h-3.5 w-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
-                                                    <span class="font-bold text-slate-700">{{ $exam->duration }}</span> Menit
+                                                    <span class="font-bold text-slate-800">{{ $exam->formatted_time_range }}</span>
                                                 </div>
                                             </td>
 
@@ -372,8 +389,8 @@
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[11px] font-semibold">
                                                     {{ $exam->subject->name ?? '-' }}
                                                 </span>
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold">
-                                                    🏫 {{ $exam->classroom->name ?? '-' }}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold" title="Kelas yang dapat mengakses ujian ini">
+                                                    Akses: {{ $exam->all_classroom_names }}
                                                 </span>
                                             </div>
                                         </div>
@@ -395,10 +412,10 @@
                                     <!-- Card Meta Details -->
                                     <div class="grid grid-cols-2 gap-2 text-xs text-slate-500 pt-1">
                                         <div class="flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span><strong>{{ $exam->duration }}</strong> Menit</span>
+                                            <span class="truncate"><strong>Jam:</strong> {{ $exam->formatted_time_range }}</span>
                                         </div>
 
                                         <div class="flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100">

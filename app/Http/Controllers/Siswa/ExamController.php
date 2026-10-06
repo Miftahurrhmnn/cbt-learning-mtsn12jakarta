@@ -25,13 +25,19 @@ class ExamController extends Controller
         $user = Auth::user();
 
         // PEMBATASAN KELAS SISWA:
-        // Hanya tampilkan ujian yang statusnya 'published' dan kelas ujian sama dengan kelas siswa
-        $activeExamsQuery = Exam::with(['subject', 'classroom'])
+        // Tampilkan ujian yang statusnya 'published' dan kelas siswa diizinkan mengakses ujian ini
+        $activeExamsQuery = Exam::with(['subject', 'classroom', 'classrooms'])
             ->where('status', 'published')
             ->withCount('questions');
 
         if ($user->classroom_id) {
-            $activeExamsQuery->where('classroom_id', $user->classroom_id);
+            $userClassId = (int)$user->classroom_id;
+            $activeExamsQuery->where(function ($q) use ($userClassId) {
+                $q->where('classroom_id', $userClassId)
+                  ->orWhereHas('classrooms', function ($sq) use ($userClassId) {
+                      $sq->where('classrooms.id', $userClassId);
+                  });
+            });
         } else {
             // Jika siswa belum memiliki kelas terdaftar di profilnya, jangan tampilkan ujian kelas lain
             $activeExamsQuery->whereRaw('1 = 0');
@@ -76,8 +82,8 @@ class ExamController extends Controller
         $user = Auth::user();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
 
-        // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
-        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+        // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas sasaran ujian
+        if (!$exam->allowsClassroom($user->classroom_id)) {
             return redirect()->route('siswa.dashboard')
                 ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
         }
@@ -147,10 +153,10 @@ class ExamController extends Controller
     public function token(int $id): View|RedirectResponse
     {
         $user = Auth::user();
-        $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
+        $exam = Exam::with(['subject', 'classroom', 'teacher'])->withCount('questions')->findOrFail($id);
 
         // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
-        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+        if (!$exam->allowsClassroom($user->classroom_id)) {
             return redirect()->route('siswa.dashboard')
                 ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
         }
@@ -168,7 +174,7 @@ class ExamController extends Controller
         $exam = Exam::with('classroom')->findOrFail($id);
 
         // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas ujian
-        if (!$user->classroom_id || (int)$user->classroom_id !== (int)$exam->classroom_id) {
+        if (!$exam->allowsClassroom($user->classroom_id)) {
             return redirect()->route('siswa.dashboard')
                 ->with('error', 'Akses ditolak! Ujian ini khusus untuk siswa ' . ($exam->classroom->name ?? 'kelas lain') . '.');
         }
@@ -375,31 +381,24 @@ class ExamController extends Controller
                 'session' => $session,
                 'isCompleted' => false,
                 'score' => null, // Nilai tidak keluar sama sekali
-                'questions' => collect(),
-                'userAnswers' => collect(),
+                'correctAnswers' => 0,
+                'wrongAnswers' => 0,
+                'totalQuestions' => 0,
             ]);
         }
 
-        // Ambil butir soal dan kunci jawaban untuk review pembahasan siswa
-        $questions = Question::where('exam_id', $exam->id)
-            ->orWhere(function ($query) use ($exam) {
-                $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
-            })
-            ->orderBy('id')
-            ->get();
-
-        // Ambil jawaban yang telah disimpan oleh siswa pada sesi ini
-        $userAnswers = ExamAnswer::where('exam_session_id', $session->id)
-            ->get()
-            ->keyBy('question_id');
+        $totalQuestions = (int) ($session->total_questions ?? $exam->questions()->count());
+        $correctAnswers = (int) ($session->correct_answers ?? 0);
+        $wrongAnswers = max(0, $totalQuestions - $correctAnswers);
 
         return view('siswa.exam.result', [
             'exam' => $exam,
             'session' => $session,
             'isCompleted' => true,
             'score' => $session->score,
-            'questions' => $questions,
-            'userAnswers' => $userAnswers,
+            'correctAnswers' => $correctAnswers,
+            'wrongAnswers' => $wrongAnswers,
+            'totalQuestions' => $totalQuestions,
         ]);
     }
 

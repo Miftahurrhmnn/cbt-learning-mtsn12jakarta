@@ -19,6 +19,8 @@ class Exam extends Model
         'status',
         'day_of_week',
         'exam_date',
+        'start_time',
+        'end_time',
     ];
 
     protected $casts = [
@@ -39,6 +41,84 @@ class Exam extends Model
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
+    }
+
+    public function classrooms(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Classroom::class, 'classroom_exam');
+    }
+
+    /**
+     * Get all assigned classrooms (including primary classroom and pivot classrooms)
+     */
+    public function getAllClassroomNamesAttribute(): string
+    {
+        $names = collect();
+        if ($this->classroom) {
+            $names->push($this->classroom->name);
+        }
+        $pivotClassrooms = $this->relationLoaded('classrooms') ? $this->classrooms : $this->classrooms()->get();
+        foreach ($pivotClassrooms as $cls) {
+            if (!$names->contains($cls->name)) {
+                $names->push($cls->name);
+            }
+        }
+        return $names->isNotEmpty() ? $names->implode(', ') : '-';
+    }
+
+    /**
+     * Get formatted time window status (e.g. '07:30 - 09:30 WIB' or 'Waktu Fleksibel')
+     */
+    public function getFormattedTimeRangeAttribute(): string
+    {
+        if (!empty($this->start_time) && !empty($this->end_time)) {
+            $start = substr($this->start_time, 0, 5);
+            $end = substr($this->end_time, 0, 5);
+            return "{$start} - {$end} WIB";
+        } elseif (!empty($this->start_time)) {
+            $start = substr($this->start_time, 0, 5);
+            return "Mulai {$start} WIB";
+        } elseif (!empty($this->end_time)) {
+            $end = substr($this->end_time, 0, 5);
+            return "Sampai {$end} WIB";
+        }
+        return 'Fleksibel';
+    }
+
+    /**
+     * Check if a classroom ID is allowed to take this exam
+     */
+    public function allowsClassroom(?int $classroomId): bool
+    {
+        if (!$classroomId) {
+            return false;
+        }
+
+        if ($this->classroom_id == $classroomId) {
+            return true;
+        }
+
+        return $this->classrooms()->where('classrooms.id', $classroomId)->exists();
+    }
+
+    /**
+     * Check if current time is within exam schedule window (if defined)
+     */
+    public function isWithinTimeWindow(): bool
+    {
+        if (empty($this->start_time) && empty($this->end_time)) {
+            return true; // No time restriction
+        }
+
+        $now = now()->format('H:i:s');
+        if (!empty($this->start_time) && $now < $this->start_time) {
+            return false;
+        }
+        if (!empty($this->end_time) && $now > $this->end_time) {
+            return false;
+        }
+
+        return true;
     }
 
     public function teacher(): BelongsTo

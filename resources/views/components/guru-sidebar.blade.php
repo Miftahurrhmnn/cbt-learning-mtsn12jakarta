@@ -18,8 +18,10 @@
     
     // Status aktif setiap menu
     $isCreateActive = request()->routeIs('guru.ujian.create');
+    $isBankSoalActive = request()->routeIs('guru.bank-soal.*');
+    $isMonitoringActive = request()->routeIs('guru.monitoring.*');
     $isProfileActive = request()->routeIs('profile.*');
-    $isDaftarUjianActive = !$isCreateActive && !$isProfileActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard') || request()->routeIs('guru.*'));
+    $isDaftarUjianActive = !$isCreateActive && !$isBankSoalActive && !$isMonitoringActive && !$isProfileActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard'));
 
     // Inisial 2 Huruf Guru
     $nameParts = preg_split('/\s+/', trim($guruUser->name ?? 'Guru'));
@@ -74,7 +76,7 @@
 
         <!-- Mobile Navigation Menu -->
         <nav class="mt-6 space-y-1.5">
-            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Menu</p>
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Manajemen Ujian</p>
             
             <!-- Daftar Ujian -->
             <a href="{{ route('guru.ujian.index') }}" 
@@ -97,6 +99,26 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>Buat Ujian Baru</span>
+            </a>
+
+            <!-- Bank Soal -->
+            <a href="{{ route('guru.bank-soal.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isBankSoalActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isBankSoalActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span>Bank Soal</span>
+            </a>
+
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 pt-3">Monitoring & Evaluasi</p>
+
+            <!-- Monitoring Siswa -->
+            <a href="{{ route('guru.monitoring.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isMonitoringActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isMonitoringActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span>Monitoring Siswa</span>
             </a>
         </nav>
     </div>
@@ -142,7 +164,7 @@
 
         <!-- Navigation Section Desktop -->
         <nav class="space-y-1.5">
-            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Menu</p>
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Manajemen Ujian</p>
             
             <!-- Daftar Ujian -->
             <a href="{{ route('guru.ujian.index') }}" 
@@ -165,6 +187,26 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>Buat Ujian Baru</span>
+            </a>
+
+            <!-- Bank Soal -->
+            <a href="{{ route('guru.bank-soal.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isBankSoalActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isBankSoalActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span>Bank Soal</span>
+            </a>
+
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 pt-4">Monitoring & Evaluasi</p>
+
+            <!-- Monitoring Siswa -->
+            <a href="{{ route('guru.monitoring.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isMonitoringActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isMonitoringActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span>Monitoring Siswa</span>
             </a>
         </nav>
     </div>

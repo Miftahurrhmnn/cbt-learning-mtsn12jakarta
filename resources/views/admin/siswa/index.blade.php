@@ -131,7 +131,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($st->classroom)
                                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                                    🏫 {{ $st->classroom->name }}
+                                                    {{ $st->classroom->name }}
                                                 </span>
                                             @else
                                                 <span class="text-xs text-slate-400 italic">Belum diatur</span>

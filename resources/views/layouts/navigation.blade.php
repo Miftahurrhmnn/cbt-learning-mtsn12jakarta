@@ -12,9 +12,9 @@
                             class="h-9 w-9 object-contain"
                         />
 
-                        <span class="text-lg font-extrabold tracking-tight text-slate-900">
+                        <span class="text-lg font-black tracking-tight text-slate-900">
                             CBT
-                            <span style="color: #08CB00;">
+                            <span class="text-[#2B77DE]">
                                 MTsN 12 Jakarta
                             </span>
                         </span>

@@ -253,9 +253,12 @@ class CbtSystemTest extends TestCase
         $finalSiswaResult = $this->actingAs($siswa)->get(route('siswa.ujian.hasil', $exam->id));
         $finalSiswaResult->assertSee('50.0');
         $finalSiswaResult->assertSee('Nilai Akhir');
-        // Fitur Baru: Siswa dapat melihat review jawaban dan kunci jawaban setelah selesai
-        $finalSiswaResult->assertSee('Kunci Jawaban:');
-        $finalSiswaResult->assertSee('Pilihan Anda:');
+        $finalSiswaResult->assertSee('Jawaban Benar');
+        $finalSiswaResult->assertSee('Jawaban Salah');
+        $finalSiswaResult->assertSee('Total Soal');
+        $finalSiswaResult->assertDontSee('Pembahasan & Lembar Jawaban');
+        $finalSiswaResult->assertDontSee('Kunci Jawaban:');
+        $finalSiswaResult->assertDontSee('Pilihan Anda:');
 
         // Guru CAN now see the score!
         $finalGuruScores = $this->actingAs($guru)->get(route('guru.ujian.scores', $exam->id));
@@ -509,5 +512,40 @@ class CbtSystemTest extends TestCase
         $responseCreate->assertSee('Buat Ujian Baru');
         $responseCreate->assertSee('Guru Aktif');
     }
+
+    public function test_siswa_token_page_renders_harmoniously_with_dashboard(): void
+    {
+        $class = Classroom::create(['name' => 'Kelas X-A']);
+        $siswa = User::factory()->create([
+            'role' => 'siswa',
+            'name' => 'Ahmad Fauzi (Siswa)',
+            'nisn' => '41524110008',
+            'classroom_id' => $class->id,
+        ]);
+
+        $subject = Subject::create(['name' => 'Matematika']);
+        $exam = Exam::create([
+            'title' => 'matematika dasar',
+            'subject_id' => $subject->id,
+            'classroom_id' => $class->id,
+            'duration' => 60,
+            'status' => 'published',
+            'day_of_week' => 'Selasa',
+            'token' => 'MTK2026',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('siswa.ujian.token', $exam->id));
+        $response->assertStatus(200);
+        $response->assertSee('Ahmad Fauzi (Siswa)');
+        $response->assertSee('41524110008');
+        $response->assertSee('Kelas X-A');
+        $response->assertSee('Masukkan Token Ujian');
+        $response->assertSee('matematika dasar');
+        $response->assertSee('60');
+        $response->assertSee('Mulai Ujian (Token)');
+        $response->assertSee('CBT MTsN 12');
+        $response->assertDontSee('#08CB00');
+    }
 }
+
 

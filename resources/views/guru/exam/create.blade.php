@@ -1,5 +1,5 @@
 <x-app-layout :hide-nav="true">
-    <div x-data="{ sidebarOpen: false, duration: {{ old('duration', 60) }} }" class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <div x-data="{ sidebarOpen: false, startTime: '{{ old('start_time', '') }}', endTime: '{{ old('end_time', '') }}' }" class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
 
         <!-- Guru Sidebar Component (Desktop Sticky & Mobile Drawer) -->
         <x-guru-sidebar />
@@ -37,6 +37,19 @@
             </header>
 
             <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl w-full mx-auto">
+                <!-- Page Breadcrumbs & Header -->
+                <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                            <a href="{{ route('guru.ujian.index') }}" class="hover:text-indigo-600 transition">Daftar Ujian</a>
+                            <span>/</span>
+                            <span class="text-slate-600 font-semibold">Buat Ujian Baru</span>
+                        </div>
+                        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Formulir Buat Ujian Baru</h1>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-1">Lengkapi parameter ujian, kelas sasaran, serta jam pelaksanaan ujian sebelum menambahkan butir soal.</p>
+                    </div>
+                </div>
+
                 <!-- Form Card -->
                 <div class="bg-white overflow-hidden shadow-2xs rounded-3xl border border-slate-200/80">
                     <form action="{{ route('guru.ujian.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
@@ -54,44 +67,61 @@
                             @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <!-- Mata Pelajaran -->
-                            <div>
-                                <label for="subject_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                    Mata Pelajaran <span class="text-rose-500">*</span>
+                        <!-- Mata Pelajaran -->
+                        <div>
+                            <label for="subject_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                Mata Pelajaran <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="subject_id" id="subject_id" required
+                                class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                <option value="">-- Pilih Mata Pelajaran --</option>
+                                @foreach($subjects as $subject)
+                                    <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
+                                        <x-heroicon-s-book-open class="h-5 w-5" /> {{ $subject->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('subject_id')
+                                <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Kelas Sasaran (Dapat Memilih Banyak Kelas) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                    Kelas Sasaran Ujian <span class="text-rose-500">*</span>
                                 </label>
-                                <select name="subject_id" id="subject_id" required
-                                    class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
-                                    <option value="">-- Pilih Mata Pelajaran --</option>
-                                    @foreach($subjects as $subject)
-                                        <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
-                                            <x-heroicon-s-book-open class="h-5 w-5" /> {{ $subject->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('subject_id')
-                                    <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
-                                @enderror
+                                <span class="text-[11px] text-slate-400">Centang kelas mana saja yang bisa mengakses ujian ini</span>
                             </div>
 
-                            <!-- Kelas Sasaran -->
-                            <div>
-                                <label for="classroom_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                    Kelas Sasaran <span class="text-rose-500">*</span>
-                                </label>
-                                <select name="classroom_id" id="classroom_id" required
-                                    class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
-                                    <option value="">-- Pilih Kelas --</option>
-                                    @foreach($classrooms as $classroom)
-                                        <option value="{{ $classroom->id }}" {{ old('classroom_id') == $classroom->id ? 'selected' : '' }}>
-                                            🏫 {{ $classroom->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('classroom_id')
-                                    <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
-                                @enderror
+                            <!-- Penjelasan Terkait Hak Akses Kelas -->
+                            <div class="mb-3 p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl flex items-start gap-3 shadow-2xs">
+                                <div class="w-8 h-8 rounded-xl bg-[#2B77DE] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div class="text-xs text-blue-950 leading-relaxed">
+                                    <strong class="font-extrabold block text-blue-900">Penjelasan Hak Akses Kelas:</strong>
+                                    Ujian ini <strong>hanya akan tampil dan dapat dikerjakan</strong> oleh siswa yang terdaftar pada kelas yang dicentang di bawah ini. Siswa dari kelas lain tidak akan dapat melihat maupun mengakses ujian ini di dashboard mereka.
+                                </div>
                             </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200">
+                                @foreach($classrooms as $classroom)
+                                    <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 cursor-pointer transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/60 shadow-2xs">
+                                        <input type="checkbox" name="classroom_ids[]" value="{{ $classroom->id }}" 
+                                            {{ (is_array(old('classroom_ids')) && in_array($classroom->id, old('classroom_ids'))) || old('classroom_id') == $classroom->id ? 'checked' : '' }}
+                                            class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                                        <span class="text-xs font-semibold text-slate-800">{{ $classroom->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('classroom_ids')
+                                <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                            @error('classroom_id')
+                                <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Jadwal Pelaksanaan (Hari & Tanggal Ujian) -->
@@ -106,7 +136,7 @@
                                     <option value="">-- Pilih Hari Ujian (Opsional) --</option>
                                     @foreach($daysList as $dayName)
                                         <option value="{{ $dayName }}" {{ old('day_of_week') == $dayName ? 'selected' : '' }}>
-                                            📅 {{ $dayName }}
+                                            <x-heroicon-o-calendar /> {{ $dayName }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -130,44 +160,46 @@
                             </div>
                         </div>
 
-                        <!-- Durasi Pengerjaan & Preset Tombol Cepat -->
-                        <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <label for="duration" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                    Durasi Ujian (Menit) <span class="text-rose-500">*</span>
-                                </label>
-                                <span class="text-xs font-bold text-indigo-600" x-text="duration + ' Menit (' + (duration / 60) + ' Jam)'"></span>
+                        <!-- Status Jam Pelaksanaan Ujian (WIB) - Menggantikan Input Durasi -->
+                        <div class="p-5 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                                        Status Jam Pelaksanaan Ujian (WIB)
+                                    </label>
+                                    <p class="text-[11px] text-slate-500">Atur jam mulai akses dan batas jam selesai ujian yang berlaku bagi siswa.</p>
+                                </div>
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span x-text="startTime && endTime ? (startTime + ' - ' + endTime + ' WIB') : (startTime ? ('Mulai ' + startTime + ' WIB') : (endTime ? ('Sampai ' + endTime + ' WIB') : 'Jam Belum Ditentukan'))"></span>
+                                </div>
                             </div>
 
-                            <!-- Presets Cepat -->
-                            <div class="grid grid-cols-4 gap-2">
-                                <button type="button" @click="duration = 30"
-                                    class="py-1.5 text-xs font-bold rounded-lg border transition text-center"
-                                    :class="duration === 30 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
-                                    30 Menit
-                                </button>
-                                <button type="button" @click="duration = 60"
-                                    class="py-1.5 text-xs font-bold rounded-lg border transition text-center"
-                                    :class="duration === 60 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
-                                    60 Menit (1 Jam)
-                                </button>
-                                <button type="button" @click="duration = 90"
-                                    class="py-1.5 text-xs font-bold rounded-lg border transition text-center"
-                                    :class="duration === 90 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
-                                    90 Menit
-                                </button>
-                                <button type="button" @click="duration = 120"
-                                    class="py-1.5 text-xs font-bold rounded-lg border transition text-center"
-                                    :class="duration === 120 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
-                                    120 Menit (2 Jam)
-                                </button>
-                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="start_time" class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Jam Mulai Ujian (WIB)
+                                    </label>
+                                    <input type="time" name="start_time" id="start_time" x-model="startTime"
+                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                    <p class="text-[11px] text-slate-400 mt-1">Jam mulai soal ujian dapat dibuka dan dikerjakan siswa.</p>
+                                    @error('start_time')
+                                        <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                            <input type="number" name="duration" id="duration" x-model="duration" min="5" max="300" required
-                                class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white shadow-2xs">
-                            @error('duration')
-                                <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
-                            @enderror
+                                <div>
+                                    <label for="end_time" class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Jam Selesai Ujian (WIB)
+                                    </label>
+                                    <input type="time" name="end_time" id="end_time" x-model="endTime"
+                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                    <p class="text-[11px] text-slate-400 mt-1">Batas akhir jam pengerjaan ujian bagi siswa.</p>
+                                    @error('end_time')
+                                        <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
 
                         <div>

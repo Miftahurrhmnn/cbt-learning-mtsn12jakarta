@@ -54,7 +54,7 @@ class ExamSession extends Model
             return 0;
         }
 
-        $durationMinutes = $this->exam ? $this->exam->duration : 60;
+        $durationMinutes = ($this->exam && $this->exam->duration) ? (int) $this->exam->duration : 60;
         $endTimeLimit = Carbon::parse($this->start_time)->addMinutes($durationMinutes);
         $diff = Carbon::now()->diffInSeconds($endTimeLimit, false);
 

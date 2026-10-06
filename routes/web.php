@@ -53,8 +53,16 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
     Route::get('/ujian/{examId}/soal/create', [GuruExamController::class, 'questionCreate'])->name('ujian.soal.create');
     Route::post('/ujian/{examId}/soal', [GuruExamController::class, 'questionStore'])->name('ujian.soal.store');
     Route::post('/ujian/{examId}/soal/import-docx', [GuruExamController::class, 'questionImportDocx'])->name('ujian.soal.import_docx');
+    Route::get('/soal/{id}/edit', [GuruExamController::class, 'questionEdit'])->name('soal.edit');
+    Route::put('/soal/{id}', [GuruExamController::class, 'questionUpdate'])->name('soal.update');
     Route::delete('/soal/{id}', [GuruExamController::class, 'questionDestroy'])->name('soal.destroy');
 
+    // Bank Soal Guru
+    Route::get('/bank-soal', [GuruExamController::class, 'bankSoal'])->name('bank-soal.index');
+
+    // Monitoring Siswa (Real-time aktivitas siswa & analisis jawaban tabel kotak)
+    Route::get('/monitoring', [GuruExamController::class, 'monitoringIndex'])->name('monitoring.index');
+    Route::get('/monitoring/sesi/{sessionId}', [GuruExamController::class, 'monitoringDetail'])->name('monitoring.detail');
 
     // Rekapitulasi Nilai Siswa
     Route::get('/ujian/{examId}/nilai', [GuruExamController::class, 'scores'])->name('ujian.scores');

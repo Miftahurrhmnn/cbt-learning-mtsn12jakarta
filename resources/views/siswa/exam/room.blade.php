@@ -51,13 +51,19 @@
 
             <!-- Countdown Timer & Actions -->
             <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Status Jam Ujian -->
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Jam: <strong class="text-slate-900">{{ $exam->formatted_time_range }}</strong></span>
+                </div>
+
                 <!-- Timer Display -->
                 <div class="flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-xl border font-mono font-bold text-sm tracking-wider shadow-xs transition"
                     :class="remainingSeconds < 300 ? 'bg-rose-50 text-rose-600 border-rose-300 animate-pulse' : 'bg-slate-50 text-slate-800 border-slate-200'">
                     <svg class="w-4 h-4" :class="remainingSeconds < 300 ? 'text-rose-600' : 'text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span x-text="formattedTime">60:00</span>
+                    <span x-text="formattedTime"></span>
                 </div>
 
                 <!-- Tombol Mobile Toggle Drawer Nomor Soal -->
@@ -514,7 +520,7 @@
                 },
 
                 autoSubmit() {
-                    alert('Waktu 1 jam telah berakhir! Ujian Anda akan diselesaikan otomatis.');
+                    alert('Waktu ujian telah berakhir! Ujian Anda akan diselesaikan otomatis.');
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = this.finishUrl;
