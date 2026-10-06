@@ -102,23 +102,73 @@ class Exam extends Model
     }
 
     /**
+     * Check if exam has not reached its scheduled start time yet (WIB / Asia/Jakarta).
+     */
+    public function hasNotStartedYet(): bool
+    {
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+
+        // 1. Cek Tanggal jika diisi
+        if ($this->exam_date) {
+            $examDateStr = $this->exam_date->format('Y-m-d');
+            $todayStr = $now->format('Y-m-d');
+            if ($todayStr < $examDateStr) {
+                return true;
+            }
+            if ($todayStr > $examDateStr) {
+                return false;
+            }
+        }
+
+        // 2. Cek Jam Mulai jika diisi
+        if (!empty($this->start_time)) {
+            $currentTime = $now->format('H:i');
+            $startTime = substr($this->start_time, 0, 5);
+            if ($currentTime < $startTime) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if exam has already ended according to end_time or exam_date (WIB / Asia/Jakarta).
+     */
+    public function hasEnded(): bool
+    {
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+
+        // 1. Cek Tanggal jika diisi
+        if ($this->exam_date) {
+            $examDateStr = $this->exam_date->format('Y-m-d');
+            $todayStr = $now->format('Y-m-d');
+            if ($todayStr > $examDateStr) {
+                return true;
+            }
+            if ($todayStr < $examDateStr) {
+                return false;
+            }
+        }
+
+        // 2. Cek Jam Selesai jika diisi
+        if (!empty($this->end_time)) {
+            $currentTime = $now->format('H:i');
+            $endTime = substr($this->end_time, 0, 5);
+            if ($currentTime > $endTime) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Check if current time is within exam schedule window (if defined)
      */
     public function isWithinTimeWindow(): bool
     {
-        if (empty($this->start_time) && empty($this->end_time)) {
-            return true; // No time restriction
-        }
-
-        $now = now()->format('H:i:s');
-        if (!empty($this->start_time) && $now < $this->start_time) {
-            return false;
-        }
-        if (!empty($this->end_time) && $now > $this->end_time) {
-            return false;
-        }
-
-        return true;
+        return !$this->hasNotStartedYet() && !$this->hasEnded();
     }
 
     public function teacher(): BelongsTo

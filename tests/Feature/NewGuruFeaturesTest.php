@@ -355,4 +355,144 @@ class NewGuruFeaturesTest extends TestCase
         $responseToken->assertSee('Akses Ujian Khusus:');
         $responseToken->assertSee('Kelas VII-A');
     }
+
+    /**
+     * Test 7: Bank Soal shows distinct exam cards with subject, title, schedule, and classroom,
+     * and creating an exam auto-detects day from exam_date without manual day input.
+     */
+    public function test_guru_bank_soal_shows_distinct_exam_cards_and_auto_detects_day_from_date(): void
+    {
+        // 1. Create exam submitting only exam_date (2026-10-12 is Monday / Senin)
+        $responseStore = $this->actingAs($this->guru)->post(route('guru.ujian.store'), [
+            'title' => 'Ujian Aljabar Khusus VII-A',
+            'subject_id' => $this->subjectMatematika->id,
+            'classroom_ids' => [$this->classA->id],
+            'status' => 'published',
+            'start_time' => '08:00',
+            'end_time' => '09:30',
+            'exam_date' => '2026-10-12', // Monday
+            // day_of_week is omitted!
+        ]);
+
+        $createdExam = Exam::where('title', 'Ujian Aljabar Khusus VII-A')->first();
+        $this->assertNotNull($createdExam);
+        $this->assertEquals('Senin', $createdExam->day_of_week);
+
+        // Add a question to this exam
+        Question::create([
+            'exam_id' => $createdExam->id,
+            'subject_id' => $this->subjectMatematika->id,
+            'question_text' => 'Berapakah 10 x 10?',
+            'option_a' => '100',
+            'option_b' => '200',
+            'option_c' => '300',
+            'option_d' => '400',
+            'correct_answer' => 'A',
+        ]);
+
+        // 2. Check Bank Soal index displays the distinct exam card with details
+        $responseBankSoal = $this->actingAs($this->guru)->get(route('guru.bank-soal.index'));
+        $responseBankSoal->assertStatus(200);
+        $responseBankSoal->assertSee('Matematika');
+        $responseBankSoal->assertSee('Ujian Aljabar Khusus VII-A');
+        $responseBankSoal->assertSee('08:00 - 09:30 WIB');
+        $responseBankSoal->assertSee('Kelas VII-A');
+        $responseBankSoal->assertSee('1 Soal');
+        $responseBankSoal->assertSee('Senin, 12 Oct 2026');
+
+        // 3. Click the exam card in Bank Soal (pass exam_id)
+        $responseExamDetail = $this->actingAs($this->guru)->get(route('guru.bank-soal.index', ['exam_id' => $createdExam->id]));
+        $responseExamDetail->assertStatus(200);
+        $responseExamDetail->assertSee('Berapakah 10 x 10?');
+        $responseExamDetail->assertSee('✓ Kunci Jawaban');
+        $responseExamDetail->assertSee('Kembali ke Daftar Kartu Ujian');
+    }
+
+    /**
+     * Test 8: Siswa cannot start exam before start_time, sees warning alert, and exam room header has refresh button
+     */
+    public function test_siswa_cannot_start_exam_before_scheduled_start_time_and_sees_alert_and_room_has_refresh_button(): void
+    {
+        $futureStart = \Carbon\Carbon::now('Asia/Jakarta')->addHours(2)->format('H:i');
+        $futureEnd = \Carbon\Carbon::now('Asia/Jakarta')->addHours(4)->format('H:i');
+
+        $examFuture = Exam::create([
+            'title' => 'Ujian Masa Depan',
+            'subject_id' => $this->subjectMatematika->id,
+            'classroom_id' => $this->classA->id,
+            'user_id' => $this->guru->id,
+            'start_time' => $futureStart,
+            'end_time' => $futureEnd,
+            'status' => 'published',
+            'token' => 'FUT2026',
+        ]);
+        $examFuture->classrooms()->sync([$this->classA->id]);
+
+        $q = Question::create([
+            'exam_id' => $examFuture->id,
+            'subject_id' => $this->subjectMatematika->id,
+            'question_text' => 'Soal Masa Depan',
+            'option_a' => 'A',
+            'option_b' => 'B',
+            'option_c' => 'C',
+            'option_d' => 'D',
+            'correct_answer' => 'A',
+        ]);
+
+        $siswa = User::factory()->create([
+            'role' => 'siswa',
+            'classroom_id' => $this->classA->id,
+        ]);
+
+        // 1. Siswa visits token page before start time
+        $responseToken = $this->actingAs($siswa)->get(route('siswa.ujian.token', $examFuture->id));
+        $responseToken->assertStatus(200);
+        $responseToken->assertSee('Peringatan: Ujian Belum Dimulai!');
+        $responseToken->assertSee($futureStart . ' WIB');
+        $responseToken->assertSee('Ujian Belum Dimulai (Mulai ' . $futureStart . ' WIB)');
+
+        // 2. Siswa attempts to verify token before start time -> rejected!
+        $responseVerify = $this->actingAs($siswa)->post(route('siswa.ujian.verify-token', $examFuture->id), [
+            'token' => 'FUT2026',
+        ]);
+        $responseVerify->assertRedirect(route('siswa.ujian.token', $examFuture->id));
+        $responseVerify->assertSessionHas('error');
+
+        // 3. Siswa attempts to access exam room directly before start time -> redirected with error!
+        $responseRoomDirect = $this->actingAs($siswa)->get(route('siswa.ujian.show', $examFuture->id));
+        $responseRoomDirect->assertRedirect(route('siswa.ujian.token', $examFuture->id));
+        $responseRoomDirect->assertSessionHas('error');
+
+        // 4. Create an exam that IS currently running (flexible time window)
+        $examActive = Exam::create([
+            'title' => 'Ujian Aktif Sekarang',
+            'subject_id' => $this->subjectMatematika->id,
+            'classroom_id' => $this->classA->id,
+            'user_id' => $this->guru->id,
+            'start_time' => null, // Flexible
+            'end_time' => null,
+            'status' => 'published',
+            'token' => 'NOW2026',
+        ]);
+        $examActive->classrooms()->sync([$this->classA->id]);
+        Question::create([
+            'exam_id' => $examActive->id,
+            'subject_id' => $this->subjectMatematika->id,
+            'question_text' => 'Soal Sekarang',
+            'option_a' => 'A',
+            'option_b' => 'B',
+            'option_c' => 'C',
+            'option_d' => 'D',
+            'correct_answer' => 'A',
+        ]);
+
+        // Siswa enters active exam room: check header has Refresh button
+        session()->put("exam_token_verified_{$examActive->id}", true);
+        $responseRoom = $this->actingAs($siswa)->get(route('siswa.ujian.show', $examActive->id));
+        $responseRoom->assertStatus(200);
+        $responseRoom->assertSee('Refresh');
+        $responseRoom->assertSee('refreshPage()', false);
+    }
 }
+
+

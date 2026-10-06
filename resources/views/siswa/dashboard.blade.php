@@ -251,14 +251,19 @@
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
                                                 {{ $exam->subject->name ?? 'Mapel' }}
                                             </span>
-                                            <div class="flex items-center gap-1.5">
+                                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                                @if($exam->hasNotStartedYet())
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                                        ⏳ Belum Dimulai
+                                                    </span>
+                                                @endif
                                                 @if($exam->day_of_week)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
                                                         <x-heroicon-o-calendar /> {{ $exam->day_of_week }}
                                                     </span>
                                                 @endif
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700" title="Kelas Sasaran Ujian: {{ $exam->all_classroom_names }}">
-                                                    Kelas: {{ $exam->all_classroom_names }}
+                                                    {{ $exam->all_classroom_names }}
                                                 </span>
                                             </div>
                                         </div>
@@ -281,11 +286,23 @@
 
                                     <div class="pt-2">
                                         @if(!$sess)
-                                            <a href="{{ route('siswa.ujian.token', $exam->id) }}" 
-                                               class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2B77DE] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                                                <span>Mulai Ujian (Token)</span>
-                                            </a>
+                                            @if($exam->hasNotStartedYet())
+                                                <a href="{{ route('siswa.ujian.token', $exam->id) }}" 
+                                                   class="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    <span>Belum Dimulai ({{ substr($exam->start_time, 0, 5) }} WIB)</span>
+                                                </a>
+                                            @elseif($exam->hasEnded())
+                                                <div class="w-full py-2.5 px-4 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider text-center border border-slate-200">
+                                                    Waktu Ujian Berakhir
+                                                </div>
+                                            @else
+                                                <a href="{{ route('siswa.ujian.token', $exam->id) }}" 
+                                                   class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2B77DE] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                                    <span>Mulai Ujian (Token)</span>
+                                                </a>
+                                            @endif
                                         @elseif($sess->isCompleted())
                                             <div class="flex items-center justify-between gap-2 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
                                                 <span class="text-xs font-bold text-emerald-800 flex items-center gap-1">

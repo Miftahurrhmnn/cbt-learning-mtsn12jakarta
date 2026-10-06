@@ -48,9 +48,6 @@
                             </svg>
                             <span>Monitoring Pengerjaan Ujian Siswa</span>
                         </h1>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                            Pantau secara langsung siswa yang sedang mengerjakan, siswa yang telah selesai, perolehan nilai, serta analisis jawaban salah/benar per butir soal.
-                        </p>
                     </div>
                     <div>
                         <button type="button" onclick="window.location.reload()" 

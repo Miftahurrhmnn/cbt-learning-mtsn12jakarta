@@ -93,6 +93,12 @@ class ExamController extends Controller
             ->where('status', 'ongoing')
             ->exists();
 
+        // CEK WAKTU MULAI UJIAN: Jika jam belum tiba dan belum memiliki sesi berjalan
+        if ($exam->hasNotStartedYet() && !$hasOngoingSession) {
+            return redirect()->route('siswa.ujian.token', $exam->id)
+                ->with('error', 'Ujian belum dapat dimulai! Ujian dijadwalkan pada jam ' . $exam->formatted_time_range . ' (mulai pukul ' . substr($exam->start_time, 0, 5) . ' WIB).');
+        }
+
         if (!empty($exam->token) && !$hasOngoingSession && !session()->get("exam_token_verified_{$exam->id}", false)) {
             return redirect()->route('siswa.ujian.token', $exam->id);
         }
@@ -195,6 +201,17 @@ class ExamController extends Controller
         if ($exam->status !== 'published') {
             return redirect()->route('siswa.dashboard')
                 ->with('error', 'Ujian ini sedang tidak aktif atau belum dibuka oleh Guru.');
+        }
+
+        // CEK WAKTU MULAI UJIAN:
+        if ($exam->hasNotStartedYet()) {
+            return redirect()->route('siswa.ujian.token', $exam->id)
+                ->with('error', 'Ujian belum dapat dimulai! Ujian ini dijadwalkan pada jam ' . $exam->formatted_time_range . ' (mulai pukul ' . substr($exam->start_time, 0, 5) . ' WIB). Silakan tunggu hingga waktu ujian tiba.');
+        }
+
+        if ($exam->hasEnded()) {
+            return redirect()->route('siswa.dashboard')
+                ->with('error', 'Waktu pelaksanaan ujian ini telah berakhir.');
         }
 
         if (!$exam->isValidToken($request->token)) {

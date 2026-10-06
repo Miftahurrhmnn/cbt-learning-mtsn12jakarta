@@ -40,11 +40,6 @@
                 <!-- Page Breadcrumbs & Header -->
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
-                            <a href="{{ route('guru.ujian.index') }}" class="hover:text-indigo-600 transition">Daftar Ujian</a>
-                            <span>/</span>
-                            <span class="text-slate-600 font-semibold">Buat Ujian Baru</span>
-                        </div>
                         <h1 class="text-2xl font-black text-slate-900 tracking-tight">Formulir Buat Ujian Baru</h1>
                         <p class="text-xs sm:text-sm text-slate-500 mt-1">Lengkapi parameter ujian, kelas sasaran, serta jam pelaksanaan ujian sebelum menambahkan butir soal.</p>
                     </div>
@@ -124,40 +119,37 @@
                             @enderror
                         </div>
 
-                        <!-- Jadwal Pelaksanaan (Hari & Tanggal Ujian) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <!-- Hari Pelaksanaan -->
-                            <div>
-                                <label for="day_of_week" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                    Hari Pelaksanaan (Jadwal Mapel)
-                                </label>
-                                <select name="day_of_week" id="day_of_week"
-                                    class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
-                                    <option value="">-- Pilih Hari Ujian (Opsional) --</option>
-                                    @foreach($daysList as $dayName)
-                                        <option value="{{ $dayName }}" {{ old('day_of_week') == $dayName ? 'selected' : '' }}>
-                                            <x-heroicon-o-calendar /> {{ $dayName }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <p class="text-[11px] text-slate-400 mt-1">Digunakan untuk memfilter jadwal ujian siswa dan guru.</p>
-                                @error('day_of_week')
-                                    <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Tanggal Ujian -->
-                            <div>
-                                <label for="exam_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                    Tanggal Pelaksanaan (Opsional)
-                                </label>
-                                <input type="date" name="exam_date" id="exam_date" value="{{ old('exam_date') }}"
-                                    class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
-                                <p class="text-[11px] text-slate-400 mt-1">Jika hari kosong, sistem otomatis menghitung hari dari tanggal ini.</p>
-                                @error('exam_date')
-                                    <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Jadwal Pelaksanaan (Tanggal Ujian - Hari Terdeteksi Otomatis) -->
+                        <div x-data="{
+                            selectedDate: '{{ old('exam_date') }}',
+                            get detectedDay() {
+                                if (!this.selectedDate) return '';
+                                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                                const parts = this.selectedDate.split('-');
+                                if (parts.length === 3) {
+                                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                                    return days[d.getDay()] || '';
+                                }
+                                return '';
+                            }
+                        }" class="space-y-2">
+                            <label for="exam_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                                <span>Tanggal Pelaksanaan Ujian <span class="text-rose-500">*</span></span>
+                                <template x-if="detectedDay">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 normal-case shadow-2xs">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        Hari Otomatis: <span x-text="detectedDay"></span>
+                                    </span>
+                                </template>
+                            </label>
+                            <input type="date" name="exam_date" id="exam_date" x-model="selectedDate"
+                                class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                            <p class="text-[11px] text-slate-400">
+                                Cukup pilih tanggal ujian. Sistem akan mendeteksi dan mencatat hari pelaksanaan secara otomatis tanpa perlu input manual.
+                            </p>
+                            @error('exam_date')
+                                <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Status Jam Pelaksanaan Ujian (WIB) - Menggantikan Input Durasi -->

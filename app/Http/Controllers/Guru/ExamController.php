@@ -107,7 +107,7 @@ class ExamController extends Controller
             'classroom_ids.*' => 'exists:classrooms,id',
             'duration' => 'nullable|integer|min:1|max:600',
             'status' => 'required|in:draft,published',
-            'day_of_week' => 'nullable|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'day_of_week' => 'nullable|string',
             'exam_date' => 'nullable|date',
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
@@ -157,9 +157,9 @@ class ExamController extends Controller
             $duration = 60; // Standar fallback
         }
 
-        // Jika hari belum dipilih tapi tanggal diisi, otomatis deteksi hari dalam Bahasa Indonesia
-        $dayOfWeek = $request->day_of_week;
-        if (!$dayOfWeek && $request->filled('exam_date')) {
+        // Otomatis deteksi hari dalam Bahasa Indonesia jika tanggal diisi
+        $dayOfWeek = null;
+        if ($request->filled('exam_date')) {
             $carbonDate = \Carbon\Carbon::parse($request->exam_date);
             $dayOfWeek = match ($carbonDate->dayOfWeekIso) {
                 1 => 'Senin',
@@ -171,6 +171,8 @@ class ExamController extends Controller
                 7 => 'Minggu',
                 default => null,
             };
+        } elseif ($request->filled('day_of_week')) {
+            $dayOfWeek = $request->day_of_week;
         }
 
         $exam = Exam::create([
@@ -462,13 +464,35 @@ class ExamController extends Controller
         // Ambil daftar mata pelajaran yang diampu guru
         if ($guru->subjects()->exists()) {
             $subjects = $guru->subjects()->orderBy('name')->get();
-            $exams = Exam::whereIn('subject_id', $guru->subjects->pluck('id'))->orderBy('title')->get();
+            $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
+                ->withCount('questions')
+                ->whereIn('subject_id', $guru->subjects->pluck('id'));
         } else {
             $subjects = Subject::orderBy('name')->get();
-            $exams = Exam::where('user_id', $guru->id)->orderBy('title')->get();
+            $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
+                ->withCount('questions')
+                ->where('user_id', $guru->id);
         }
 
-        // Hitung jumlah butir soal dan ujian untuk setiap kartu mata pelajaran
+        // Filter Ujian berdasarkan Mapel jika dipilih
+        if ($request->filled('filter_subject_id')) {
+            $examsQuery->where('subject_id', $request->filter_subject_id);
+        }
+
+        // Pencarian pada daftar ujian
+        if ($request->filled('search_exam')) {
+            $term = trim($request->search_exam);
+            $examsQuery->where(function ($q) use ($term) {
+                $q->where('title', 'like', "%{$term}%")
+                  ->orWhereHas('subject', function ($sq) use ($term) {
+                      $sq->where('name', 'like', "%{$term}%");
+                  });
+            });
+        }
+
+        $exams = $examsQuery->latest()->get();
+
+        // Hitung total butir soal dan ujian per mata pelajaran
         foreach ($subjects as $subject) {
             $subject->questions_count = Question::where(function ($q) use ($subject, $guru) {
                 $q->where('subject_id', $subject->id)
@@ -488,31 +512,39 @@ class ExamController extends Controller
                 })->count();
         }
 
-        // Cek apakah ada mata pelajaran yang sedang dipilih
+        // Total seluruh butir soal milik guru
+        $totalQuestionsGuru = Question::where(function ($q) use ($guru) {
+            if ($guru->subjects()->exists()) {
+                $q->whereIn('subject_id', $guru->subjects->pluck('id'))
+                  ->orWhereHas('exam', function ($eq) use ($guru) {
+                      $eq->whereIn('subject_id', $guru->subjects->pluck('id'));
+                  });
+            } else {
+                $q->whereHas('exam', function ($eq) use ($guru) {
+                    $eq->where('user_id', $guru->id);
+                });
+            }
+        })->count();
+
+        // Cek apakah ada ujian atau mapel spesifik yang dipilih untuk melihat butir soal
+        $selectedExam = null;
         $selectedSubject = null;
-        if ($request->filled('subject_id')) {
+
+        if ($request->filled('exam_id')) {
+            $selectedExam = Exam::with(['subject', 'classrooms', 'classroom'])->find($request->exam_id);
+            if ($selectedExam) {
+                $selectedSubject = $selectedExam->subject;
+            }
+        } elseif ($request->filled('subject_id')) {
             $selectedSubject = $subjects->firstWhere('id', (int)$request->subject_id) 
                 ?? Subject::find($request->subject_id);
         }
 
         $query = Question::with(['exam.subject', 'exam.classroom', 'subject']);
 
-        if ($guru->subjects()->exists()) {
-            $subjectIds = $guru->subjects->pluck('id')->toArray();
-            $query->where(function ($q) use ($guru, $subjectIds) {
-                $q->whereHas('exam', function ($eq) use ($guru, $subjectIds) {
-                    $eq->where('user_id', $guru->id)
-                       ->orWhereIn('subject_id', $subjectIds);
-                })->orWhereIn('subject_id', $subjectIds);
-            });
-        } else {
-            $query->whereHas('exam', function ($eq) use ($guru) {
-                $eq->where('user_id', $guru->id);
-            });
-        }
-
-        // Filter Mata Pelajaran yang dipilih
-        if ($selectedSubject) {
+        if ($selectedExam) {
+            $query->where('exam_id', $selectedExam->id);
+        } elseif ($selectedSubject) {
             $subId = $selectedSubject->id;
             $query->where(function ($q) use ($subId) {
                 $q->where('subject_id', $subId)
@@ -520,11 +552,20 @@ class ExamController extends Controller
                       $eq->where('subject_id', $subId);
                   });
             });
-        }
-
-        // Filter Ujian Spesifik
-        if ($request->filled('exam_id')) {
-            $query->where('exam_id', $request->exam_id);
+        } else {
+            if ($guru->subjects()->exists()) {
+                $subjectIds = $guru->subjects->pluck('id')->toArray();
+                $query->where(function ($q) use ($guru, $subjectIds) {
+                    $q->whereHas('exam', function ($eq) use ($guru, $subjectIds) {
+                        $eq->where('user_id', $guru->id)
+                           ->orWhereIn('subject_id', $subjectIds);
+                    })->orWhereIn('subject_id', $subjectIds);
+                });
+            } else {
+                $query->whereHas('exam', function ($eq) use ($guru) {
+                    $eq->where('user_id', $guru->id);
+                });
+            }
         }
 
         // Pencarian Teks Soal / Opsi
@@ -545,9 +586,11 @@ class ExamController extends Controller
         return view('guru.bank-soal.index', compact(
             'questions', 
             'totalQuestions', 
+            'totalQuestionsGuru',
             'subjects', 
             'exams', 
-            'selectedSubject'
+            'selectedSubject',
+            'selectedExam'
         ));
     }
 

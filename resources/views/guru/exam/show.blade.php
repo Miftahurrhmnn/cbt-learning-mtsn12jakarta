@@ -195,7 +195,6 @@
                     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/40">
                         <div>
                             <h3 class="font-extrabold text-base sm:text-lg text-slate-900">Daftar Soal Ujian ({{ $exam->questions->count() }} Soal)</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Soal dapat ditambahkan manual satu per satu atau diimpor massal dari file Word (.docx).</p>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2.5">
@@ -241,7 +240,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                <span>+ Input Manual</span>
+                                <span>Input Manual</span>
                             </a>
                         </div>
                     </div>
