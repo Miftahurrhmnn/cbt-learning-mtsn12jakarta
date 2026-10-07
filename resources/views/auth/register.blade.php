@@ -11,18 +11,24 @@
         <div>
             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Daftar Sebagai:</label>
             <div class="grid grid-cols-2 gap-3">
-                <label class="p-3.5 rounded-2xl border-2 cursor-pointer transition flex flex-col items-center text-center"
-                    :class="selectedRole === 'siswa' ? 'border-indigo-600 bg-indigo-50/70 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'">
+                <label class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center text-center group active:scale-[0.98]"
+                    :class="selectedRole === 'siswa' ? 'border-[#2B77DE] bg-blue-50/80 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'">
                     <input type="radio" name="role" value="siswa" class="sr-only" x-model="selectedRole">
-                    <span class="text-2xl mb-1">👨‍🎓</span>
+                    <div class="w-10 h-10 rounded-xl mb-1.5 flex items-center justify-center transition"
+                        :class="selectedRole === 'siswa' ? 'bg-[#2B77DE] text-white shadow-xs' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700'">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5"/></svg>
+                    </div>
                     <span class="text-xs font-extrabold text-slate-900">Siswa</span>
                     <span class="text-[10px] text-slate-500 mt-0.5">Peserta Ujian CBT</span>
                 </label>
 
-                <label class="p-3.5 rounded-2xl border-2 cursor-pointer transition flex flex-col items-center text-center"
-                    :class="selectedRole === 'guru' ? 'border-purple-600 bg-purple-50/70 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'">
+                <label class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center text-center group active:scale-[0.98]"
+                    :class="selectedRole === 'guru' ? 'border-indigo-600 bg-indigo-50/80 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'">
                     <input type="radio" name="role" value="guru" class="sr-only" x-model="selectedRole">
-                    <span class="text-2xl mb-1">👨‍🏫</span>
+                    <div class="w-10 h-10 rounded-xl mb-1.5 flex items-center justify-center transition"
+                        :class="selectedRole === 'guru' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700'">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                    </div>
                     <span class="text-xs font-extrabold text-slate-900">Guru</span>
                     <span class="text-[10px] text-slate-500 mt-0.5">Pembuat Soal & Ujian</span>
                 </label>

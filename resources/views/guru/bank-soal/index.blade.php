@@ -59,7 +59,9 @@
                 @if(session('success'))
                     <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-800 text-sm font-semibold shadow-2xs">
                         <div class="flex items-center gap-3">
-                            <span class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">✓</span>
+                            <span class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
                             <span>{{ session('success') }}</span>
                         </div>
                     </div>
@@ -68,7 +70,9 @@
                 @if(session('error'))
                     <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-rose-800 text-sm font-semibold shadow-2xs">
                         <div class="flex items-center gap-3">
-                            <span class="w-7 h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">✕</span>
+                            <span class="w-7 h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
                             <span>{{ session('error') }}</span>
                         </div>
                     </div>
@@ -98,7 +102,7 @@
                                 <span>Unduh Template Word</span>
                             </a>
                             <a href="{{ route('guru.ujian.create') }}" 
-                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
+                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
                                 <span>+ Buat Ujian Baru</span>
                             </a>
                         </div>
@@ -170,12 +174,12 @@
                             </div>
 
                             <div class="sm:col-span-1 flex items-center gap-1.5">
-                                <button type="submit" class="w-full p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
+                                <button type="submit" class="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                 </button>
                                 @if(request()->filled('search_exam') || request()->filled('filter_subject_id'))
                                     <a href="{{ route('guru.bank-soal.index') }}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition flex items-center justify-center" title="Reset Filter">
-                                        ✕
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </a>
                                 @endif
                             </div>
@@ -277,8 +281,9 @@
 
                         <div class="flex items-center gap-2.5 shrink-0">
                             <a href="{{ route('guru.bank-soal.index') }}" 
-                               class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
-                                Ganti Ujian
+                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition active:scale-[0.98]">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                                <span>Kembali ke Daftar Kartu Ujian</span>
                             </a>
                             @if($selectedExam)
                                 <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" 
@@ -346,7 +351,7 @@
                                 </button>
                                 @if(request()->filled('search'))
                                     <a href="{{ route('guru.bank-soal.index', array_filter(['exam_id' => $selectedExam?->id, 'subject_id' => $selectedSubject?->id])) }}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition flex items-center justify-center" title="Reset Filter">
-                                        ✕
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </a>
                                 @endif
                             </div>
@@ -377,7 +382,7 @@
                                             <span>Impor File DOCX</span>
                                         </a>
                                     @else
-                                        <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                                        <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">
                                             <span>+ Buat Ujian Baru</span>
                                         </a>
                                     @endif
@@ -431,7 +436,10 @@
                                                         <div class="my-2">
                                                             <a href="{{ asset('storage/' . $q->image) }}" target="_blank" class="inline-block group relative">
                                                                 <img src="{{ asset('storage/' . $q->image) }}" alt="Gambar Soal" class="max-h-44 rounded-xl border border-slate-200 object-contain bg-white shadow-xs group-hover:opacity-95 transition">
-                                                                <span class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">🔍 Lihat</span>
+                                                                <span class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                                                                    Lihat
+                                                                </span>
                                                             </a>
                                                         </div>
                                                     @endif

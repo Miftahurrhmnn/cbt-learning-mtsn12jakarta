@@ -97,26 +97,31 @@
         <div class="pt-2 pb-3 space-y-1 px-4">
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('admin.siswa.index') }}"
-                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                    👥 Kelola Data Siswa
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Kelola Data Siswa</span>
                 </a>
                 <a href="{{ route('admin.siswa.create') }}"
-                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.create') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                    + Tambah Siswa Baru
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.create') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Tambah Siswa Baru</span>
                 </a>
             @elseif(Auth::user()->isGuru())
                 <a href="{{ route('guru.ujian.index') }}"
-                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('guru.ujian.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                     Daftar Ujian & Soal
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('guru.ujian.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    <span>Daftar Ujian & Soal</span>
                 </a>
                 <a href="{{ route('guru.ujian.create') }}"
-                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('guru.ujian.create') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                     Buat Ujian Baru
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('guru.ujian.create') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Buat Ujian Baru</span>
                 </a>
             @else
                 <a href="{{ route('siswa.dashboard') }}"
-                    class="block px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('siswa.dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                    📝 Ujian Saya
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('siswa.dashboard') ? 'bg-blue-50 text-[#2B77DE]' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-[#2B77DE] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    <span>Ujian Saya</span>
                 </a>
             @endif
         </div>

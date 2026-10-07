@@ -141,7 +141,10 @@
                                     alt="Gambar Soal"
                                     class="max-h-80 w-auto rounded-lg object-contain cursor-zoom-in hover:opacity-95 transition shadow-xs"
                                     @click="openImageModal('/storage/' + currentQuestion.image)">
-                                <span class="block text-[11px] text-slate-500 mt-1.5 italic font-medium">🔍 Klik gambar untuk melihat ukuran penuh</span>
+                                <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 mt-1.5 italic font-medium">
+                                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                                    Klik gambar untuk melihat ukuran penuh
+                                </span>
                             </div>
                         </template>
 
@@ -240,8 +243,9 @@
                     <!-- Tombol Selesai Ujian di Sidebar -->
                     <div class="mt-6 pt-4 border-t border-slate-100">
                         <button type="button" @click="showFinishModal = true"
-                            class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm rounded-xl shadow-xs transition hover:shadow-md">
-                            ✓ Selesaikan Ujian
+                            class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm rounded-xl shadow-xs transition hover:shadow-md active:scale-[0.99]">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Selesaikan Ujian
                         </button>
                     </div>
                 </div>
@@ -262,8 +266,8 @@
                             <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Daftar Nomor Soal</h3>
                             <p class="text-xs text-slate-500"><span class="text-emerald-600 font-bold" x-text="answeredCount"></span> dari <span x-text="totalQuestions"></span> terjawab</p>
                         </div>
-                        <button type="button" @click="mobileDrawer = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
-                            ✕
+                        <button type="button" @click="mobileDrawer = false" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition" title="Tutup">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
 
@@ -358,7 +362,10 @@
 
                             <template x-if="unansweredCount > 0">
                                 <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs leading-relaxed space-y-1">
-                                    <p class="font-bold">⚠️ Masih ada <span x-text="unansweredCount"></span> soal yang belum dikerjakan (kotak merah)!</p>
+                                    <p class="font-bold flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                        Masih ada <span x-text="unansweredCount"></span> soal yang belum dikerjakan (kotak merah)!
+                                    </p>
                                     <p>Sistem mewajibkan seluruh soal dijawab terlebih dahulu sebelum Anda diizinkan untuk menyelesaikan ujian.</p>
                                 </div>
                             </template>
@@ -401,7 +408,7 @@
     <div x-show="modalImage" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4" @click="modalImage = null">
         <div class="relative max-w-4xl max-h-screen p-2" @click.stop>
             <button type="button" @click="modalImage = null" class="absolute -top-3 -right-3 bg-white text-slate-900 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg hover:bg-slate-100">
-                ✕
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             <img :src="modalImage" class="max-h-[85vh] max-w-full rounded-xl object-contain bg-white shadow-2xl">
         </div>

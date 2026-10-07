@@ -146,11 +146,15 @@
                         <!-- Legend Keterangan Warna Kotak -->
                         <div class="flex items-center gap-3 text-xs font-bold">
                             <span class="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                                <span class="w-3 h-3 rounded-md bg-emerald-500 text-white text-[9px] flex items-center justify-center font-bold">✓</span>
+                                <span class="w-3.5 h-3.5 rounded-md bg-emerald-500 text-white flex items-center justify-center">
+                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </span>
                                 Benar ({{ $correctCount }})
                             </span>
                             <span class="inline-flex items-center gap-1.5 text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
-                                <span class="w-3 h-3 rounded-md bg-rose-500 text-white text-[9px] flex items-center justify-center font-bold">✕</span>
+                                <span class="w-3.5 h-3.5 rounded-md bg-rose-500 text-white flex items-center justify-center">
+                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </span>
                                 Salah ({{ $wrongCount }})
                             </span>
                             <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
@@ -241,7 +245,10 @@
                                             <div>
                                                 <a href="{{ asset('storage/' . $q->image) }}" target="_blank" class="inline-block group relative">
                                                     <img src="{{ asset('storage/' . $q->image) }}" alt="Gambar Soal" class="max-h-52 rounded-2xl border border-slate-200 object-contain bg-white shadow-2xs group-hover:opacity-95 transition">
-                                                    <span class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded">🔍 Perbesar</span>
+                                                    <span class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                                                        Perbesar
+                                                    </span>
                                                 </a>
                                             </div>
                                         @endif

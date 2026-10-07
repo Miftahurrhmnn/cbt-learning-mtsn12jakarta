@@ -108,8 +108,8 @@
                                 <div class="relative inline-block">
                                     <img :src="imagePreview" class="max-h-52 rounded-xl border border-slate-300 shadow-xs object-contain bg-white">
                                     <button type="button" @click="imagePreview = null; document.getElementById('image').value = ''"
-                                        class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-rose-600 text-xs font-bold">
-                                        ✕
+                                        class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-rose-600 transition">
+                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
                                 </div>
                             </div>
@@ -161,7 +161,12 @@
                                         :class="selectedKey === '{{ $opt }}' ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs font-black' : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-bold'">
                                         <input type="radio" name="correct_answer" value="{{ $opt }}" class="sr-only" x-model="selectedKey">
                                         <span class="text-base font-black">{{ $opt }}</span>
-                                        <span class="text-[10px] mt-0.5" x-text="selectedKey === '{{ $opt }}' ? '✓ Kunci' : 'Pilihan'"></span>
+                                        <span class="text-[10px] mt-0.5 inline-flex items-center gap-0.5">
+                                            <template x-if="selectedKey === '{{ $opt }}'">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            </template>
+                                            <span x-text="selectedKey === '{{ $opt }}' ? 'Kunci' : 'Pilihan'"></span>
+                                        </span>
                                     </label>
                                 @endforeach
                             </div>
@@ -240,8 +245,9 @@
                                     </div>
                                 </template>
                                 <template x-if="docxFileName">
-                                    <div class="text-xs font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200">
-                                        📄 <span x-text="docxFileName"></span>
+                                    <div class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200">
+                                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <span x-text="docxFileName"></span>
                                     </div>
                                 </template>
                             </div>

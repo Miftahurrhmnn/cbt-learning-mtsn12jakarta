@@ -39,7 +39,9 @@
 
             @if(session('success'))
                 <div class="mb-4 p-4 bg-emerald-500 text-white rounded-2xl shadow-md flex items-center gap-3 text-xs sm:text-sm font-semibold">
-                    <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">✓</span>
+                    <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </span>
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
@@ -118,7 +120,7 @@
                             <!-- Jawaban Benar -->
                             <div class="p-4 sm:p-5 rounded-2xl bg-emerald-50/70 border border-emerald-100 text-emerald-950 flex flex-col items-center justify-center transition hover:bg-emerald-50">
                                 <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm mb-2 shadow-2xs">
-                                    ✓
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 </div>
                                 <span class="text-2xl sm:text-3xl font-black text-emerald-600 leading-none">
                                     {{ $correctAnswers }}
@@ -131,7 +133,7 @@
                             <!-- Jawaban Salah -->
                             <div class="p-4 sm:p-5 rounded-2xl bg-rose-50/70 border border-rose-100 text-rose-950 flex flex-col items-center justify-center transition hover:bg-rose-50">
                                 <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center font-bold text-sm mb-2 shadow-2xs">
-                                    ✕
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </div>
                                 <span class="text-2xl sm:text-3xl font-black text-rose-600 leading-none">
                                     {{ $wrongAnswers }}
@@ -168,7 +170,7 @@
                             <div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
                                 <span>Status Nilai:</span>
                                 <strong class="text-emerald-600 flex items-center gap-1 font-bold">
-                                    <span>✓</span> Tersimpan di Buku Nilai Guru
+                                    <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Tersimpan di Buku Nilai Guru
                                 </strong>
                             </div>
                         </div>

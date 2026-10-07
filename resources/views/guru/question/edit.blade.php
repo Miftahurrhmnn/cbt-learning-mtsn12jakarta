@@ -123,8 +123,8 @@
                                 <div class="relative inline-block">
                                     <img :src="imagePreview" class="max-h-52 rounded-xl border-2 border-indigo-500 shadow-md object-contain bg-white">
                                     <button type="button" @click="imagePreview = null; document.getElementById('image').value = ''"
-                                        class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-rose-600 text-xs font-bold">
-                                        ✕
+                                        class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-rose-600 transition">
+                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
                                 </div>
                             </div>

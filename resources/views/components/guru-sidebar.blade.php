@@ -151,13 +151,13 @@
 </aside>
 
 <!-- ==================== DESKTOP FIXED/STICKY SIDEBAR ==================== -->
-<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-white border-r border-slate-200/80 z-30 justify-between">
+<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-black text-white border-r border-slate-200/80 z-30 justify-between">
     <div class="p-6">
         <!-- Brand Header Desktop -->
         <div class="flex items-center gap-3 pb-8">
             <img src="{{ asset('images/favicon.ico') }}" alt="Logo" class="w-10 h-10 object-contain shrink-0">
             <div>
-                <h2 class="font-black text-slate-900 text-base leading-tight">CBT MTsN 12 Jakarta</h2>
+                <h2 class="font-black text-whitetext-base leading-tight">CBT MTsN 12 Jakarta</h2>
                 <p class="text-xs font-medium text-slate-400 mt-0.5">Portal Guru & Ujian</p>
             </div>
         </div>
@@ -168,12 +168,12 @@
             
             <!-- Daftar Ujian -->
             <a href="{{ route('guru.ujian.index') }}" 
-               class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isDaftarUjianActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+               class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isDaftarUjianActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
                 <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 {{ $isDaftarUjianActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 {{ $isDaftarUjianActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <span>Daftar Ujian</span>
+                    <span class="text-white">Daftar Ujian</span>
                 </div>
                 <span class="px-2.5 py-0.5 text-xs font-bold rounded-full {{ $isDaftarUjianActive ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500' }}">
                     {{ $examCount ?? 0 }}
@@ -182,8 +182,8 @@
 
             <!-- Buat Ujian Baru -->
             <a href="{{ route('guru.ujian.create') }}" 
-               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
-                <svg class="w-5 h-5 {{ $isCreateActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isCreateActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>Buat Ujian Baru</span>
@@ -191,8 +191,8 @@
 
             <!-- Bank Soal -->
             <a href="{{ route('guru.bank-soal.index') }}" 
-               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isBankSoalActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
-                <svg class="w-5 h-5 {{ $isBankSoalActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isBankSoalActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isBankSoalActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
                 <span>Bank Soal</span>
@@ -202,8 +202,8 @@
 
             <!-- Monitoring Siswa -->
             <a href="{{ route('guru.monitoring.index') }}" 
-               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isMonitoringActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
-                <svg class="w-5 h-5 {{ $isMonitoringActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isMonitoringActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isMonitoringActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
                 <span>Monitoring Siswa</span>
@@ -212,7 +212,7 @@
     </div>
 
     <!-- Desktop User Profile & Logout -->
-    <div class="p-4 border-t border-slate-100 bg-white">
+    <div class="p-4 border-t border-slate-100 bg-black">
         <div class="flex items-center justify-between gap-3 px-2">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white font-extrabold text-sm shadow-xs">

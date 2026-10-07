@@ -5,3 +5,44 @@
 [x-cloak] {
     display: none !important;
 }
+
+@layer components {
+    /* Semantic Buttons */
+    .btn-semantic-primary {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-xs uppercase tracking-wider shadow-xs hover:bg-primary-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer;
+    }
+    .btn-semantic-guru {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-guru-primary text-white font-bold text-xs uppercase tracking-wider shadow-xs hover:bg-guru-primary-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer;
+    }
+    .btn-semantic-secondary {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition-all duration-200 active:scale-[0.98] cursor-pointer border border-slate-200/80;
+    }
+    .btn-semantic-success {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-success text-white font-bold text-xs uppercase tracking-wider shadow-xs hover:bg-success-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer;
+    }
+    .btn-semantic-danger {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-danger text-white font-bold text-xs uppercase tracking-wider shadow-xs hover:bg-danger-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer;
+    }
+    .btn-semantic-warning {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-warning text-white font-bold text-xs uppercase tracking-wider shadow-xs hover:bg-warning-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer;
+    }
+
+    /* Semantic Badges */
+    .badge-semantic-success {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-success-light text-success border border-emerald-200;
+    }
+    .badge-semantic-danger {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-danger-light text-danger border border-rose-200;
+    }
+    .badge-semantic-warning {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-warning-light text-warning border border-amber-200;
+    }
+    .badge-semantic-info {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-info-light text-info border border-sky-200;
+    }
+
+    /* Interactive Cards */
+    .card-interactive {
+        @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+    }
+}

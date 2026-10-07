@@ -91,12 +91,15 @@
                             </div>
 
                             <!-- Penjelasan Terkait Hak Akses Kelas -->
-                            <div class="mb-3 p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl flex items-start gap-3 shadow-2xs">
-                                <div class="w-8 h-8 rounded-xl bg-[#2B77DE] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="mb-3 p-3.5 bg-yellow-100 border border-yellow-200 rounded-2xl flex items-start gap-3 shadow-2xs">
+                                <div class="w-8 h-8 rounded-xl bg-yellow-500 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
                                 </div>
-                                <div class="text-xs text-blue-950 leading-relaxed">
-                                    <strong class="font-extrabold block text-blue-900">Penjelasan Hak Akses Kelas:</strong>
+                                <!-- Mengubah text-white menjadi text-yellow-800 agar kontras dan mudah dibaca -->
+                                <div class="text-xs text-yellow-800 leading-relaxed">
+                                    <strong class="font-extrabold block text-yellow-900">Penjelasan Hak Akses Kelas:</strong>
                                     Ujian ini <strong>hanya akan tampil dan dapat dikerjakan</strong> oleh siswa yang terdaftar pada kelas yang dicentang di bawah ini. Siswa dari kelas lain tidak akan dapat melihat maupun mengakses ujian ini di dashboard mereka.
                                 </div>
                             </div>
@@ -161,8 +164,8 @@
                                     </label>
                                     <p class="text-[11px] text-slate-500">Atur jam mulai akses dan batas jam selesai ujian yang berlaku bagi siswa.</p>
                                 </div>
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
-                                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500 border border-red-200 text-white text-xs font-bold">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     <span x-text="startTime && endTime ? (startTime + ' - ' + endTime + ' WIB') : (startTime ? ('Mulai ' + startTime + ' WIB') : (endTime ? ('Sampai ' + endTime + ' WIB') : 'Jam Belum Ditentukan'))"></span>
                                 </div>
                             </div>
@@ -251,7 +254,7 @@
                             <a href="{{ route('guru.ujian.index') }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition">
                                 Batal
                             </a>
-                            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition hover:shadow-md">
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-400 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition hover:shadow-md">
                                 Simpan & Lanjut Tambah Soal
                             </button>
                         </div>

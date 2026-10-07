@@ -116,8 +116,9 @@
                             </span>
                             <div class="flex items-center gap-1.5">
                                 @if($exam->day_of_week)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
-                                        📅 {{ $exam->day_of_week }}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
+                                        <svg class="w-3 h-3 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        {{ $exam->day_of_week }}
                                     </span>
                                 @endif
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
@@ -133,7 +134,9 @@
                         <!-- Konfirmasi Hak Akses Kelas Siswa -->
                         <div class="p-2.5 bg-emerald-50/90 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs text-emerald-800">
                             <div class="flex items-center gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+                                <span class="w-5 h-5 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-[10px]">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </span>
                                 <span>Akses Ujian Khusus: <strong>{{ $exam->all_classroom_names }}</strong></span>
                             </div>
                             <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md">Kelas Anda Sesuai</span>

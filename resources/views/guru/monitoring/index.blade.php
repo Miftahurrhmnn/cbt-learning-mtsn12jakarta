@@ -149,12 +149,12 @@
 
                         <!-- Tombol Submit & Reset -->
                         <div class="sm:col-span-1 flex items-center gap-1.5">
-                            <button type="submit" class="w-full p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
+                            <button type="submit" class="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             </button>
                             @if(request()->hasAny(['search', 'exam_id', 'classroom_id', 'status']))
                                 <a href="{{ route('guru.monitoring.index') }}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition flex items-center justify-center" title="Reset Filter">
-                                    ✕
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </a>
                             @endif
                         </div>
