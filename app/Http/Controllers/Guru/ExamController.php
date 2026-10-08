@@ -145,6 +145,9 @@ class ExamController extends Controller
             try {
                 $start = \Carbon\Carbon::parse(substr($request->start_time, 0, 5));
                 $end = \Carbon\Carbon::parse(substr($request->end_time, 0, 5));
+                if ($end->lessThan($start)) {
+                    $end->addDay();
+                }
                 $diff = $start->diffInMinutes($end, false);
                 if ($diff > 0) {
                     $duration = (int) $diff;

@@ -408,7 +408,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full inline">
                         @csrf
                         <button type="submit" class="w-full py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">
-                            Log Outfke
+                            Log Out
                         </button>
                     </form>
                 </div>

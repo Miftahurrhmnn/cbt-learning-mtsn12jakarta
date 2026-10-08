@@ -174,6 +174,15 @@
                     </div>
                 </div>
 
+                <!-- Penjelasan Hak Akses Kelas Siswa -->
+                <div class="p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center gap-3 text-xs text-indigo-900 shadow-2xs">
+                    <svg class="w-5 h-5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div>
+                        <strong class="font-bold">Penjelasan Hak Akses Kelas Siswa:</strong>
+                        Ujian ini secara khusus dapat diakses oleh siswa di <strong>{{ $exam->all_classroom_names }}</strong>. Siswa dari kelas selain ini tidak akan dapat memasukkan token maupun membuka ruang ujian.
+                    </div>
+                </div>
+
                 <!-- Daftar Soal Ujian Card -->
                 <div class="bg-white rounded-3xl shadow-2xs border border-slate-200/80 overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/40">
@@ -252,7 +261,7 @@
                                 </button>
                                 <a href="{{ route('guru.ujian.soal.create', $exam->id) }}" 
                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition hover:shadow-md">
-                                    <span>+ Input Soal Manual</span>
+                                    <span>Input Soal Manual</span>
                                 </a>
                             </div>
 

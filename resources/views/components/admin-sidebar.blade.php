@@ -178,6 +178,15 @@
                     {{ $studentCount }}
                 </span>
             </a>
+
+            <!-- Tambah Siswa Baru (MENU BARU) -->
+            <a href="{{ route('admin.siswa.create') }}" 
+            class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ request()->routeIs('admin.siswa.create') ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.siswa.create') ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <span>Tambah Siswa</span>
+            </a>
         </nav>
     </div>
 

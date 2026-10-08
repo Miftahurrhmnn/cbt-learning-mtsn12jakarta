@@ -102,31 +102,110 @@ class Exam extends Model
     }
 
     /**
+     * Get the full Carbon start DateTime (WIB / Asia/Jakarta) based on exam_date and start_time.
+     */
+    public function getStartDateTime(?\Carbon\Carbon $referenceDate = null): ?\Carbon\Carbon
+    {
+        $baseDate = $this->exam_date ? $this->exam_date->copy() : ($referenceDate ? $referenceDate->copy() : \Carbon\Carbon::now('Asia/Jakarta'));
+
+        if (!empty($this->start_time)) {
+            $time = substr($this->start_time, 0, 5);
+            return \Carbon\Carbon::createFromFormat('Y-m-d H:i', $baseDate->format('Y-m-d') . ' ' . $time, 'Asia/Jakarta')->startOfMinute();
+        }
+
+        if ($this->exam_date) {
+            return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $baseDate->format('Y-m-d') . ' 00:00:00', 'Asia/Jakarta')->startOfDay();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the full Carbon end DateTime (WIB / Asia/Jakarta) based on exam_date, start_time, and end_time.
+     * Automatically handles overnight / cross-midnight windows (e.g. 23:00 - 05:00).
+     */
+    public function getEndDateTime(?\Carbon\Carbon $referenceDate = null): ?\Carbon\Carbon
+    {
+        $baseDate = $this->exam_date ? $this->exam_date->copy() : ($referenceDate ? $referenceDate->copy() : \Carbon\Carbon::now('Asia/Jakarta'));
+
+        if (!empty($this->end_time)) {
+            $endTimeStr = substr($this->end_time, 0, 5);
+            $startTimeStr = !empty($this->start_time) ? substr($this->start_time, 0, 5) : null;
+
+            // Jika end_time lebih kecil dari start_time (contoh: 23:00 - 05:00), waktu selesai adalah keesokan harinya (+1 hari)
+            if ($startTimeStr && $endTimeStr < $startTimeStr) {
+                $baseDate->addDay();
+            }
+
+            return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $baseDate->format('Y-m-d') . ' ' . $endTimeStr . ':59', 'Asia/Jakarta');
+        }
+
+        if ($this->exam_date) {
+            return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $baseDate->format('Y-m-d') . ' 23:59:59', 'Asia/Jakarta')->endOfDay();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get calculated duration in minutes between start_time and end_time.
+     * Automatically handles cross-midnight ranges (e.g. 23:00 - 05:00 = 360 mins).
+     */
+    public function getCalculatedDurationFromTimes(): ?int
+    {
+        if (empty($this->start_time) || empty($this->end_time)) {
+            return null;
+        }
+
+        try {
+            $start = \Carbon\Carbon::parse(substr($this->start_time, 0, 5));
+            $end = \Carbon\Carbon::parse(substr($this->end_time, 0, 5));
+            if ($end->lessThan($start)) {
+                $end->addDay();
+            }
+            $diff = (int) $start->diffInMinutes($end, false);
+            return $diff > 0 ? $diff : null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Check if exam has not reached its scheduled start time yet (WIB / Asia/Jakarta).
      */
     public function hasNotStartedYet(): bool
     {
         $now = \Carbon\Carbon::now('Asia/Jakarta');
 
-        // 1. Cek Tanggal jika diisi
+        // 1. Jika ada tanggal ujian (exam_date)
         if ($this->exam_date) {
-            $examDateStr = $this->exam_date->format('Y-m-d');
-            $todayStr = $now->format('Y-m-d');
-            if ($todayStr < $examDateStr) {
-                return true;
+            $startDateTime = $this->getStartDateTime();
+            if ($startDateTime) {
+                return $now->lt($startDateTime);
             }
-            if ($todayStr > $examDateStr) {
-                return false;
-            }
+            return false;
         }
 
-        // 2. Cek Jam Mulai jika diisi
+        // 2. Jika tanggal fleksibel / tanpa tanggal
+        if (!empty($this->start_time) && !empty($this->end_time)) {
+            $currentTime = $now->format('H:i');
+            $startTime = substr($this->start_time, 0, 5);
+            $endTime = substr($this->end_time, 0, 5);
+
+            // Rentang lintas tengah malam (contoh: 23:00 - 05:00)
+            if ($endTime < $startTime) {
+                // Di luar jam aktif (siang hari): antara > 05:00 dan < 23:00
+                return ($currentTime > $endTime && $currentTime < $startTime);
+            }
+
+            // Rentang normal hari yang sama (contoh: 08:00 - 10:00)
+            return $currentTime < $startTime;
+        }
+
         if (!empty($this->start_time)) {
             $currentTime = $now->format('H:i');
             $startTime = substr($this->start_time, 0, 5);
-            if ($currentTime < $startTime) {
-                return true;
-            }
+            return $currentTime < $startTime;
         }
 
         return false;
@@ -139,25 +218,36 @@ class Exam extends Model
     {
         $now = \Carbon\Carbon::now('Asia/Jakarta');
 
-        // 1. Cek Tanggal jika diisi
+        // 1. Jika ada tanggal ujian (exam_date)
         if ($this->exam_date) {
-            $examDateStr = $this->exam_date->format('Y-m-d');
-            $todayStr = $now->format('Y-m-d');
-            if ($todayStr > $examDateStr) {
-                return true;
+            $endDateTime = $this->getEndDateTime();
+            if ($endDateTime) {
+                return $now->gt($endDateTime);
             }
-            if ($todayStr < $examDateStr) {
-                return false;
-            }
+            return false;
         }
 
-        // 2. Cek Jam Selesai jika diisi
+        // 2. Jika tanggal fleksibel / tanpa tanggal
+        if (!empty($this->start_time) && !empty($this->end_time)) {
+            $currentTime = $now->format('H:i');
+            $startTime = substr($this->start_time, 0, 5);
+            $endTime = substr($this->end_time, 0, 5);
+
+            // Rentang lintas tengah malam (contoh: 23:00 - 05:00)
+            if ($endTime < $startTime) {
+                // Jam aktif adalah >= 23:00 atau <= 05:00.
+                // Ujian tidak dianggap berakhir selama di jam aktif.
+                return false;
+            }
+
+            // Rentang normal hari yang sama (contoh: 08:00 - 10:00)
+            return $currentTime > $endTime;
+        }
+
         if (!empty($this->end_time)) {
             $currentTime = $now->format('H:i');
             $endTime = substr($this->end_time, 0, 5);
-            if ($currentTime > $endTime) {
-                return true;
-            }
+            return $currentTime > $endTime;
         }
 
         return false;

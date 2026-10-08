@@ -246,7 +246,7 @@
                                             @if($session->violation_count >= 4 || $session->is_cheating_detected)
                                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">
                                                     <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
-                                                    Curang ({{ $session->violation_count }}x)
+                                                    Terdeteksi Curang ({{ $session->violation_count }}x)
                                                 </span>
                                             @elseif($session->violation_count > 0)
                                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">

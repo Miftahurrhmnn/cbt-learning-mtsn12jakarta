@@ -47,12 +47,6 @@
 
                 <!-- Page Header Title -->
                 <div>
-                    <div class="flex items-center gap-2 mb-1 text-xs text-slate-500">
-                        <a href="{{ route('admin.siswa.index') }}" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                            Kembali ke Daftar Siswa
-                        </a>
-                    </div>
                     <h1 class="font-black text-2xl text-slate-900 leading-tight">
                         {{ __('Input Data Siswa Baru') }}
                     </h1>
@@ -154,7 +148,7 @@
                             <a href="{{ route('admin.siswa.index') }}" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider transition">
                                 Batal
                             </a>
-                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-indigo-100 transition hover:-translate-y-0.5 active:scale-[0.98]">
+                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-indigo-100 transition active:scale-[0.98]">
                                 Simpan Data Siswa
                             </button>
                         </div>

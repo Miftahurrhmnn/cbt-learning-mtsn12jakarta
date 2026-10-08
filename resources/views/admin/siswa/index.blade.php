@@ -173,10 +173,6 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
                                                 <div class="inline-flex items-center gap-1.5">
-                                                    <a href="{{ route('admin.siswa.create', $st->id) }}" 
-                                                       class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition">
-                                                        <x-heroicon-s-plus class="w-4 h-4"/>
-                                                    </a>
                                                     <a href="{{ route('admin.siswa.edit', $st->id) }}" 
                                                        class="px-3 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white transition">
                                                         <x-heroicon-s-pencil-square class="w-4 h-4" />
@@ -184,7 +180,7 @@
                                                     <form action="{{ route('admin.siswa.destroy', $st->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus siswa {{ $st->name }}? Tindakan ini tidak dapat dibatalkan.');">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-100 text-white transition cursor-pointer">
+                                                        <button type="submit" class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition cursor-pointer">
                                                            <x-heroicon-s-trash class="w-4 h-4" />
                                                         </button>
                                                     </form>

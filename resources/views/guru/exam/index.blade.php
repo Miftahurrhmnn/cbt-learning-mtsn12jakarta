@@ -210,7 +210,7 @@
                     @if($exams->isEmpty())
                         <!-- Empty State -->
                         <div class="py-16 px-4 text-center">
-                            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 shadow-inner">
+                            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 shadow-inner">
                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
@@ -218,7 +218,7 @@
                             <h3 class="text-base font-bold text-slate-900">Belum ada ujian yang dibuat</h3>
                             <p class="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-slate-500">Mulai dengan memilih mata pelajaran dan kelas sasaran untuk menyiapkan paket ujian pertama.</p>
                             <div class="mt-6">
-                                <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition hover:bg-indigo-700">
+                                <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-100 transition hover:bg-blue-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>

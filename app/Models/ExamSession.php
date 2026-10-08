@@ -60,9 +60,27 @@ class ExamSession extends Model
             return 0;
         }
 
-        $durationMinutes = ($this->exam && $this->exam->duration) ? (int) $this->exam->duration : 60;
+        $durationMinutes = 60;
+        if ($this->exam) {
+            $calc = $this->exam->getCalculatedDurationFromTimes();
+            if ($calc !== null && $calc > 0) {
+                $durationMinutes = $calc;
+            } elseif ($this->exam->duration) {
+                $durationMinutes = (int) $this->exam->duration;
+            }
+        }
+
         $endTimeLimit = Carbon::parse($this->start_time)->addMinutes($durationMinutes);
-        $diff = Carbon::now()->diffInSeconds($endTimeLimit, false);
+
+        // Jangan melebihi batas waktu akhir ujian jika ada jadwal selesai spesifik
+        if ($this->exam) {
+            $examEndDateTime = $this->exam->getEndDateTime(Carbon::parse($this->start_time));
+            if ($examEndDateTime && $examEndDateTime->lessThan($endTimeLimit)) {
+                $endTimeLimit = $examEndDateTime;
+            }
+        }
+
+        $diff = Carbon::now('Asia/Jakarta')->diffInSeconds($endTimeLimit, false);
 
         return max(0, (int) $diff);
     }

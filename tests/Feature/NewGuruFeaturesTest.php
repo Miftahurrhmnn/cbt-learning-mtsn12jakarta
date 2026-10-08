@@ -413,14 +413,17 @@ class NewGuruFeaturesTest extends TestCase
      */
     public function test_siswa_cannot_start_exam_before_scheduled_start_time_and_sees_alert_and_room_has_refresh_button(): void
     {
-        $futureStart = \Carbon\Carbon::now('Asia/Jakarta')->addHours(2)->format('H:i');
-        $futureEnd = \Carbon\Carbon::now('Asia/Jakarta')->addHours(4)->format('H:i');
+        $nowWib = \Carbon\Carbon::now('Asia/Jakarta');
+        $futureStartDate = $nowWib->copy()->addHours(2);
+        $futureStart = $futureStartDate->format('H:i');
+        $futureEnd = $nowWib->copy()->addHours(4)->format('H:i');
 
         $examFuture = Exam::create([
             'title' => 'Ujian Masa Depan',
             'subject_id' => $this->subjectMatematika->id,
             'classroom_id' => $this->classA->id,
             'user_id' => $this->guru->id,
+            'exam_date' => $futureStartDate->toDateString(),
             'start_time' => $futureStart,
             'end_time' => $futureEnd,
             'status' => 'published',
