@@ -16,7 +16,7 @@
          class="min-h-screen bg-slate-100/70 font-sans text-slate-800 antialiased pb-24 md:pb-12">
 
         <!-- ==================== TOP BLUE APP HEADER (Sesuai Foto Simaster) ==================== -->
-        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#2B77DE] to-[#1F67CB] text-white pt-4 pb-14 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
+        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#266210] to-[#063B00] text-white pt-4 pb-14 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
             <!-- Background Decorative Circles -->
             <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute top-1/2 -left-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
@@ -42,7 +42,7 @@
                             {{ Auth::user()->nisn ?? '17/310790/SV/456738' }}
                         </p>
                         <p class="text-[11px] font-medium text-white/75 truncate mt-0.5">
-                            {{ Auth::user()->classroom->name ?? 'Kelas X-A' }} &bull; MTsN 12 Jakarta
+                            {{ Auth::user()->classroom->name ?? 'Kelas X-A' }}
                         </p>
                     </div>
                 </div>
@@ -138,13 +138,13 @@
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
                     <!-- Form Filter Hari -->
                     <form method="GET" action="{{ route('siswa.dashboard') }}#section-exams" class="space-y-2.5">
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-4">
                             <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 Filter Jadwal Berdasarkan Hari:
                             </span>
                             @if(request()->hasAny(['day', 'search']))
-                                <a href="{{ route('siswa.dashboard') }}" class="text-[11px] font-bold text-blue-600 hover:underline">
+                                <a href="{{ route('siswa.dashboard') }}" class="text-[11px] font-bold text-red-600 hover:underline">
                                     Reset Semua
                                 </a>
                             @endif
@@ -153,12 +153,12 @@
                         <!-- Horizontal Scrollable Day Chips -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                             <a href="{{ route('siswa.dashboard') }}#section-exams"
-                               class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ !request('day') ? 'bg-[#2B77DE] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                               class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ !request('day') ? 'bg-green-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                                 Semua Hari
                             </a>
                             @foreach($daysList as $d)
                                 <a href="{{ route('siswa.dashboard', ['day' => $d, 'search' => request('search')]) }}#section-exams"
-                                   class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ request('day') == $d ? 'bg-[#2B77DE] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                   class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ request('day') == $d ? 'bg-green-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                                     {{ $d }}
                                 </a>
                             @endforeach
@@ -184,7 +184,7 @@
                 @if($activeExams->isEmpty())
                     <div class="bg-white p-8 rounded-2xl border border-slate-200/80 text-center">
                         <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2 text-xl">
-                            <x-heroicon-o-folder class="w-6 h-6 text-blue-500" />
+                            <x-heroicon-o-folder class="w-6 h-6 text-green-500" />
                         </div>
                         <h4 class="font-bold text-sm text-slate-800">Belum Ada Ujian untuk Kelas {{ Auth::user()->classroom->name ?? 'Anda' }}</h4>
                         <p class="text-xs text-slate-400 mt-1">Hanya ujian yang sesuai dengan kelas Anda ({{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}) yang akan ditampilkan di sini.</p>
@@ -380,7 +380,7 @@
         <!-- ==================== MODAL PROFIL SISWA ==================== -->
         <div x-show="profileModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" @click="profileModalOpen = false">
             <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4" @click.stop>
-                <div class="w-16 h-16 rounded-full bg-[#2B77DE] text-white flex items-center justify-center mx-auto text-xl font-black shadow-md">
+                <div class="w-16 h-16 rounded-full bg-[#266210] text-white flex items-center justify-center mx-auto text-xl font-black shadow-md">
                     {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
                 </div>
 
@@ -396,7 +396,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-400">Kelas:</span>
-                        <strong class="text-blue-700">{{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}</strong>
+                        <strong class="text-slate-700">{{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}</strong>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-400">Sekolah:</span>
@@ -408,7 +408,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full inline">
                         @csrf
                         <button type="submit" class="w-full py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">
-                            Log Out
+                            Log Outfke
                         </button>
                     </form>
                 </div>

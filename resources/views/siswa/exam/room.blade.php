@@ -176,10 +176,10 @@
                 </div>
 
                 <!-- Tombol Navigasi Bawah -->
-                <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-xs border border-slate-200/80">
+                <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-xs border border-slate-200/80 gap-4">
                     <button type="button" @click="prevQuestion()" :disabled="currentIndex === 0"
                         class="inline-flex items-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition">
-                        &larr; Soal Sebelumnya
+                        Soal Sebelumnya
                     </button>
 
                     <button type="button" @click="showFinishModal = true"
@@ -188,8 +188,8 @@
                     </button>
 
                     <button type="button" @click="nextQuestion()" :disabled="currentIndex === totalQuestions - 1"
-                        class="inline-flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition shadow-xs">
-                        Soal Selanjutnya &rarr;
+                        class="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition shadow-xs">
+                        Soal Selanjutnya
                     </button>
                 </div>
             </div>
@@ -364,7 +364,7 @@
                                 <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs leading-relaxed space-y-1">
                                     <p class="font-bold flex items-center gap-1.5">
                                         <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                        Masih ada <span x-text="unansweredCount"></span> soal yang belum dikerjakan (kotak merah)!
+                                        Masih ada soal yang belum dikerjakan (kotak merah)!
                                     </p>
                                     <p>Sistem mewajibkan seluruh soal dijawab terlebih dahulu sebelum Anda diizinkan untuk menyelesaikan ujian.</p>
                                 </div>
@@ -390,8 +390,8 @@
 
                     <template x-if="unansweredCount > 0">
                         <button type="button" @click="goToFirstUnanswered()"
-                            class="w-full inline-flex justify-center items-center gap-1.5 rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700 transition">
-                            Cari Soal Yang Belum &rarr;
+                            class="w-full inline-flex justify-center items-center gap-1.5 rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-blue-600 text-sm font-bold text-white hover:bg-blue-700 transition">
+                            Cari Soal Yang Belum
                         </button>
                     </template>
 

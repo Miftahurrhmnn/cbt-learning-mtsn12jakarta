@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-slate-100/70 font-sans text-slate-800 antialiased pb-12 flex flex-col justify-between selection:bg-blue-500 selection:text-white">
 
         <!-- ==================== TOP BLUE APP HEADER (Selaras dengan Dashboard Siswa) ==================== -->
-        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#2B77DE] to-[#1F67CB] text-white pt-4 pb-16 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
+        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#266210] to-[#063B00] text-white pt-4 pb-16 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
             <!-- Background Decorative Circles -->
             <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute top-1/2 -left-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
@@ -18,9 +18,6 @@
                         </div>
 
                         <div class="min-w-0 flex-1">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-blue-100 flex items-center gap-1.5 mb-1">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> CBT MTsN 12 Jakarta
-                            </div>
                             <h2 class="text-base sm:text-lg font-bold text-white truncate leading-tight">
                                 {{ Auth::user()->name }}
                             </h2>
@@ -28,17 +25,9 @@
                                 {{ Auth::user()->nisn ?? 'Siswa MTsN 12' }}
                             </p>
                             <p class="text-[11px] font-medium text-white/75 truncate mt-0.5">
-                                {{ Auth::user()->classroom->name ?? 'Kelas Siswa' }} &bull; MTsN 12 Jakarta
+                                {{ Auth::user()->classroom->name ?? 'Kelas Siswa' }}
                             </p>
                         </div>
-                    </div>
-
-                    <div class="shrink-0">
-                        <a href="{{ route('siswa.dashboard') }}" 
-                           class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition shadow-2xs backdrop-blur-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                            <span class="hidden sm:inline">Kembali ke</span> Dashboard
-                        </a>
                     </div>
                 </div>
             </div>
@@ -238,7 +227,7 @@
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                 </svg>
-                                <span>Mulai Ujian (Token)</span>
+                                <span>Mulai Ujian</span>
                             </button>
                         @endif
                     </form>

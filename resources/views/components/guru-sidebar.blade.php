@@ -131,7 +131,7 @@
                     {{ $initials }}
                 </div>
                 <div class="truncate">
-                    <p class="text-sm font-bold text-slate-900 truncate leading-tight">{{ $guruUser->name }}</p>
+                    <p class="text-sm font-bold text-white truncate leading-tight">{{ $guruUser->name }}</p>
                     <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-1">
                         <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                         Guru Aktif
@@ -154,7 +154,7 @@
 <aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-black text-white border-r border-slate-200/80 z-30 justify-between">
     <div class="p-6">
         <!-- Brand Header Desktop -->
-        <div class="flex items-center gap-3 pb-8">
+        <div class="flex items-center gap-3 pb-6 border-b border-slate-100">
             <img src="{{ asset('images/favicon.ico') }}" alt="Logo" class="w-10 h-10 object-contain shrink-0">
             <div>
                 <h2 class="font-black text-whitetext-base leading-tight">CBT MTsN 12 Jakarta</h2>
@@ -163,7 +163,7 @@
         </div>
 
         <!-- Navigation Section Desktop -->
-        <nav class="space-y-1.5">
+        <nav class="mt-6 space-y-1.5">
             <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Manajemen Ujian</p>
             
             <!-- Daftar Ujian -->
@@ -215,11 +215,11 @@
     <div class="p-4 border-t border-slate-100 bg-black">
         <div class="flex items-center justify-between gap-3 px-2">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white font-extrabold text-sm shadow-xs">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white font-extrabold text-sm shadow-xs">
                     {{ $initials }}
                 </div>
                 <div class="truncate">
-                    <p class="text-sm font-bold text-slate-900 truncate leading-tight">{{ $guruUser->name }}</p>
+                    <p class="text-sm font-bold text-white truncate leading-tight">{{ $guruUser->name }}</p>
                     <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-1">
                         <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                         Guru Aktif

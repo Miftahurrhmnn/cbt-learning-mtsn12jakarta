@@ -43,6 +43,10 @@
                         </div>
 
                         @if(Auth::user()->isAdmin())
+                            <x-dropdown-link :href="route('admin.dashboard')" class="text-xs font-semibold py-2">
+                                {{ __('Dashboard Admin') }}
+                            </x-dropdown-link>
+
                             <x-dropdown-link :href="route('admin.siswa.index')" class="text-xs font-semibold py-2">
                                 {{ __('Kelola Data Siswa') }}
                             </x-dropdown-link>
@@ -96,6 +100,11 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur-md">
         <div class="pt-2 pb-3 space-y-1 px-4">
             @if(Auth::user()->isAdmin())
+                <a href="{{ route('admin.dashboard') }}"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span>Dashboard Admin</span>
+                </a>
                 <a href="{{ route('admin.siswa.index') }}"
                     class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-bold {{ request()->routeIs('admin.siswa.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50' }}">
                     <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>

@@ -3,7 +3,7 @@
          class="min-h-screen bg-slate-100/70 font-sans text-slate-800 antialiased pb-28 md:pb-16 flex flex-col justify-between selection:bg-blue-500 selection:text-white">
 
         <!-- ==================== TOP BLUE APP HEADER (Selaras dengan Dashboard Siswa) ==================== -->
-        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#2B77DE] to-[#1F67CB] text-white pt-4 pb-16 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
+        <header class="bg-[#2B77DE] bg-gradient-to-b from-[#266210] to-[#063B00] text-white pt-4 pb-16 px-4 sm:px-6 lg:px-8 rounded-b-[2.5rem] shadow-md relative overflow-hidden">
             <!-- Background Decorative Circles -->
             <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute top-1/2 -left-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
@@ -20,9 +20,6 @@
                     </div>
 
                     <div class="min-w-0 flex-1">
-                        <div class="text-[11px] font-bold uppercase tracking-wider text-blue-100 flex items-center gap-1.5 mb-1">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> CBT MTsN 12 Jakarta
-                        </div>
                         <h2 class="text-base sm:text-lg font-bold text-white truncate leading-tight">
                             {{ Auth::user()->name }}
                         </h2>

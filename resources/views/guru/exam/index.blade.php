@@ -193,7 +193,8 @@
 
                             <!-- Tombol Reset / Submit -->
                             <div class="sm:col-span-2 flex items-center gap-1.5">
-                                <button type="submit" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs">
+                                <button type="submit" class="flex justify-center items-center gap-2 w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs">
+                                    <x-heroicon-o-funnel class="w-4 h-4" />
                                     Filter
                                 </button>
                                 @if(request()->hasAny(['search', 'classroom_id', 'day', 'status']))
@@ -232,10 +233,10 @@
                                 <thead>
                                     <tr class="bg-slate-50/70">
                                         <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Judul</th>
-                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Kelas Sasaran</th>
+                                        <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Kelas</th>
                                         <th scope="col" class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status Jam</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Soal</th>
-                                        <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status Akses</th>
+                                        <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Status</th>
                                         <th scope="col" class="px-5 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Token</th>
                                         <th scope="col" class="px-6 py-3.5 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Aksi Guru</th>
                                     </tr>
@@ -245,15 +246,15 @@
                                         <tr class="transition hover:bg-slate-50/70 group">
                                             <!-- Judul & Mapel -->
                                             <td class="px-6 py-4">
-                                                <div class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition">
+                                                <div class="text-sm font-bold text-slate-900 group-hover:text-slate-600 transition">
                                                     {{ $exam->title ?? 'Ujian ' . ($exam->subject->name ?? '-') }}
                                                 </div>
                                                 <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px]">
-                                                        Mapel: {{ $exam->subject->name ?? '-' }}
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-100 text-slate-700 text-[11px]">
+                                                        {{ $exam->subject->name ?? '-' }}
                                                     </span>
                                                     @if($exam->day_of_week)
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold">
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-100 text-slate-700 text-[11px]">
                                                             <x-heroicon-o-calendar /> {{ $exam->day_of_week }}
                                                         </span>
                                                     @endif
@@ -273,7 +274,7 @@
                                                             }
                                                         @endphp
                                                         @forelse($allCls as $c)
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[12px] font-bold text-slate-700">
                                                                 {{ $c->name }}
                                                             </span>
                                                         @empty
@@ -286,7 +287,7 @@
                                             <!-- Status Jam Pelaksanaan -->
                                             <td class="px-5 py-4 whitespace-nowrap text-xs font-medium text-slate-600">
                                                 <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
-                                                    <svg class="h-3.5 w-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="h-3.5 w-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
                                                     <span class="font-bold text-slate-800">{{ $exam->formatted_time_range }}</span>
@@ -332,23 +333,23 @@
                                                     <form action="{{ route('guru.ujian.toggle_status', $exam->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @if($exam->status === 'published')
-                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-xs font-bold text-white shadow-2xs transition" onclick="return confirm('Tutup ujian ini? Siswa tidak akan dapat mengaksesnya.')">
+                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-3.5 py-3.5 text-xs font-bold text-white shadow-2xs transition" onclick="return confirm('Tutup ujian ini? Siswa tidak akan dapat mengaksesnya.')">
                                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                             </button>
                                                         @else
-                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-2xs transition" onclick="return confirm('Mulai ujian ini sekarang agar siswa dapat mengerjakan?')">
+                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-3.5 text-xs font-bold text-white shadow-2xs transition" onclick="return confirm('Mulai ujian ini sekarang agar siswa dapat mengerjakan?')">
                                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                             </button>
                                                         @endif
                                                     </form>
 
                                                     <!-- Kelola Soal -->
-                                                    <a href="{{ route('guru.ujian.show', $exam->id) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 text-xs font-bold transition">
+                                                    <a href="{{ route('guru.ujian.show', $exam->id) }}" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white px-3.5 py-3.5 text-xs font-bold transition">
                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                     </a>
 
                                                     <!-- Rekap Nilai -->
-                                                    <a href="{{ route('guru.ujian.scores', $exam->id) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-2.5 text-xs font-bold transition">
+                                                    <a href="{{ route('guru.ujian.scores', $exam->id) }}" class="inline-flex items-center gap-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white px-3.5 py-3.5 text-xs font-bold transition">
                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                                                     </a>
 
@@ -356,7 +357,7 @@
                                                     <form action="{{ route('guru.ujian.destroy', $exam->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="flex bg-red-600 px-4 py-2.5 items-center justify-center rounded-xl text-white hover:bg-red-50 hover:text-white transition" title="Hapus Ujian" onclick="return confirm('Hapus ujian ini beserta seluruh soalnya?')">
+                                                        <button type="submit" class="flex bg-red-600 px-3.5 py-3.5 items-center justify-center rounded-lg text-white hover:bg-red-700 hover:text-white transition" title="Hapus Ujian" onclick="return confirm('Hapus ujian ini beserta seluruh soalnya?')">
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                             </svg>

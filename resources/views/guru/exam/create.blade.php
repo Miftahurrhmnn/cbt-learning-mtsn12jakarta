@@ -91,15 +91,15 @@
                             </div>
 
                             <!-- Penjelasan Terkait Hak Akses Kelas -->
-                            <div class="mb-3 p-3.5 bg-yellow-100 border border-yellow-200 rounded-2xl flex items-start gap-3 shadow-2xs">
-                                <div class="w-8 h-8 rounded-xl bg-yellow-500 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                            <div class="mb-3 p-3.5 bg-yellow-300 border border-yellow-200 rounded-2xl flex items-start gap-3 shadow-2xs">
+                                <div class="w-8 h-8 rounded-xl bg-yellow-800 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                 </div>
                                 <!-- Mengubah text-white menjadi text-yellow-800 agar kontras dan mudah dibaca -->
-                                <div class="text-xs text-yellow-800 leading-relaxed">
-                                    <strong class="font-extrabold block text-yellow-900">Penjelasan Hak Akses Kelas:</strong>
+                                <div class="text-xs text-black leading-relaxed">
+                                    <strong class="font-extrabold block text-black">Penjelasan Hak Akses Kelas:</strong>
                                     Ujian ini <strong>hanya akan tampil dan dapat dikerjakan</strong> oleh siswa yang terdaftar pada kelas yang dicentang di bawah ini. Siswa dari kelas lain tidak akan dapat melihat maupun mengakses ujian ini di dashboard mereka.
                                 </div>
                             </div>

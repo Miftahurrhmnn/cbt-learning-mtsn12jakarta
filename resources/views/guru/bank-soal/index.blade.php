@@ -25,7 +25,7 @@
                     </a>
                 @else
                     <a href="{{ route('guru.ujian.create') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
-                        <span>+ Buat Ujian</span>
+                        <span>Buat Ujian</span>
                     </a>
                 @endif
             </header>
@@ -85,9 +85,6 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                </svg>
                                 <span>Bank Soal Guru</span>
                             </h1>
                             <p class="text-xs sm:text-sm text-slate-500 mt-1">
@@ -101,25 +98,11 @@
                                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 <span>Unduh Template Word</span>
                             </a>
-                            <a href="{{ route('guru.ujian.create') }}" 
-                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
-                                <span>+ Buat Ujian Baru</span>
-                            </a>
                         </div>
                     </div>
 
                     <!-- Stats Overview Cards -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </div>
-                            <div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Seluruh Soal</span>
-                                <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalQuestionsGuru }}</p>
-                            </div>
-                        </div>
-
                         <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -189,11 +172,11 @@
                     <!-- Grid Kartu Ujian (Dibedakan Tiap Ujian, Lengkap Mapel, Ujian, Jam & Tanggal, Kelas) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         @forelse($exams as $exam)
-                            <div class="group relative bg-white rounded-3xl border border-slate-200/90 hover:border-indigo-500 p-6 shadow-2xs hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 flex flex-col justify-between transform hover:-translate-y-1">
+                            <div class="group relative bg-white rounded-3xl border border-slate-200/90 hover:border-slate-500 p-6 shadow-2xs hover:shadow-xl hover:shadow-slate-500/10 transition-all duration-200 flex flex-col justify-between transform hover:-translate-y-1">
                                 <div>
                                     <!-- Top Row: Badge Mapel & Status/Soal -->
                                     <div class="flex items-center justify-between gap-2 mb-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-slate-50 text-slate-700 border border-slate-100">
                                             {{ $exam->subject->name ?? 'Mata Pelajaran' }}
                                         </span>
                                         <div class="flex items-center gap-1.5">
@@ -213,7 +196,7 @@
                                     </div>
 
                                     <!-- Nama Ujian (Title) -->
-                                    <h3 class="text-base sm:text-lg font-black text-slate-900 group-hover:text-indigo-600 transition leading-snug mb-3">
+                                    <h3 class="text-base sm:text-lg font-black text-slate-900 group-hover:text-slate-600 transition leading-snug mb-3">
                                         {{ $exam->title }}
                                     </h3>
 
@@ -221,15 +204,15 @@
                                     <div class="space-y-2 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/70 text-xs">
                                         <!-- Tanggal & Hari Pelaksanaan -->
                                         <div class="flex items-center gap-2 text-slate-700">
-                                            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <svg class="w-4 h-4 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                             <span class="font-medium text-slate-600">
                                                 <strong class="text-slate-800">{{ $exam->day_of_week ? $exam->day_of_week . ', ' : '' }}{{ $exam->exam_date ? $exam->exam_date->format('d M Y') : 'Jadwal Fleksibel' }}</strong>
                                             </span>
                                         </div>
 
                                         <!-- Jam Pelaksanaan -->
-                                        <div class="flex items-center gap-2 text-indigo-700 font-bold">
-                                            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <div class="flex items-center gap-2 text-slate-800 font-bold">
+                                            <svg class="w-4 h-4 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                             <span>Jam: {{ $exam->formatted_time_range }}</span>
                                         </div>
 
@@ -243,7 +226,7 @@
 
                                 <!-- Action Bottom Link -->
                                 <a href="{{ route('guru.bank-soal.index', ['exam_id' => $exam->id]) }}" 
-                                   class="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:text-indigo-700">
+                                   class="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-500 group-hover:text-blue-600">
                                     <span>Buka Soal & Jawaban</span>
                                     <span class="text-base group-hover:translate-x-1.5 transition-transform duration-200">&rarr;</span>
                                 </a>
@@ -287,13 +270,13 @@
                             </a>
                             @if($selectedExam)
                                 <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
-                                    <span>+ Tambah Soal Manual</span>
+                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
+                                    <span>Tambah Soal Manual</span>
                                 </a>
                             @else
                                 <a href="{{ route('guru.ujian.create') }}" 
                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
-                                    <span>+ Buat Ujian</span>
+                                    <span>Buat Ujian</span>
                                 </a>
                             @endif
                         </div>
@@ -376,14 +359,14 @@
                                 <div class="mt-4 flex items-center justify-center gap-3">
                                     @if($selectedExam)
                                         <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
-                                            <span>+ Tambah Soal Manual</span>
+                                            <span>Tambah Soal Manual</span>
                                         </a>
                                         <a href="{{ route('guru.ujian.show', $selectedExam->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
                                             <span>Impor File DOCX</span>
                                         </a>
                                     @else
                                         <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">
-                                            <span>+ Buat Ujian Baru</span>
+                                            <span>Buat Ujian Baru</span>
                                         </a>
                                     @endif
                                 </div>

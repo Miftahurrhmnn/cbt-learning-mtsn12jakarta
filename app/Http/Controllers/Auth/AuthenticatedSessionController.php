@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
         if ($user && $user->isAdmin()) {
-            return redirect()->route('admin.siswa.index');
+            return redirect()->route('admin.dashboard');
         }
 
         if ($user && $user->isGuru()) {

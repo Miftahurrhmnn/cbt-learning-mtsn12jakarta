@@ -123,12 +123,12 @@
                 @endif
 
                 <!-- Penjelasan Hak Akses Kelas Ujian -->
-                <div class="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
-                    <div class="w-8 h-8 rounded-xl bg-[#2B77DE] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                <div class="bg-yellow-300 border border-yellow-200 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+                    <div class="w-8 h-8 rounded-xl bg-yellow-800 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    <div class="text-xs text-blue-950 leading-relaxed">
-                        <strong class="font-bold text-blue-900 block text-xs">Penjelasan Hak Akses Kelas Siswa:</strong>
+                    <div class="text-xs text-black leading-relaxed">
+                        <strong class="font-bold text-black block text-xs">Penjelasan Hak Akses Kelas Siswa:</strong>
                         Ujian ini telah diatur khusus untuk siswa dari kelas <strong>{{ $exam->all_classroom_names }}</strong>. Siswa yang tidak terdaftar di kelas tersebut tidak akan dapat melihat maupun mengakses paket ujian ini di dashboard mereka.
                     </div>
                 </div>
@@ -136,15 +136,15 @@
                 <!-- Banner Ringkasan Info Ujian -->
                 <div class="bg-white p-6 rounded-2xl shadow-2xs border border-slate-200/80 grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Mata Pelajaran</span>
-                        <p class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">{{ $exam->subject->name ?? '-' }}</p>
+                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Ujian</span>
+                        <p class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">{{ $exam->title ?? '-' }}</p>
                     </div>
                     <div>
                         <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Target Kelas</span>
-                        <p class="text-sm sm:text-base font-extrabold text-indigo-700 mt-1">{{ $exam->all_classroom_names }}</p>
+                        <p class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">{{ $exam->all_classroom_names }}</p>
                     </div>
                     <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Jadwal & Jam</span>
+                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Jadwal</span>
                         <p class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">
                             {{ $exam->day_of_week ?? '-' }}
                             @if($exam->exam_date)
@@ -152,18 +152,13 @@
                                     {{ $exam->exam_date->format('d M Y') }}
                                 </span>
                             @endif
-                            @if($exam->start_time || $exam->end_time)
-                                <span class="block text-xs font-bold text-indigo-600 mt-0.5 font-mono">
-                                    {{ $exam->formatted_time_range }}
-                                </span>
-                            @endif
                         </p>
                     </div>
                     <div>
                         <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Status Jam Pelaksanaan</span>
                         <div class="mt-1">
-                            <span class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl border border-indigo-100">
-                                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black text-red-600 bg-rose-50 px-2.5 py-1 rounded-xl border border-red-100">
+                                <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 {{ $exam->formatted_time_range }}
                             </span>
                         </div>

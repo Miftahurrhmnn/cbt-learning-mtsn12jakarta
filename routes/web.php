@@ -17,7 +17,7 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if ($user->isAdmin()) {
-        return redirect()->route('admin.siswa.index');
+        return redirect()->route('admin.dashboard');
     }
     if ($user->isGuru()) {
         return redirect()->route('guru.ujian.index');
@@ -27,9 +27,7 @@ Route::get('/dashboard', function () {
 
 // ==================== ADMIN ROUTES (KHUSUS ROLE ADMIN) ====================
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return redirect()->route('admin.siswa.index');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('siswa', \App\Http\Controllers\Admin\StudentController::class);
 });

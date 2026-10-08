@@ -27,7 +27,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Portal Guru</span>
                     <span class="text-slate-300">/</span>
-                    <span class="text-xs font-bold text-indigo-600">Monitoring Siswa Realtime</span>
+                    <span class="text-xs font-bold text-slate-500">Monitoring Siswa Realtime</span>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
