@@ -56,7 +56,7 @@
                 <div class="flex items-center p-1.5 bg-slate-200/70 rounded-2xl max-w-md mx-auto">
                     <button type="button" @click="activeTab = 'manual'"
                         class="flex-1 py-2.5 px-4 text-xs font-bold rounded-xl transition text-center flex items-center justify-center gap-2"
-                        :class="activeTab === 'manual' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'">
+                        :class="activeTab === 'manual' ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         <span>Input Manual</span>
                     </button>
@@ -100,7 +100,7 @@
 
                             <input type="file" name="image" id="image" accept="image/*"
                                 @change="const file = $event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { imagePreview = e.target.result; }; reader.readAsDataURL(file); } else { imagePreview = null; }"
-                                class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
 
                             <!-- Preview Gambar Realtime -->
                             <div x-show="imagePreview" class="mt-4" style="display: none;">
@@ -180,7 +180,7 @@
                             <a href="{{ route('guru.ujian.show', $exam->id) }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition">
                                 Batal
                             </a>
-                            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition hover:shadow-md">
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs transition hover:shadow-md">
                                 Simpan Soal ke Bank Ujian
                             </button>
                         </div>
@@ -197,9 +197,9 @@
                     </div>
 
                     <!-- Langkah 1: Download Template -->
-                    <div class="p-5 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="p-5 rounded-2xl bg-blue-50/80 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-start gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold">
+                            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold">
                                 1
                             </div>
                             <div>
@@ -207,7 +207,7 @@
                                 <p class="text-xs text-slate-600 mt-0.5">Gunakan format tabel resmi agar butir soal, opsi A-D, dan kunci jawaban terbaca dengan akurat.</p>
                             </div>
                         </div>
-                        <a href="{{ route('guru.ujian.soal.template') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs self-start sm:self-auto shrink-0">
+                        <a href="{{ route('guru.ujian.soal.template') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs self-start sm:self-auto shrink-0">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             <span>Unduh Template (.docx)</span>
                         </a>

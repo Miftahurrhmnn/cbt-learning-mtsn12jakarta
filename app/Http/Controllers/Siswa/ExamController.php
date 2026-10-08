@@ -286,6 +286,40 @@ class ExamController extends Controller
     }
 
     /**
+     * Catat Pelanggaran Integritas Ujian (Keluar Tab / Buka Aplikasi Lain / Keluar Fullscreen)
+     */
+    public function logViolation(Request $request, int $id): JsonResponse
+    {
+        $userId = Auth::id();
+        $exam = Exam::findOrFail($id);
+
+        $session = ExamSession::where('user_id', $userId)
+            ->where('exam_id', $exam->id)
+            ->where('status', 'ongoing')
+            ->first();
+
+        if (!$session) {
+            return response()->json(['error' => 'Sesi ujian tidak valid atau telah selesai.'], 403);
+        }
+
+        $session->increment('violation_count');
+        $session->last_violation_at = Carbon::now();
+
+        if ($session->violation_count >= 4) {
+            $session->is_cheating_detected = true;
+        }
+
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pelanggaran meninggalkan layar ujian dicatat oleh pengawas.',
+            'violation_count' => $session->violation_count,
+            'is_cheating_detected' => (bool)$session->is_cheating_detected,
+        ]);
+    }
+
+    /**
      * Selesaikan Ujian & Hitung Nilai Akhir
      */
     public function finish(Request $request, int $id): RedirectResponse

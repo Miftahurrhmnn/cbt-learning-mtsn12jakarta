@@ -30,10 +30,13 @@
         questions: {{ Js::from($questions) }},
         initialAnswers: {{ Js::from($userAnswers) }},
         initialRemainingSeconds: {{ $remainingSeconds }},
+        initialViolationCount: {{ $session->violation_count ?? 0 }},
+        initialIsCheating: {{ ($session->isCheating() || ($session->violation_count ?? 0) >= 4) ? 'true' : 'false' }},
         saveUrl: '{{ route('siswa.ujian.simpan_jawaban', $exam->id) }}',
-        finishUrl: '{{ route('siswa.ujian.selesai', $exam->id) }}'
+        finishUrl: '{{ route('siswa.ujian.selesai', $exam->id) }}',
+        violationUrl: '{{ route('siswa.ujian.log_violation', $exam->id) }}'
     })"
-    x-init="initTimer()">
+    x-init="initExam()">
 
     <!-- Modern Sticky Topbar -->
     <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
@@ -56,6 +59,17 @@
                     <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>Jam: <strong class="text-slate-900">{{ $exam->formatted_time_range }}</strong></span>
                 </div>
+
+                <!-- Tombol Layar Penuh (Fullscreen) -->
+                <button type="button" @click="enterFullscreen()" 
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
+                    :class="isFullscreen ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse'"
+                    :title="isFullscreen ? 'Mode Layar Penuh Aktif' : 'Aktifkan Mode Layar Penuh'">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/>
+                    </svg>
+                    <span class="hidden md:inline" x-text="isFullscreen ? 'Layar Penuh' : 'Aktifkan Fullscreen'"></span>
+                </button>
 
                 <!-- Tombol Refresh Ujian -->
                 <button type="button" @click="refreshPage()" 
@@ -379,7 +393,7 @@
 
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
                     <template x-if="unansweredCount === 0">
-                        <form :action="finishUrl" method="POST" class="w-full sm:w-auto">
+                        <form :action="finishUrl" method="POST" @submit="isSubmitting = true; stopAlarmSound()" class="w-full sm:w-auto">
                             @csrf
                             <button type="submit"
                                 class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 transition">
@@ -414,6 +428,112 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL WAJIB LAYAR PENUH (FULLSCREEN PROMPT) ==================== -->
+    <div x-show="showFullscreenPromptModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-md transition-opacity"></div>
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+            <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border border-slate-200 space-y-5">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto shadow-inner border border-indigo-100">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/></svg>
+                </div>
+                
+                <div class="space-y-2">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        Integritas & Anti-Kecurangan
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        Wajib Mode Layar Penuh
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                        Ujian ini diawasi dengan sistem deteksi kecurangan otomatis. Selama ujian berlangsung, layar akan dikunci dalam <strong>Mode Layar Penuh (Fullscreen) tanpa menu navigasi</strong>.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-left text-xs text-amber-900 space-y-2">
+                    <div class="font-extrabold flex items-center gap-1.5 text-amber-950">
+                        <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>Peraturan Ketat Ujian CBT:</span>
+                    </div>
+                    <ul class="space-y-1 list-disc list-inside text-amber-800">
+                        <li>Dilarang keluar dari layar ujian, membuka tab lain, atau aplikasi pihak ketiga.</li>
+                        <li>Sirene alarm peringatan akan berbunyi kencang jika Anda meninggalkan layar ujian.</li>
+                        <li>Jika terdeteksi keluar hingga <strong>4 kali</strong>, sistem otomatis menandai Anda <strong>TERDETEKSI CURANG</strong> pada monitor Guru.</li>
+                    </ul>
+                </div>
+
+                <button type="button" @click="startFullscreenExam()"
+                    class="w-full py-4 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/></svg>
+                    <span>Masuk Layar Penuh & Mulai Ujian</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL ALARM & PERINGATAN KECURANGAN ==================== -->
+    <div x-show="showViolationModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-rose-950/90 backdrop-blur-md transition-opacity"></div>
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+            <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border-4 border-rose-500 space-y-5 animate-pulse-short">
+                
+                <!-- Siren Alert Icon -->
+                <div class="relative mx-auto w-20 h-20 flex items-center justify-center">
+                    <span class="absolute inset-0 rounded-full bg-rose-500/20 animate-ping"></span>
+                    <div class="w-16 h-16 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-600/40">
+                        <svg class="w-8 h-8 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Judul & Keterangan -->
+                <div class="space-y-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-300 inline-block animate-pulse">
+                        PERINGATAN INTEGRITAS CBT
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-black text-rose-600 tracking-tight">
+                        PELANGGARAN TERDETEKSI!
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                        Anda terdeteksi meninggalkan layar ujian, beralih ke tab browser lain, atau membuka aplikasi pihak ketiga.
+                    </p>
+                </div>
+
+                <!-- Indikator Pelanggaran & Status Curang (>= 4x) -->
+                <template x-if="violationCount >= 4 || isCheating">
+                    <div class="p-4 bg-rose-100 border-2 border-rose-500 rounded-2xl text-left space-y-2">
+                        <div class="flex items-center gap-2 text-rose-900 font-black text-sm">
+                            <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>STATUS: TERDETEKSI CURANG (<span x-text="violationCount"></span>x KELUAR)</span>
+                        </div>
+                        <p class="text-xs text-rose-800 leading-relaxed">
+                            Perhatian Serius! Anda telah keluar dari layar ujian sebanyak <strong x-text="violationCount"></strong> kali (mencapai batas toleransi 4 kali). 
+                            <strong>Sistem telah menandai dan melaporkan Anda sebagai TERDETEKSI CURANG pada monitor Guru!</strong>
+                        </p>
+                    </div>
+                </template>
+
+                <template x-if="violationCount > 0 && violationCount < 4 && !isCheating">
+                    <div class="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-left space-y-1.5 text-xs text-amber-900">
+                        <div class="flex items-center justify-between font-bold">
+                            <span>Pelanggaran Ke: <strong class="text-rose-600 text-sm" x-text="violationCount"></strong> / 3 Toleransi</span>
+                            <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-black text-[10px]" x-text="'Sisa: ' + (4 - violationCount) + 'x'"></span>
+                        </div>
+                        <p class="text-slate-600">
+                            Peringatan! Jika Anda keluar hingga <strong>4 kali</strong>, sistem akan otomatis mengunci status <strong>"TERDETEKSI CURANG"</strong> pada monitoring Guru.
+                        </p>
+                    </div>
+                </template>
+
+                <!-- Tombol Kembali ke Ujian -->
+                <button type="button" @click="dismissViolationModal()"
+                    class="w-full py-4 px-6 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-rose-600/30 transition active:scale-[0.98] cursor-pointer">
+                    Saya Mengerti, Kembali ke Ujian (Layar Penuh)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Alpine.js Application Logic -->
     <script>
         function cbtExam(config) {
@@ -426,7 +546,19 @@
                 remainingSeconds: config.initialRemainingSeconds,
                 saveUrl: config.saveUrl,
                 finishUrl: config.finishUrl,
+                violationUrl: config.violationUrl,
                 
+                // State Integritas & Anti-Cheat
+                violationCount: config.initialViolationCount || 0,
+                isCheating: config.initialIsCheating || false,
+                isFullscreen: false,
+                showFullscreenPromptModal: false,
+                showViolationModal: false,
+                audioCtx: null,
+                alarmInterval: null,
+                lastViolationTimestamp: 0,
+                isSubmitting: false,
+
                 isSaving: false,
                 isRefreshing: false,
                 saveStatus: false,
@@ -473,6 +605,187 @@
                             this.autoSubmit();
                         }
                     }, 1000);
+                },
+
+                // Inisialisasi Ujian & Event Listener Keamanan Anti-Cheat
+                initExam() {
+                    this.initTimer();
+
+                    // Cek status Fullscreen awal
+                    this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+                    if (!this.isFullscreen) {
+                        this.showFullscreenPromptModal = true;
+                    }
+
+                    // 1. Deteksi Fullscreen Change (Tekan Esc / F11 untuk keluar layar penuh)
+                    const onFullscreenChange = () => {
+                        this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+                        if (!this.isFullscreen && !this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
+                            this.handleViolation('Keluar dari mode layar penuh (fullscreen)');
+                        }
+                    };
+                    document.addEventListener('fullscreenchange', onFullscreenChange);
+                    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+                    document.addEventListener('msfullscreenchange', onFullscreenChange);
+
+                    // 2. Deteksi Beralih Tab / Minimalkan Browser (Visibility Change)
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden && !this.showFinishModal && !this.isSubmitting) {
+                            this.handleViolation('Beralih tab browser atau meminimalkan jendela');
+                        }
+                    });
+
+                    // 3. Deteksi Membuka Aplikasi Lain / Klik di Luar Browser (Window Blur)
+                    window.addEventListener('blur', () => {
+                        if (!this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
+                            this.handleViolation('Membuka aplikasi pihak ketiga atau mengklik di luar jendela ujian');
+                        }
+                    });
+
+                    // 4. Cegah Klik Kanan (Context Menu)
+                    document.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        return false;
+                    });
+
+                    // 5. Cegah Shortcut Inspeksi / Developer Tools (F12, Ctrl+Shift+I, Ctrl+U)
+                    window.addEventListener('keydown', (e) => {
+                        if (
+                            e.key === 'F12' ||
+                            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c' || e.key === 'J' || e.key === 'j')) ||
+                            (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+                        ) {
+                            e.preventDefault();
+                            this.handleViolation('Mencoba membuka inspect element / developer tools');
+                            return false;
+                        }
+                    });
+                },
+
+                // Mengaktifkan Fullscreen dari Dialog Awal
+                startFullscreenExam() {
+                    this.showFullscreenPromptModal = false;
+                    this.enterFullscreen();
+                    this.initAudioContext();
+                },
+
+                // Meminta Browser Masuk Fullscreen
+                enterFullscreen() {
+                    const docEl = document.documentElement;
+                    const requestMethod = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (requestMethod) {
+                        requestMethod.call(docEl).then(() => {
+                            this.isFullscreen = true;
+                        }).catch(() => {
+                            this.isFullscreen = false;
+                        });
+                    }
+                },
+
+                // Menyiapkan Web Audio Context untuk Alarm
+                initAudioContext() {
+                    try {
+                        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                        if (!this.audioCtx) {
+                            this.audioCtx = new AudioCtxClass();
+                        }
+                        if (this.audioCtx.state === 'suspended') {
+                            this.audioCtx.resume();
+                        }
+                    } catch (e) {
+                        console.warn('Web Audio API not supported:', e);
+                    }
+                },
+
+                // Memainkan Suara Alarm Sirene Polisi/Darurat Berkala
+                playAlarmSound() {
+                    if (this.alarmInterval) return;
+                    this.initAudioContext();
+
+                    const triggerSiren = () => {
+                        if (!this.showViolationModal || !this.audioCtx) return;
+                        try {
+                            const now = this.audioCtx.currentTime;
+                            const osc = this.audioCtx.createOscillator();
+                            const gain = this.audioCtx.createGain();
+
+                            osc.type = 'sawtooth';
+                            // Modulasi frekuensi 750Hz -> 1150Hz -> 750Hz (Sirene Darurat)
+                            osc.frequency.setValueAtTime(750, now);
+                            osc.frequency.linearRampToValueAtTime(1150, now + 0.25);
+                            osc.frequency.linearRampToValueAtTime(750, now + 0.5);
+
+                            gain.gain.setValueAtTime(0.28, now);
+                            gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+
+                            osc.connect(gain);
+                            gain.connect(this.audioCtx.destination);
+
+                            osc.start(now);
+                            osc.stop(now + 0.52);
+                        } catch (err) {
+                            console.error('Error playing alarm:', err);
+                        }
+                    };
+
+                    triggerSiren();
+                    this.alarmInterval = setInterval(triggerSiren, 550);
+                },
+
+                // Mematikan Suara Alarm
+                stopAlarmSound() {
+                    if (this.alarmInterval) {
+                        clearInterval(this.alarmInterval);
+                        this.alarmInterval = null;
+                    }
+                },
+
+                // Menutup Modal Peringatan & Kembali Masuk Fullscreen
+                dismissViolationModal() {
+                    this.stopAlarmSound();
+                    this.showViolationModal = false;
+                    this.enterFullscreen();
+                },
+
+                // Handler Pencatatan Pelanggaran
+                async handleViolation(reason) {
+                    const now = Date.now();
+                    // Debounce cooldown 2.5 detik agar satu aksi (alt-tab) tidak mencatat ganda dari blur & visibilitychange
+                    if (now - this.lastViolationTimestamp < 2500) {
+                        return;
+                    }
+                    this.lastViolationTimestamp = now;
+
+                    // Tampilkan modal dan mainkan sirene alarm
+                    this.showViolationModal = true;
+                    this.playAlarmSound();
+
+                    // Kirim log pelanggaran ke backend server
+                    try {
+                        const response = await fetch(this.violationUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ reason: reason })
+                        });
+
+                        const data = await response.json();
+                        if (response.ok && data.success) {
+                            this.violationCount = data.violation_count;
+                            if (data.is_cheating_detected || this.violationCount >= 4) {
+                                this.isCheating = true;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Gagal mengirim log pelanggaran:', error);
+                        this.violationCount++;
+                        if (this.violationCount >= 4) {
+                            this.isCheating = true;
+                        }
+                    }
                 },
 
                 goToQuestion(index) {
@@ -543,6 +856,8 @@
                 },
 
                 autoSubmit() {
+                    this.isSubmitting = true;
+                    this.stopAlarmSound();
                     alert('Waktu ujian telah berakhir! Ujian Anda akan diselesaikan otomatis.');
                     const form = document.createElement('form');
                     form.method = 'POST';

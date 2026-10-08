@@ -91,14 +91,6 @@
                                 Pilih salah satu paket ujian di bawah untuk melihat butir soal serta kunci jawabannya.
                             </p>
                         </div>
-
-                        <div class="flex items-center gap-2.5 shrink-0">
-                            <a href="{{ route('guru.ujian.soal.template') }}" 
-                               class="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-bold transition shadow-2xs">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                <span>Unduh Template Word</span>
-                            </a>
-                        </div>
                     </div>
 
                     <!-- Stats Overview Cards -->

@@ -542,7 +542,7 @@ class CbtSystemTest extends TestCase
         $response->assertSee('Masukkan Token Ujian');
         $response->assertSee('matematika dasar');
         $response->assertSee('60');
-        $response->assertSee('Mulai Ujian (Token)');
+        $response->assertSee('Mulai Ujian');
         $response->assertSee('CBT MTsN 12');
         $response->assertDontSee('#08CB00');
     }

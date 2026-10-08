@@ -132,6 +132,66 @@
                     </div>
                 </div>
 
+                <!-- Anti-Cheat Integrity Status Banner -->
+                @if($session->violation_count >= 4 || $session->is_cheating_detected)
+                    <div class="p-6 bg-rose-50/90 border-2 border-rose-300 rounded-3xl shadow-xs">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </div>
+                            <div class="flex-1 space-y-1.5">
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <h3 class="text-base sm:text-lg font-black text-rose-900 tracking-tight">
+                                        TERDETEKSI KECURANGAN: SISWA {{ $session->violation_count }}x KELUAR DARI UJIAN
+                                    </h3>
+                                    <span class="px-3 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white">
+                                        STATUS: CURANG
+                                    </span>
+                                </div>
+                                <p class="text-xs sm:text-sm text-rose-800 leading-relaxed">
+                                    Siswa ini telah terdeteksi meninggalkan layar ujian, beralih ke tab browser lain, atau membuka aplikasi pihak ketiga sebanyak <strong>{{ $session->violation_count }} kali</strong> (telah mencapai/melebihi batas toleransi 4 kali).
+                                    @if($session->last_violation_at)
+                                        <span class="block text-xs text-rose-700/80 mt-1 font-mono">Pelanggaran terakhir tercatat pada: {{ $session->last_violation_at->format('d/m/Y H:i:s') }} WIB</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @elseif($session->violation_count > 0)
+                    <div class="p-5 bg-amber-50/90 border border-amber-300 rounded-3xl shadow-xs">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h3 class="text-sm sm:text-base font-extrabold text-amber-900">
+                                        Peringatan Integritas: {{ $session->violation_count }}x Keluar Layar Ujian
+                                    </h3>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-200 text-amber-900">
+                                        Toleransi Tersisa: {{ max(0, 4 - $session->violation_count) }}x
+                                    </span>
+                                </div>
+                                <p class="text-xs text-amber-800">
+                                    Siswa terdeteksi keluar dari layar ujian sebanyak {{ $session->violation_count }} kali. Sistem akan otomatis menandai <strong>"Terdeteksi Curang"</strong> jika mencapai 4 kali keluar.
+                                    @if($session->last_violation_at)
+                                        <span class="block text-xs text-amber-700/80 mt-0.5 font-mono">Pelanggaran terakhir: {{ $session->last_violation_at->format('d/m/Y H:i:s') }} WIB</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="p-4 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl flex items-center gap-3 text-xs text-emerald-800">
+                        <div class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="font-bold text-emerald-900">Integritas Ujian Tertib:</span> Siswa mengerjakan secara jujur tanpa meninggalkan layar ujian (0x pelanggaran).
+                        </div>
+                    </div>
+                @endif
+
                 <!-- ==================== TABEL KOTAK NOMOR SOAL (MATRIX GRID) ==================== -->
                 <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xs p-6 sm:p-7 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">

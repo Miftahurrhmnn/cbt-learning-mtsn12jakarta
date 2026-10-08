@@ -18,14 +18,20 @@ class ExamSession extends Model
         'score',
         'total_questions',
         'correct_answers',
+        'violation_count',
+        'last_violation_at',
+        'is_cheating_detected',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'last_violation_at' => 'datetime',
         'score' => 'decimal:2',
         'total_questions' => 'integer',
         'correct_answers' => 'integer',
+        'violation_count' => 'integer',
+        'is_cheating_detected' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -59,5 +65,10 @@ class ExamSession extends Model
         $diff = Carbon::now()->diffInSeconds($endTimeLimit, false);
 
         return max(0, (int) $diff);
+    }
+
+    public function isCheating(): bool
+    {
+        return $this->violation_count >= 4 || $this->is_cheating_detected;
     }
 }

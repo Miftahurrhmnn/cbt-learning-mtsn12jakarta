@@ -122,17 +122,6 @@
                     </div>
                 @endif
 
-                <!-- Penjelasan Hak Akses Kelas Ujian -->
-                <div class="bg-yellow-300 border border-yellow-200 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
-                    <div class="w-8 h-8 rounded-xl bg-yellow-800 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div class="text-xs text-black leading-relaxed">
-                        <strong class="font-bold text-black block text-xs">Penjelasan Hak Akses Kelas Siswa:</strong>
-                        Ujian ini telah diatur khusus untuk siswa dari kelas <strong>{{ $exam->all_classroom_names }}</strong>. Siswa yang tidak terdaftar di kelas tersebut tidak akan dapat melihat maupun mengakses paket ujian ini di dashboard mereka.
-                    </div>
-                </div>
-
                 <!-- Banner Ringkasan Info Ujian -->
                 <div class="bg-white p-6 rounded-2xl shadow-2xs border border-slate-200/80 grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
@@ -178,7 +167,7 @@
                             @endif
                             @if($exam->token)
                                 <span class="text-xs text-slate-500 font-medium">
-                                    Token: <strong class="font-mono text-indigo-600 tracking-wider font-bold">{{ $exam->token }}</strong>
+                                    Token: <strong class="font-mono text-black tracking-wider font-bold">{{ $exam->token }}</strong>
                                 </span>
                             @endif
                         </div>
@@ -231,7 +220,7 @@
 
                             <!-- Tombol Tambah Soal Manual -->
                             <a href="{{ route('guru.ujian.soal.create', $exam->id) }}" 
-                               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-xs font-bold transition shadow-xs">
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-bold transition shadow-xs">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>

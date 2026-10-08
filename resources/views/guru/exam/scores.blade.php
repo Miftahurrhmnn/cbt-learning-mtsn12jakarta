@@ -48,13 +48,15 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-black text-slate-900 tracking-tight">Rekapitulasi Nilai: {{ $exam->title ?? $exam->subject->name }}</h1>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                            Kelas: <strong>{{ $exam->all_classroom_names }}</strong> &bull; Total Partisipasi: <strong>{{ $sessions->count() }} Siswa</strong>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-3">
+                            Kelas: <strong>{{ $exam->all_classroom_names }}</strong> 
+                            <br>
+                            Total Partisipasi: <strong>{{ $sessions->count() }} Siswa</strong>
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('guru.ujian.show', $exam->id) }}" 
-                           class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                           class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                             <span>Kembali ke Detail</span>
                         </a>
@@ -80,7 +82,7 @@
                             <h3 class="text-sm font-extrabold text-slate-900 uppercase">Daftar Pengerjaan Siswa</h3>
                             <p class="text-xs text-slate-400 mt-0.5">Pantau status pengerjaan, skor perolehan, dan waktu penyelesaian siswa.</p>
                         </div>
-                        <span class="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl font-mono border border-indigo-100">
+                        <span class="px-3.5 py-1.5 bg-slate-50 text-slate-700 text-xs font-bold rounded-xl font-mono border border-indigo-100">
                             {{ $sessions->where('status', 'completed')->count() }} / {{ $sessions->count() }} Selesai
                         </span>
                     </div>
@@ -144,7 +146,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                                 @if($session->isCompleted())
-                                                    <span class="text-base font-black {{ $session->score >= 75 ? 'text-emerald-600' : 'text-indigo-600' }}">
+                                                    <span class="text-base font-black {{ $session->score >= 75 ? 'text-emerald-600' : 'text-black' }}">
                                                         {{ number_format($session->score, 1) }}
                                                     </span>
                                                     <span class="text-xs text-slate-400 font-normal">/ 100</span>

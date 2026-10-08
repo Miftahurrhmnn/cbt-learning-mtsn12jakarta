@@ -29,6 +29,10 @@
                             </p>
                         </div>
                     </div>
+
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 text-xs font-bold text-white tracking-wide">
+                        <span>CBT MTsN 12</span>
+                    </div>
                 </div>
             </div>
         </header>

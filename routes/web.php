@@ -91,6 +91,9 @@ Route::middleware(['auth', 'is_siswa'])->prefix('siswa')->name('siswa.')->group(
         ->middleware('throttle:120,1')
         ->name('ujian.simpan_jawaban');
 
+    Route::post('/ujian/{id}/log-pelanggaran', [SiswaExamController::class, 'logViolation'])
+        ->name('ujian.log_violation');
+
     Route::post('/ujian/{id}/selesai', [SiswaExamController::class, 'finish'])
         ->name('ujian.selesai');
 

@@ -43,23 +43,20 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
                             <span>Monitoring Pengerjaan Ujian Siswa</span>
                         </h1>
                     </div>
                     <div>
                         <button type="button" onclick="window.location.reload()" 
                                 class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-2xs transition">
-                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             <span>Segarkan Data (Refresh)</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Stats Overview Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Sedang Mengerjakan -->
                     <div class="p-5 bg-white rounded-3xl border border-amber-200/80 shadow-2xs flex items-center gap-4 relative overflow-hidden">
                         <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -67,8 +64,7 @@
                         </div>
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                                Sedang Mengerjakan
+                                Mengerjakan
                             </span>
                             <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalOngoing }} <span class="text-xs font-semibold text-slate-400">Siswa</span></p>
                         </div>
@@ -80,19 +76,25 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Selesai Mengerjakan</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Selesai</span>
                             <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalCompleted }} <span class="text-xs font-semibold text-slate-400">Siswa</span></p>
                         </div>
                     </div>
 
-                    <!-- Rata-rata Nilai -->
-                    <div class="p-5 bg-white rounded-3xl border border-indigo-200/80 shadow-2xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    <!-- Terdeteksi Curang (Anti-Cheat) -->
+                    <div class="p-5 bg-white rounded-3xl border {{ $totalCheating > 0 ? 'border-rose-300 ring-2 ring-rose-500/10' : 'border-slate-200/80' }} shadow-2xs flex items-center gap-4 relative overflow-hidden">
+                        <div class="w-12 h-12 rounded-2xl {{ $totalCheating > 0 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500' }} flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Rata-rata Nilai Selesai</span>
-                            <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $avgScore }} <span class="text-xs font-semibold text-slate-400">/ 100</span></p>
+                            <span class="text-xs font-bold uppercase tracking-wider {{ $totalCheating > 0 ? 'text-rose-600' : 'text-slate-500' }} flex items-center gap-1.5">
+                                Terdeteksi Curang
+                            </span>
+                            <p class="text-2xl font-black {{ $totalCheating > 0 ? 'text-rose-600' : 'text-slate-900' }} mt-0.5">
+                                {{ $totalCheating }} <span class="text-xs font-semibold text-slate-400">Siswa</span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -102,12 +104,12 @@
                     <form action="{{ route('guru.monitoring.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center">
                         
                         <!-- Search Box (Nama / NISN) -->
-                        <div class="sm:col-span-4 relative">
+                        <div class="sm:col-span-3 relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             </div>
                             <input type="text" name="search" value="{{ request('search') }}" 
-                                placeholder="Cari nama siswa, NISN, atau email..." 
+                                placeholder="Cari nama, NISN, email..." 
                                 class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
                         </div>
 
@@ -137,13 +139,24 @@
                             </select>
                         </div>
 
-                        <!-- Filter Status -->
+                        <!-- Filter Status Pengerjaan -->
                         <div class="sm:col-span-2">
                             <select name="status" onchange="this.form.submit()" 
                                 class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white">
                                 <option value="">Semua Status</option>
-                                <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Sedang Mengerjakan</option>
+                                <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Mengerjakan</option>
                                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Integritas (Anti-Cheat) -->
+                        <div class="sm:col-span-1">
+                            <select name="integrity" onchange="this.form.submit()" 
+                                class="w-full px-2 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white" title="Filter Integritas / Pelanggaran">
+                                <option value="">Integritas</option>
+                                <option value="clean" {{ request('integrity') == 'clean' ? 'selected' : '' }}>Tertib (0x)</option>
+                                <option value="warning" {{ request('integrity') == 'warning' ? 'selected' : '' }}>Peringatan (1-3x)</option>
+                                <option value="curang" {{ request('integrity') == 'curang' ? 'selected' : '' }}>Curang (&ge;4x)</option>
                             </select>
                         </div>
 
@@ -152,7 +165,7 @@
                             <button type="submit" class="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             </button>
-                            @if(request()->hasAny(['search', 'exam_id', 'classroom_id', 'status']))
+                            @if(request()->hasAny(['search', 'exam_id', 'classroom_id', 'status', 'integrity']))
                                 <a href="{{ route('guru.monitoring.index') }}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition flex items-center justify-center" title="Reset Filter">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </a>
@@ -167,12 +180,13 @@
                         <table class="w-full text-left text-xs sm:text-sm">
                             <thead class="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                                 <tr>
-                                    <th class="py-3.5 px-4 sm:px-6">Nama Siswa & NISN</th>
+                                    <th class="py-3.5 px-4 sm:px-6">Nama Siswa</th>
                                     <th class="py-3.5 px-4">Kelas</th>
-                                    <th class="py-3.5 px-4">Ujian & Mapel</th>
+                                    <th class="py-3.5 px-4">Ujian</th>
                                     <th class="py-3.5 px-4 text-center">Status</th>
-                                    <th class="py-3.5 px-4 text-center">Waktu Mulai</th>
-                                    <th class="py-3.5 px-4 text-center">Nilai Akhir</th>
+                                    <th class="py-3.5 px-4 text-center">Integritas Ujian</th>
+                                    <th class="py-3.5 px-4 text-center">Waktu</th>
+                                    <th class="py-3.5 px-4 text-center">Nilai</th>
                                     <th class="py-3.5 px-4 sm:px-6 text-right">Analisis Kotak</th>
                                 </tr>
                             </thead>
@@ -210,7 +224,6 @@
                                         <!-- Ujian & Mapel -->
                                         <td class="py-4 px-4">
                                             <p class="font-bold text-slate-900 truncate max-w-xs">{{ $exam->title ?? '-' }}</p>
-                                            <span class="text-[11px] text-indigo-600 font-semibold">{{ $exam->subject->name ?? '-' }}</span>
                                         </td>
 
                                         <!-- Status Badge -->
@@ -228,11 +241,31 @@
                                             @endif
                                         </td>
 
+                                        <!-- Integritas Ujian (Anti-Cheat) -->
+                                        <td class="py-4 px-4 text-center">
+                                            @if($session->violation_count >= 4 || $session->is_cheating_detected)
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">
+                                                    <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                                                    Curang ({{ $session->violation_count }}x)
+                                                </span>
+                                            @elseif($session->violation_count > 0)
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">
+                                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                    Peringatan ({{ $session->violation_count }}x)
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                                    Tertib (0x)
+                                                </span>
+                                            @endif
+                                        </td>
+
                                         <!-- Waktu Mulai -->
-                                        <td class="py-4 px-4 text-center text-xs text-slate-500 font-mono">
+                                        <td class="py-4 px-4 text-center text-xs text-slate-500">
                                             {{ $session->start_time ? $session->start_time->format('H:i:s') : '-' }}
                                             @if($session->end_time)
-                                                <span class="block text-[10px] text-slate-400">Selesai: {{ $session->end_time->format('H:i:s') }}</span>
+                                                <span class="block text-xs text-slate-400 mt-2">Selesai: {{ $session->end_time->format('H:i:s') }}</span>
                                             @endif
                                         </td>
 
@@ -257,13 +290,13 @@
                                             <a href="{{ route('guru.monitoring.detail', $session->id) }}" 
                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition shadow-2xs">
                                                 <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                                                <span>Analisis Jawaban</span>
+                                                <span>Jawaban</span>
                                             </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="py-12 px-6 text-center text-slate-400">
+                                        <td colspan="8" class="py-12 px-6 text-center text-slate-400">
                                             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                             </div>

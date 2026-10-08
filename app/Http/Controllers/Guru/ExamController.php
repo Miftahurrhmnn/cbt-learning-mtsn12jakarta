@@ -630,6 +630,23 @@ class ExamController extends Controller
             $sessionsQuery->where('status', $request->status);
         }
 
+        // Filter Integritas (tertib, warning, curang)
+        if ($request->filled('integrity')) {
+            if ($request->integrity === 'curang') {
+                $sessionsQuery->where(function ($q) {
+                    $q->where('violation_count', '>=', 4)
+                      ->orWhere('is_cheating_detected', true);
+                });
+            } elseif ($request->integrity === 'warning') {
+                $sessionsQuery->where('violation_count', '>=', 1)
+                              ->where('violation_count', '<', 4)
+                              ->where('is_cheating_detected', false);
+            } elseif ($request->integrity === 'clean') {
+                $sessionsQuery->where('violation_count', 0)
+                              ->where('is_cheating_detected', false);
+            }
+        }
+
         // Filter Cari Siswa
         if ($request->filled('search')) {
             $search = trim($request->search);
@@ -644,6 +661,10 @@ class ExamController extends Controller
         $statsBase = clone $sessionsQuery;
         $totalOngoing = (clone $statsBase)->where('status', 'ongoing')->count();
         $totalCompleted = (clone $statsBase)->where('status', 'completed')->count();
+        $totalCheating = (clone $statsBase)->where(function ($q) {
+            $q->where('violation_count', '>=', 4)
+              ->orWhere('is_cheating_detected', true);
+        })->count();
         $avgScore = round((float)((clone $statsBase)->where('status', 'completed')->avg('score') ?? 0), 1);
 
         $sessions = $sessionsQuery->latest()->paginate(15)->withQueryString();
@@ -655,7 +676,7 @@ class ExamController extends Controller
         }
         $classrooms = Classroom::orderBy('name')->get();
 
-        return view('guru.monitoring.index', compact('sessions', 'totalOngoing', 'totalCompleted', 'avgScore', 'exams', 'classrooms'));
+        return view('guru.monitoring.index', compact('sessions', 'totalOngoing', 'totalCompleted', 'totalCheating', 'avgScore', 'exams', 'classrooms'));
     }
 
     /**
