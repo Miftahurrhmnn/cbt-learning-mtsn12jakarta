@@ -2,7 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Ujian: {{ $exam->title ?? $exam->subject->name }} - CBT Modern</title>
     
@@ -15,11 +19,20 @@
 
     <style>
         [x-cloak] { display: none !important; }
+        html, body {
+            overscroll-behavior: none !important;
+            overscroll-behavior-x: none !important;
+            overscroll-behavior-y: none !important;
+            -webkit-overscroll-behavior: none !important;
+            touch-action: pan-y !important;
+            -webkit-touch-callout: none !important;
+        }
         .no-select {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
     </style>
 </head>
@@ -42,9 +55,6 @@
     <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 text-white font-black text-sm flex items-center justify-center shadow-sm">
-                    CBT
-                </div>
                 <div>
                     <h1 class="text-sm sm:text-base font-bold text-slate-900 line-clamp-1">
                         {{ $exam->title ?? 'Ujian ' . $exam->subject->name }}
@@ -52,24 +62,13 @@
                 </div>
             </div>
 
-                <!-- Countdown Timer & Actions -->
+            <!-- Countdown Timer & Actions -->
             <div class="flex items-center gap-2 sm:gap-3">
                 <!-- Status Jam Ujian -->
                 <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
                     <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>Jam: <strong class="text-slate-900">{{ $exam->formatted_time_range }}</strong></span>
                 </div>
-
-                <!-- Tombol Layar Penuh (Fullscreen) -->
-                <button type="button" @click="enterFullscreen()" 
-                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
-                    :class="isFullscreen ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse'"
-                    :title="isFullscreen ? 'Mode Layar Penuh Aktif' : 'Aktifkan Mode Layar Penuh'">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/>
-                    </svg>
-                    <span class="hidden md:inline" x-text="isFullscreen ? 'Layar Penuh' : 'Aktifkan Fullscreen'"></span>
-                </button>
 
                 <!-- Tombol Refresh Ujian -->
                 <button type="button" @click="refreshPage()" 
@@ -433,12 +432,12 @@
         <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-md transition-opacity"></div>
         <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border border-slate-200 space-y-5">
-                <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto shadow-inner border border-indigo-100">
+                <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-inner border border-blue-100">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/></svg>
                 </div>
                 
                 <div class="space-y-2">
-                    <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
                         Integritas & Anti-Kecurangan
                     </span>
                     <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -454,15 +453,16 @@
                         <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span>Peraturan Ketat Ujian CBT:</span>
                     </div>
-                    <ul class="space-y-1 list-disc list-inside text-amber-800">
+                    <ul class="space-y-1.5 list-disc list-inside text-amber-800">
                         <li>Dilarang keluar dari layar ujian, membuka tab lain, atau aplikasi pihak ketiga.</li>
-                        <li>Sirene alarm peringatan akan berbunyi kencang jika Anda meninggalkan layar ujian.</li>
+                        <li><strong>Tombol Kembali (Back) HP Android / iPhone & gesture gesek layar otomatis dikunci</strong> oleh sistem.</li>
+                        <li>Sirene alarm peringatan akan berbunyi kencang jika Anda meninggalkan layar atau menekan tombol navigasi HP.</li>
                         <li>Jika terdeteksi keluar hingga <strong>4 kali</strong>, sistem otomatis menandai Anda <strong>TERDETEKSI CURANG</strong> pada monitor Guru.</li>
                     </ul>
                 </div>
 
                 <button type="button" @click="startFullscreenExam()"
-                    class="w-full py-4 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
+                    class="w-full py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-blue-600/25 transition active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5m-6 11l-5 5m0 0h4m-4 0v-4m16 4v-4m0 4h-4m0 0l-5-5"/></svg>
                     <span>Masuk Layar Penuh & Mulai Ujian</span>
                 </button>
@@ -494,8 +494,13 @@
                     <h3 class="text-xl sm:text-2xl font-black text-rose-600 tracking-tight">
                         PELANGGARAN TERDETEKSI!
                     </h3>
+                    <template x-if="currentViolationReason">
+                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-800 text-center">
+                            Pemicu: <span x-text="currentViolationReason"></span>
+                        </div>
+                    </template>
                     <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                        Anda terdeteksi meninggalkan layar ujian, beralih ke tab browser lain, atau membuka aplikasi pihak ketiga.
+                        Anda terdeteksi menekan tombol kembali HP, beralih aplikasi/tab browser, atau keluar dari mode layar penuh ujian.
                     </p>
                 </div>
 
@@ -551,6 +556,8 @@
                 // State Integritas & Anti-Cheat
                 violationCount: config.initialViolationCount || 0,
                 isCheating: config.initialIsCheating || false,
+                currentViolationReason: '',
+                wakeLock: null,
                 isFullscreen: false,
                 showFullscreenPromptModal: false,
                 showViolationModal: false,
@@ -611,13 +618,25 @@
                 initExam() {
                     this.initTimer();
 
+                    // 1. Kunci Tombol Navigasi Bawaan HP (Android Back Button & Gesture Gesek iPhone/Android)
+                    this.lockNavigationHistory();
+
+                    // 2. Cegah Gesture Swipe Tepi Layar di HP
+                    this.preventEdgeSwipeNavigation();
+
+                    // 3. Cegah Siswa Menutup atau Memuat Ulang Tab (beforeunload & pagehide)
+                    this.preventPageUnload();
+
+                    // 4. Kunci Layar agar Tidak Mati/Tidur Otomatis (Screen Wake Lock API)
+                    this.requestWakeLock();
+
                     // Cek status Fullscreen awal
                     this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
                     if (!this.isFullscreen) {
                         this.showFullscreenPromptModal = true;
                     }
 
-                    // 1. Deteksi Fullscreen Change (Tekan Esc / F11 untuk keluar layar penuh)
+                    // 5. Deteksi Fullscreen Change (Tekan Esc / F11 / Gesture untuk keluar layar penuh)
                     const onFullscreenChange = () => {
                         this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
                         if (!this.isFullscreen && !this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
@@ -628,28 +647,47 @@
                     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
                     document.addEventListener('msfullscreenchange', onFullscreenChange);
 
-                    // 2. Deteksi Beralih Tab / Minimalkan Browser (Visibility Change)
+                    // 6. Deteksi Beralih Tab / Minimalkan Browser / Buka Aplikasi Lain (Visibility Change)
                     document.addEventListener('visibilitychange', () => {
                         if (document.hidden && !this.showFinishModal && !this.isSubmitting) {
-                            this.handleViolation('Beralih tab browser atau meminimalkan jendela');
+                            this.handleViolation('Beralih tab browser, meminimalkan jendela ujian, atau membuka aplikasi lain');
+                        } else if (!document.hidden) {
+                            this.requestWakeLock();
+                            try {
+                                window.history.pushState({ cbt: 'locked_active' }, document.title, window.location.href);
+                            } catch (e) {}
                         }
                     });
 
-                    // 3. Deteksi Membuka Aplikasi Lain / Klik di Luar Browser (Window Blur)
+                    // 7. Deteksi Membuka Aplikasi Lain / Klik di Luar Browser (Window Blur)
                     window.addEventListener('blur', () => {
                         if (!this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
-                            this.handleViolation('Membuka aplikasi pihak ketiga atau mengklik di luar jendela ujian');
+                            this.handleViolation('Kehilangan fokus layar ujian (membuka split-screen / floating app)');
                         }
                     });
 
-                    // 4. Cegah Klik Kanan (Context Menu)
+                    // 8. Cegah Klik Kanan (Context Menu)
                     document.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
                         return false;
                     });
 
-                    // 5. Cegah Shortcut Inspeksi / Developer Tools (F12, Ctrl+Shift+I, Ctrl+U)
+                    // 9. Cegah Shortcut Inspeksi, Developer Tools, & Tombol Navigasi Keyboard
                     window.addEventListener('keydown', (e) => {
+                        // Blokir backspace jika tidak berada di elemen input
+                        if (e.key === 'Backspace' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+                            e.preventDefault();
+                            return false;
+                        }
+                        // Blokir tombol navigasi mundur atau escape
+                        if (e.key === 'Escape' || e.key === 'BrowserBack' || (e.altKey && e.key === 'ArrowLeft')) {
+                            e.preventDefault();
+                            if (!this.showFinishModal && !this.isSubmitting) {
+                                this.handleViolation('Mencoba menekan tombol navigasi Kembali (Back/Escape)');
+                            }
+                            return false;
+                        }
+                        // Blokir inspect element / devtools
                         if (
                             e.key === 'F12' ||
                             (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c' || e.key === 'J' || e.key === 'j')) ||
@@ -662,11 +700,76 @@
                     });
                 },
 
+                // Mengunci History Browser agar Tombol Back Bawaan Handphone Terjebak & Tidak Bisa Digunakan Keluar
+                lockNavigationHistory() {
+                    const lockUrl = window.location.href;
+                    try {
+                        window.history.pushState({ cbt: 'locked_root' }, document.title, lockUrl);
+                        window.history.pushState({ cbt: 'locked_active' }, document.title, lockUrl);
+                    } catch (e) {}
+
+                    window.addEventListener('popstate', (e) => {
+                        // Segera dorong kembali state agar history tetap terkunci di halaman ujian CBT
+                        try {
+                            window.history.pushState({ cbt: 'locked_active' }, document.title, lockUrl);
+                        } catch (err) {}
+
+                        // Tangani sebagai pelanggaran integritas ujian jika siswa mencoba menekan tombol Back
+                        if (!this.showFinishModal && !this.isSubmitting) {
+                            this.handleViolation('Menekan tombol Kembali (Back Button Handphone / Gesture Navigasi)');
+                        }
+                    });
+                },
+
+                // Cegah Gesture Navigasi Gesek Tepi Layar di HP (iOS Safari & Android Chrome Edge Swipe)
+                preventEdgeSwipeNavigation() {
+                    let touchStartX = 0;
+                    window.addEventListener('touchstart', (e) => {
+                        if (e.touches && e.touches.length > 0) {
+                            touchStartX = e.touches[0].clientX;
+                            const screenW = window.innerWidth;
+                            // Jika touch dimulai tepat di tepi layar kiri (< 25px) atau tepi kanan (> screenW - 25px)
+                            if (touchStartX < 25 || touchStartX > (screenW - 25)) {
+                                e.preventDefault();
+                            }
+                        }
+                    }, { passive: false });
+                },
+
+                // Cegah Siswa Menutup Tab atau Merefresh Ujian secara Tidak Sah
+                preventPageUnload() {
+                    window.addEventListener('beforeunload', (e) => {
+                        if (!this.isSubmitting && !this.showFinishModal) {
+                            e.preventDefault();
+                            e.returnValue = 'Ujian sedang berlangsung! Jangan tinggalkan halaman ujian.';
+                            return e.returnValue;
+                        }
+                    });
+
+                    window.addEventListener('pagehide', (e) => {
+                        if (!this.isSubmitting && !this.showFinishModal) {
+                            this.handleViolation('Mencoba menutup atau meninggalkan tab ujian');
+                        }
+                    });
+                },
+
+                // Kunci Layar agar Tidak Mati/Tidur Otomatis saat Siswa Membaca Soal
+                async requestWakeLock() {
+                    try {
+                        if ('wakeLock' in navigator) {
+                            this.wakeLock = await navigator.wakeLock.request('screen');
+                        }
+                    } catch (err) {
+                        // Browser tidak mendukung WakeLock API
+                    }
+                },
+
                 // Mengaktifkan Fullscreen dari Dialog Awal
                 startFullscreenExam() {
                     this.showFullscreenPromptModal = false;
                     this.enterFullscreen();
                     this.initAudioContext();
+                    this.requestWakeLock();
                 },
 
                 // Meminta Browser Masuk Fullscreen
@@ -744,17 +847,23 @@
                 dismissViolationModal() {
                     this.stopAlarmSound();
                     this.showViolationModal = false;
+                    this.currentViolationReason = '';
                     this.enterFullscreen();
+                    this.requestWakeLock();
+                    try {
+                        window.history.pushState({ cbt: 'locked_active' }, document.title, window.location.href);
+                    } catch (e) {}
                 },
 
                 // Handler Pencatatan Pelanggaran
                 async handleViolation(reason) {
                     const now = Date.now();
-                    // Debounce cooldown 2.5 detik agar satu aksi (alt-tab) tidak mencatat ganda dari blur & visibilitychange
+                    // Debounce cooldown 2.5 detik agar satu aksi tidak mencatat ganda dari blur & visibilitychange
                     if (now - this.lastViolationTimestamp < 2500) {
                         return;
                     }
                     this.lastViolationTimestamp = now;
+                    this.currentViolationReason = reason;
 
                     // Tampilkan modal dan mainkan sirene alarm
                     this.showViolationModal = true;
@@ -791,6 +900,9 @@
                 goToQuestion(index) {
                     if (index >= 0 && index < this.totalQuestions) {
                         this.currentIndex = index;
+                        try {
+                            window.history.pushState({ cbt: 'locked_q_' + index }, document.title, window.location.href);
+                        } catch (e) {}
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 },

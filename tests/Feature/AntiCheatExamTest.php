@@ -49,8 +49,9 @@ class AntiCheatExamTest extends TestCase
             'subject_id' => $this->subject->id,
             'classroom_id' => $this->classroom->id,
             'user_id' => $this->guru->id,
-            'start_date' => Carbon::now()->toDateString(),
-            'end_date' => Carbon::now()->toDateString(),
+            'exam_date' => Carbon::now('Asia/Jakarta')->toDateString(),
+            'start_date' => Carbon::now('Asia/Jakarta')->toDateString(),
+            'end_date' => Carbon::now('Asia/Jakarta')->toDateString(),
             'start_time' => '00:00:00',
             'end_time' => '23:59:59',
             'status' => 'published',
@@ -74,10 +75,9 @@ class AntiCheatExamTest extends TestCase
      */
     public function test_student_exam_room_has_fullscreen_and_anticheat_modal(): void
     {
-        // Tandai verifikasi token
-        session(["exam_token_verified_{$this->exam->id}" => true]);
-
-        $response = $this->actingAs($this->siswa)->get(route('siswa.ujian.show', $this->exam->id));
+        $response = $this->actingAs($this->siswa)
+            ->withSession(["exam_token_verified_{$this->exam->id}" => true])
+            ->get(route('siswa.ujian.show', $this->exam->id));
 
         $response->assertStatus(200);
         $response->assertSee('Wajib Mode Layar Penuh');
@@ -85,6 +85,24 @@ class AntiCheatExamTest extends TestCase
         $response->assertSee('TERDETEKSI CURANG');
         $response->assertSee('log-pelanggaran');
         $response->assertSee('enterFullscreen');
+    }
+
+    /**
+     * Test: Ruang ujian dilengkapi penguncian tombol back bawaan HP dan gesture swipe
+     */
+    public function test_student_exam_room_has_mobile_back_button_and_gesture_lock(): void
+    {
+        $response = $this->actingAs($this->siswa)
+            ->withSession(["exam_token_verified_{$this->exam->id}" => true])
+            ->get(route('siswa.ujian.show', $this->exam->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('lockNavigationHistory');
+        $response->assertSee('preventEdgeSwipeNavigation');
+        $response->assertSee('preventPageUnload');
+        $response->assertSee('overscroll-behavior');
+        $response->assertSee('requestWakeLock');
+        $response->assertSee('Back Button Handphone');
     }
 
     /**

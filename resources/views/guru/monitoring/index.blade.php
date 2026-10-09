@@ -58,42 +58,42 @@
                 <!-- Stats Overview Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Sedang Mengerjakan -->
-                    <div class="p-5 bg-white rounded-3xl border border-amber-200/80 shadow-2xs flex items-center gap-4 relative overflow-hidden">
-                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <div class="p-5 bg-amber-700 rounded-3xl shadow-2xs flex items-center gap-4 relative overflow-hidden">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6 animate-spin text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                            <span class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
                                 Mengerjakan
                             </span>
-                            <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalOngoing }} <span class="text-xs font-semibold text-slate-400">Siswa</span></p>
+                            <p class="text-2xl font-black text-white mt-0.5">{{ $totalOngoing }} <span class="text-xs font-semibold text-white">Siswa</span></p>
                         </div>
                     </div>
 
                     <!-- Selesai Ujian -->
-                    <div class="p-5 bg-white rounded-3xl border border-emerald-200/80 shadow-2xs flex items-center gap-4">
+                    <div class="p-5 bg-emerald-700 rounded-3xl shadow-2xs flex items-center gap-4">
                         <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Selesai</span>
-                            <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalCompleted }} <span class="text-xs font-semibold text-slate-400">Siswa</span></p>
+                            <span class="text-xs font-bold uppercase tracking-wider text-white">Selesai</span>
+                            <p class="text-2xl font-black text-white mt-0.5">{{ $totalCompleted }} <span class="text-xs font-semibold text-white">Siswa</span></p>
                         </div>
                     </div>
 
                     <!-- Terdeteksi Curang (Anti-Cheat) -->
-                    <div class="p-5 bg-white rounded-3xl border {{ $totalCheating > 0 ? 'border-rose-300 ring-2 ring-rose-500/10' : 'border-slate-200/80' }} shadow-2xs flex items-center gap-4 relative overflow-hidden">
+                    <div class="p-5 bg-rose-700 rounded-3xl shadow-2xs flex items-center gap-4 relative overflow-hidden">
                         <div class="w-12 h-12 rounded-2xl {{ $totalCheating > 0 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500' }} flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider {{ $totalCheating > 0 ? 'text-rose-600' : 'text-slate-500' }} flex items-center gap-1.5">
+                            <span class="text-xs font-bold uppercase tracking-wider {{ $totalCheating > 0 ? 'text-white' : '' }} flex items-center gap-1.5">
                                 Terdeteksi Curang
                             </span>
-                            <p class="text-2xl font-black {{ $totalCheating > 0 ? 'text-rose-600' : 'text-slate-900' }} mt-0.5">
-                                {{ $totalCheating }} <span class="text-xs font-semibold text-slate-400">Siswa</span>
+                            <p class="text-2xl font-black {{ $totalCheating > 0 ? 'text-white' : '' }} mt-0.5">
+                                {{ $totalCheating }} <span class="text-xs font-semibold text-white">Siswa</span>
                             </p>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                         <!-- Filter Integritas (Anti-Cheat) -->
                         <div class="sm:col-span-1">
                             <select name="integrity" onchange="this.form.submit()" 
-                                class="w-full px-2 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white" title="Filter Integritas / Pelanggaran">
+                                class="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white" title="Filter Integritas / Pelanggaran">
                                 <option value="">Integritas</option>
                                 <option value="clean" {{ request('integrity') == 'clean' ? 'selected' : '' }}>Tertib (0x)</option>
                                 <option value="warning" {{ request('integrity') == 'warning' ? 'selected' : '' }}>Peringatan (1-3x)</option>
@@ -274,9 +274,6 @@
                                             @if($session->isCompleted())
                                                 <div class="inline-flex flex-col items-center">
                                                     <span class="text-base font-black text-slate-900">{{ number_format($session->score, 1) }}</span>
-                                                    <span class="text-[10px] font-semibold text-slate-400">
-                                                        {{ $session->correct_answers ?? 0 }} Benar / {{ $session->total_questions ?? 0 }} Soal
-                                                    </span>
                                                 </div>
                                             @else
                                                 <span class="text-[11px] font-bold text-amber-600 italic">

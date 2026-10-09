@@ -95,23 +95,23 @@
 
                     <!-- Stats Overview Cards -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
+                        <div class="p-5 bg-purple-700 rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                             </div>
                             <div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Ujian Terdaftar</span>
-                                <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $exams->count() }}</p>
+                                <span class="text-xs font-bold uppercase tracking-wider text-white">Ujian Terdaftar</span>
+                                <p class="text-2xl font-black text-white mt-0.5">{{ $exams->count() }}</p>
                             </div>
                         </div>
 
-                        <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
+                        <div class="p-5 bg-emerald-700 rounded-3xl border border-slate-200/80 shadow-2xs flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                             </div>
                             <div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran Anda</span>
-                                <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $subjects->count() }}</p>
+                                <span class="text-xs font-bold uppercase tracking-wider text-white">Mata Pelajaran Anda</span>
+                                <p class="text-2xl font-black text-white mt-0.5">{{ $subjects->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                             <div class="sm:col-span-3">
                                 <select name="filter_subject_id" onchange="this.form.submit()" 
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-white">
-                                    <option value="">Semua Mata Pelajaran</option>
+                                    <option value="">Semua Ujian</option>
                                     @foreach($subjects as $sub)
                                         <option value="{{ $sub->id }}" {{ request('filter_subject_id') == $sub->id ? 'selected' : '' }}>
                                             {{ $sub->name }} ({{ $sub->exams_count }} Ujian)

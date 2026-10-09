@@ -92,7 +92,7 @@
                 <!-- 3 Stat Summary Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                     <!-- Total Ujian -->
-                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs transition hover:shadow-md hover:border-indigo-200">
+                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-indigo-700 p-5 shadow-2xs transition hover:shadow-md hover:border-indigo-200">
                         <div class="flex items-center gap-4">
                             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-inner">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,14 +100,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Ujian Dibuat</span>
-                                <h4 class="mt-0.5 text-2xl font-black text-slate-900">{{ $exams->total() }}</h4>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-white">Total Ujian Dibuat</span>
+                                <h4 class="mt-0.5 text-2xl font-black text-white">{{ $exams->total() }}</h4>
                             </div>
                         </div>
                     </div>
 
                     <!-- Ujian Aktif (Published) -->
-                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs transition hover:shadow-md hover:border-emerald-200">
+                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-emerald-700 p-5 shadow-2xs transition hover:shadow-md hover:border-emerald-200">
                         <div class="flex items-center gap-4">
                             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-inner">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,14 +115,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ujian Aktif (Published)</span>
-                                <h4 class="mt-0.5 text-2xl font-black text-emerald-600">{{ $exams->where('status', 'published')->count() }}</h4>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-white">Ujian Aktif (Published)</span>
+                                <h4 class="mt-0.5 text-2xl font-black text-white">{{ $exams->where('status', 'published')->count() }}</h4>
                             </div>
                         </div>
                     </div>
 
                     <!-- Total Partisipasi Siswa -->
-                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs transition hover:shadow-md hover:border-purple-200">
+                    <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-purple-700 p-5 shadow-2xs transition hover:shadow-md hover:border-purple-200">
                         <div class="flex items-center gap-4">
                             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-inner">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,8 +130,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Partisipasi Siswa</span>
-                                <h4 class="mt-0.5 text-2xl font-black text-purple-700">{{ $exams->sum('sessions_count') }}</h4>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-white">Total Partisipasi Siswa</span>
+                                <h4 class="mt-0.5 text-2xl font-black text-white">{{ $exams->sum('sessions_count') }}</h4>
                             </div>
                         </div>
                     </div>

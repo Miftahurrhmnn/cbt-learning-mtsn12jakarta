@@ -43,11 +43,6 @@
                 <!-- Header Breadcrumbs & Back Navigation -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
-                            <a href="{{ route('guru.monitoring.index') }}" class="hover:text-indigo-600 transition">Monitoring Siswa</a>
-                            <span>/</span>
-                            <span class="text-slate-600 font-semibold">{{ $session->user->name ?? 'Siswa' }}</span>
-                        </div>
                         <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                             <span>Hasil & Analisis Jawaban Siswa</span>
                         </h1>

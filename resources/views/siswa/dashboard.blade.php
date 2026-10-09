@@ -153,12 +153,12 @@
                         <!-- Horizontal Scrollable Day Chips -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                             <a href="{{ route('siswa.dashboard') }}#section-exams"
-                               class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ !request('day') ? 'bg-green-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                               class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ !request('day') ? 'bg-blue-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                                 Semua Hari
                             </a>
                             @foreach($daysList as $d)
                                 <a href="{{ route('siswa.dashboard', ['day' => $d, 'search' => request('search')]) }}#section-exams"
-                                   class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ request('day') == $d ? 'bg-green-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                   class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition {{ request('day') == $d ? 'bg-blue-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                                     {{ $d }}
                                 </a>
                             @endforeach
@@ -174,7 +174,7 @@
                             @if(request('day'))
                                 <input type="hidden" name="day" value="{{ request('day') }}">
                             @endif
-                            <button type="submit" class="absolute right-1 top-2 bottom-1 px-3 bg-[#2B77DE] text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 transition">
+                            <button type="submit" class="absolute right-1 top-2 bottom-1 px-3 bg-blue-500 text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 transition">
                                 Cari
                             </button>
                         </div>
@@ -248,7 +248,7 @@
                                      class="snap-start shrink-0 w-[84%] sm:w-[50%] md:w-[46%] lg:w-[40%] bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition p-4 sm:p-5 flex flex-col justify-between space-y-4">
                                     <div>
                                         <div class="flex items-center justify-between gap-2 mb-2">
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E0F2FE] text-[#0369A1]">
                                                 {{ $exam->subject->name ?? 'Mapel' }}
                                             </span>
                                             <div class="flex items-center gap-1.5 flex-wrap justify-end">
@@ -259,11 +259,11 @@
                                                     </span>
                                                 @endif
                                                 @if($exam->day_of_week)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#F3F4F6] text-[#374151]">
                                                         <x-heroicon-o-calendar /> {{ $exam->day_of_week }}
                                                     </span>
                                                 @endif
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700" title="Kelas Sasaran Ujian: {{ $exam->all_classroom_names }}">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#F0F4F8] text-[#102A43]" title="Kelas Sasaran Ujian: {{ $exam->all_classroom_names }}">
                                                     {{ $exam->all_classroom_names }}
                                                 </span>
                                             </div>
@@ -275,7 +275,7 @@
 
                                         <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500 pt-2 border-t border-slate-100">
                                             <div class="flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                <svg class="w-3.5 h-3.5 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                 <span class="truncate">Jam: <strong class="text-slate-800">{{ $exam->formatted_time_range }}</strong></span>
                                             </div>
                                             <div class="flex items-center gap-1.5">
@@ -299,9 +299,9 @@
                                                 </div>
                                             @else
                                                 <a href="{{ route('siswa.ujian.token', $exam->id) }}" 
-                                                   class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2B77DE] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
+                                                   class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs transition">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                                                    <span>Mulai Ujian (Token)</span>
+                                                    <span>Mulai Ujian</span>
                                                 </a>
                                             @endif
                                         @elseif($sess->isCompleted())
@@ -415,27 +415,57 @@
             </div>
         </div>
 
-        <!-- ==================== FLOATING BOTTOM APP NAVIGATION DOCK (Persis seperti Foto) ==================== -->
-        <nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2 shadow-2xl">
-            <div class="max-w-md mx-auto flex items-center justify-around relative">
-                <!-- 1. Home Icon -->
-                <button @click="activeTab = 'home'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
-                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition"
-                        :class="activeTab === 'home' ? 'text-[#2B77DE]' : ''">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                </button>
+        <!-- ==================== MODERN FLOATING BOTTOM APP NAVIGATION DOCK ==================== -->
+<!-- ==================== FLOATING BOTTOM NAVIGATION DOCK (4 MENU) ==================== -->
+<nav class="fixed bottom-4 inset-x-0 z-50 px-4 pointer-events-none">
+    <div class="max-w-md mx-auto bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 rounded-full p-1.5 flex items-center justify-between pointer-events-auto transition-all duration-300">
+        
+        <!-- 1. Beranda -->
+        @php $isHome = request()->routeIs('siswa.dashboard'); @endphp
+        <a href="{{ route('siswa.dashboard') }}" 
+           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isHome ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            @if($isHome)
+                <span class="tracking-wide">Beranda</span>
+            @endif
+        </a>
 
-                <!-- 5. User Profile Icon -->
-                <button @click="profileModalOpen = true" 
-                        class="flex flex-col items-center justify-center p-2 text-slate-500 hover:text-[#2B77DE] transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </button>
-            </div>
-        </nav>
+        <!-- 2. Jadwal Ujian -->
+        @php $isJadwal = request()->routeIs('siswa.jadwal'); @endphp
+        <a href="" 
+           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isJadwal ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            @if($isJadwal)
+                <span class="tracking-wide">Jadwal</span>
+            @endif
+        </a>
+
+        <!-- 3. Hasil / Nilai -->
+        @php $isHasil = request()->routeIs('siswa.hasil'); @endphp
+        <a href="" 
+           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isHasil ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            @if($isHasil)
+                <span class="tracking-wide">Nilai</span>
+            @endif
+        </a>
+
+        <!-- 4. Profil Siswa -->
+        <button @click="profileModalOpen = true" 
+                class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 cursor-pointer">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+        </button>
+
+    </div>
+</nav>
 
     </div>
 </x-app-layout>
