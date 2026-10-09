@@ -20,8 +20,9 @@
     $isCreateActive = request()->routeIs('guru.ujian.create');
     $isBankSoalActive = request()->routeIs('guru.bank-soal.*');
     $isMonitoringActive = request()->routeIs('guru.monitoring.*');
+    $isCalendarActive = request()->routeIs('guru.fullcalendar.*');
     $isProfileActive = request()->routeIs('profile.*');
-    $isDaftarUjianActive = !$isCreateActive && !$isBankSoalActive && !$isMonitoringActive && !$isProfileActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard'));
+    $isDaftarUjianActive = !$isCreateActive && !$isBankSoalActive && !$isMonitoringActive && !$isProfileActive && !$isCalendarActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard'));
 
     // Inisial 2 Huruf Guru
     $nameParts = preg_split('/\s+/', trim($guruUser->name ?? 'Guru'));
@@ -151,7 +152,7 @@
 </aside>
 
 <!-- ==================== DESKTOP FIXED/STICKY SIDEBAR ==================== -->
-<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-black text-white border-r border-slate-200/80 z-30 justify-between">
+<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-[#030303] text-white z-30 justify-between">
     <div class="p-6">
         <!-- Brand Header Desktop -->
         <div class="flex items-center gap-3 pb-6 border-b border-slate-100">
@@ -208,11 +209,23 @@
                 </svg>
                 <span>Monitoring Siswa</span>
             </a>
+
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 pt-4">Penjadwalan</p>
+
+            <!-- Calendar -->
+            <a href="{{ route('guru.fullcalendar.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCalendarActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <!-- Icon Kalender -->
+                <svg class="w-5 h-5 {{ $isCalendarActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>Agenda</span>
+            </a>
         </nav>
     </div>
 
     <!-- Desktop User Profile & Logout -->
-    <div class="p-4 border-t border-slate-100 bg-black">
+    <div class="p-4 border-t border-slate-100 bg-[#030303]">
         <div class="flex items-center justify-between gap-3 px-2">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white font-extrabold text-sm shadow-xs">

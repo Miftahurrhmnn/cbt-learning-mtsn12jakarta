@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Guru\ExamController as GuruExamController;
+use App\Http\Controllers\FullCalenderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Siswa\ExamController as SiswaExamController;
 use Illuminate\Support\Facades\Auth;
@@ -61,6 +62,11 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
     // Monitoring Siswa (Real-time aktivitas siswa & analisis jawaban tabel kotak)
     Route::get('/monitoring', [GuruExamController::class, 'monitoringIndex'])->name('monitoring.index');
     Route::get('/monitoring/sesi/{sessionId}', [GuruExamController::class, 'monitoringDetail'])->name('monitoring.detail');
+
+    Route::controller(FullCalenderController::class)->group(function(){
+        Route::get('/fullcalender', 'index')->name('fullcalendar.index');
+        Route::post('fullcalenderAjax', 'ajax')->name('fullcalendar.ajax');
+    });
 
     // Rekapitulasi Nilai Siswa
     Route::get('/ujian/{examId}/nilai', [GuruExamController::class, 'scores'])->name('ujian.scores');

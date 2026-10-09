@@ -34,6 +34,10 @@
                             </p>
                         </div>
                     </div>
+
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 text-xs font-bold text-white tracking-wide">
+                        <span>CBT MTsN 12</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -77,7 +81,7 @@
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h2 class="text-xs sm:text-sm font-bold text-amber-950 uppercase tracking-wide">Ujian Belum Dimulai</h2>
+                                <h2 class="text-xs sm:text-sm font-bold text-amber-950 uppercase tracking-wide">Peringatan: Ujian Belum Dimulai!</h2>
                                 <p class="text-xs text-amber-800 mt-1 leading-relaxed">
                                     Pengerjaan dibuka pukul <strong>{{ substr($exam->start_time, 0, 5) }} WIB</strong>. Silakan periksa jam berkala.
                                 </p>
@@ -100,7 +104,7 @@
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h2 class="text-xs sm:text-sm font-bold text-rose-950 uppercase tracking-wide">Waktu Ujian Telah Selesai</h2>
+                                <h2 class="text-xs sm:text-sm font-bold text-rose-950 uppercase tracking-wide">Waktu Ujian Telah Berakhir</h2>
                                 <p class="text-xs text-rose-800 mt-1 leading-relaxed">
                                     Batas pengerjaan ujian telah berakhir pada pukul {{ substr($exam->end_time, 0, 5) }} WIB.
                                 </p>
@@ -124,7 +128,7 @@
                                     </span>
                                 @endif
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-200/60 text-slate-700">
-                                    {{ $exam->all_classroom_names }}
+                                    Akses Ujian Khusus: {{ $exam->all_classroom_names }}
                                 </span>
                             </div>
                         </div>
@@ -225,7 +229,7 @@
                                 disabled
                                 class="w-full py-3.5 px-6 rounded-2xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed select-none"
                             >
-                                <span>Belum Bisa Dimulai</span>
+                                <span>Ujian Belum Dimulai (Mulai {{ substr($exam->start_time, 0, 5) }} WIB)</span>
                             </button>
                         @elseif($exam->hasEnded())
                             <button
@@ -243,7 +247,7 @@
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                 </svg>
-                                <span>Mulai Ujian Now</span>
+                                <span>Mulai Ujian</span>
                             </button>
                         @endif
                     </form>
