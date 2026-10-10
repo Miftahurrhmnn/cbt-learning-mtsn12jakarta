@@ -89,10 +89,10 @@
                             </svg>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider {{ $totalCheating > 0 ? 'text-white' : '' }} flex items-center gap-1.5">
+                            <span class="text-xs font-bold uppercase tracking-wider {{ $totalCheating > 0 ? 'text-white' : 'text-white' }} flex items-center gap-1.5">
                                 Terdeteksi Curang
                             </span>
-                            <p class="text-2xl font-black {{ $totalCheating > 0 ? 'text-white' : '' }} mt-0.5">
+                            <p class="text-2xl font-bold {{ $totalCheating > 0 ? 'text-white' : 'text-white' }} mt-0.5">
                                 {{ $totalCheating }} <span class="text-xs font-semibold text-white">Siswa</span>
                             </p>
                         </div>

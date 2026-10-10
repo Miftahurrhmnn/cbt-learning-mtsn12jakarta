@@ -55,28 +55,7 @@
 
             <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
 
-                <!-- Alert Feedback -->
-                @if(session('success'))
-                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-800 text-sm font-semibold shadow-2xs">
-                        <div class="flex items-center gap-3">
-                            <span class="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            </span>
-                            <span>{{ session('success') }}</span>
-                        </div>
-                    </div>
-                @endif
 
-                @if(session('error'))
-                    <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-rose-800 text-sm font-semibold shadow-2xs">
-                        <div class="flex items-center gap-3">
-                            <span class="w-7 h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </span>
-                            <span>{{ session('error') }}</span>
-                        </div>
-                    </div>
-                @endif
 
                 @if(!$selectedExam && !$selectedSubject)
                     <!-- ==================== TAMPILAN 1: GRID KARTU PER UJIAN (DEFAULT) ==================== -->

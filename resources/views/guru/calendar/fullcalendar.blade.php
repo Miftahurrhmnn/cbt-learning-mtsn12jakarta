@@ -1,7 +1,7 @@
 <x-app-layout :hide-nav="true">
-    {{-- CSS FullCalendar & Toastr --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    {{-- CSS FullCalendar --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.print.min.css" media="print" />
 
     {{-- Kustomisasi Tema Kalender agar cocok dengan Tailwind (Modern/Flat Design) --}}
     <style>
@@ -290,11 +290,10 @@
         </div>
     </div>
 
-    {{-- Script Tambahan FullCalendar & Modal Handler --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    {{-- Script FullCalendar & Moment --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/locale/id.js"></script>
     
     <script type="text/javascript">
         var SITEURL = "{{ url('/') }}";
@@ -308,15 +307,22 @@
                 }
             });
               
-            calendarInstance = $('#calendar').fullCalendar({
-                editable: true,
-                events: SITEURL + "/guru/fullcalender",
-                displayEventTime: false,
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'month,agendaWeek,agendaDay'
-                },
+            if ($('#calendar').length && typeof $.fn.fullCalendar === 'function') {
+                calendarInstance = $('#calendar').fullCalendar({
+                    editable: true,
+                    events: SITEURL + "/guru/fullcalender",
+                    displayEventTime: false,
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,agendaWeek,agendaDay'
+                    },
+                    buttonText: {
+                        today: 'Hari Ini',
+                        month: 'Bulan',
+                        week: 'Minggu',
+                        day: 'Hari'
+                    },
                 eventRender: function (event, element, view) {
                     if (event.allDay === 'true') {
                         event.allDay = true;
@@ -380,7 +386,8 @@
                     openDetailModal(event);
                 }
             });
-        });
+        }
+    });
 
         // ==================== FUNGSI MODAL TAMBAH & EDIT ====================
 

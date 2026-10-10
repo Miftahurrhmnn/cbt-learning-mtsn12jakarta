@@ -13,8 +13,21 @@ class FullCalenderController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $user = Auth::user();
-            $query = Event::whereDate('start', '<=', $request->end)
-                ->whereDate('end', '>=', $request->start);
+            $query = Event::query();
+
+            if ($request->filled('start') && $request->filled('end')) {
+                $query->where(function ($q) use ($request) {
+                    $q->whereBetween('start', [$request->start, $request->end])
+                        ->orWhereBetween('end', [$request->start, $request->end])
+                        ->orWhere(function ($sub) use ($request) {
+                            $sub->whereDate('start', '<=', $request->end)
+                                ->where(function ($endSub) use ($request) {
+                                    $endSub->whereDate('end', '>=', $request->start)
+                                        ->orWhereNull('end');
+                                });
+                        });
+                });
+            }
 
             if ($user) {
                 $query->where(function ($q) use ($user) {
