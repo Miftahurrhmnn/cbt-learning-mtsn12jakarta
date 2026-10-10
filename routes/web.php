@@ -31,6 +31,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('siswa', \App\Http\Controllers\Admin\StudentController::class);
+    Route::resource('guru', \App\Http\Controllers\Admin\TeacherController::class);
 });
 
 // ==================== GURU ROUTES ====================

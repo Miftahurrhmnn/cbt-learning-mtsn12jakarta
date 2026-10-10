@@ -1,4 +1,4 @@
-@props(['studentCount' => null])
+@props(['studentCount' => null, 'teacherCount' => null])
 
 @php
     $adminUser = auth()->user();
@@ -7,9 +7,16 @@
     if ($studentCount === null) {
         $studentCount = \App\Models\User::where('role', 'siswa')->count();
     }
+
+    // Hitung total guru jika belum dipassing
+    if ($teacherCount === null) {
+        $teacherCount = \App\Models\User::where('role', 'guru')->count();
+    }
     
     // Status aktif setiap menu
     $isDashboardActive = request()->routeIs('admin.dashboard');
+    $isCreateGuruActive = request()->routeIs('admin.guru.create');
+    $isGuruIndexActive = request()->routeIs('admin.guru.index') || (request()->routeIs('admin.guru.*') && !$isCreateGuruActive);
     $isCreateSiswaActive = request()->routeIs('admin.siswa.create');
     $isSiswaIndexActive = request()->routeIs('admin.siswa.index') || (request()->routeIs('admin.siswa.*') && !$isCreateSiswaActive);
     $isProfileActive = request()->routeIs('profile.*');
@@ -81,7 +88,30 @@
                 <span>Dashboard</span>
             </a>
 
-            <!-- Data Siswa -->
+            <!-- Data Guru (MENU TERPISAH) -->
+            <a href="{{ route('admin.guru.index') }}" 
+               class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isGuruIndexActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 {{ $isGuruIndexActive ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                    </svg>
+                    <span>Data Guru</span>
+                </div>
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-full {{ $isGuruIndexActive ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-600' }}">
+                    {{ $teacherCount }}
+                </span>
+            </a>
+
+            <!-- Tambah Guru (MENU TERPISAH) -->
+            <a href="{{ route('admin.guru.create') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateGuruActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isCreateGuruActive ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <span>Tambah Guru</span>
+            </a>
+
+            <!-- Data Siswa (MENU TERPISAH) -->
             <a href="{{ route('admin.siswa.index') }}" 
                class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isSiswaIndexActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold' }}">
                 <div class="flex items-center gap-3">
@@ -93,6 +123,15 @@
                 <span class="px-2.5 py-0.5 text-xs font-bold rounded-full {{ $isSiswaIndexActive ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-600' }}">
                     {{ $studentCount }}
                 </span>
+            </a>
+
+            <!-- Tambah Siswa (MENU TERPISAH) -->
+            <a href="{{ route('admin.siswa.create') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateSiswaActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isCreateSiswaActive ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <span>Tambah Siswa</span>
             </a>
 
             <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 pt-3">Pengaturan</p>
@@ -136,7 +175,7 @@
 </aside>
 
 <!-- ==================== DESKTOP FIXED/STICKY SIDEBAR ==================== -->
-<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-black text-white border-r border-slate-200/80 z-30 justify-between shadow-xs">
+<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-[#1B2430] text-white border-r border-slate-200/80 z-30 justify-between shadow-xs">
     <div class="p-6">
         <!-- Brand Header Desktop -->
         <div class="flex items-center gap-3 pb-6 border-b border-slate-100">
@@ -165,7 +204,34 @@
                 <span>Dashboard</span>
             </a>
 
-            <!-- Data Siswa -->
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Kelola Guru</p>
+
+            <!-- Data Guru (MENU TERPISAH) -->
+            <a href="{{ route('admin.guru.index') }}" 
+               class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isGuruIndexActive ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 {{ $isGuruIndexActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                    </svg>
+                    <span>Data Guru</span>
+                </div>
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-full {{ $isGuruIndexActive ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-600' }}">
+                    {{ $teacherCount }}
+                </span>
+            </a>
+
+            <!-- Tambah Guru (MENU TERPISAH) -->
+            <a href="{{ route('admin.guru.create') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateGuruActive ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isCreateGuruActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <span>Tambah Guru</span>
+            </a>
+
+            <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Kelola Siswa</p>
+
+            <!-- Data Siswa (MENU TERPISAH) -->
             <a href="{{ route('admin.siswa.index') }}" 
                class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isSiswaIndexActive ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
                 <div class="flex items-center gap-3">
@@ -179,10 +245,10 @@
                 </span>
             </a>
 
-            <!-- Tambah Siswa Baru (MENU BARU) -->
+            <!-- Tambah Siswa Baru (MENU TERPISAH) -->
             <a href="{{ route('admin.siswa.create') }}" 
-            class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ request()->routeIs('admin.siswa.create') ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
-                <svg class="w-5 h-5 {{ request()->routeIs('admin.siswa.create') ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isCreateSiswaActive ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isCreateSiswaActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                 </svg>
                 <span>Tambah Siswa</span>
@@ -191,7 +257,7 @@
     </div>
 
     <!-- Desktop User Profile & Logout -->
-    <div class="p-4 border-t border-slate-100 bg-black">
+    <div class="p-4 border-t border-slate-100 bg-[#1B2430]">
         <div class="flex items-center justify-between gap-3 px-2">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white font-extrabold text-sm shadow-xs">
