@@ -118,7 +118,8 @@
                                     <label class="relative flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 cursor-pointer transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/60 shadow-2xs">
                                         <input type="checkbox" name="classroom_ids[]" value="{{ $classroom->id }}" 
                                             {{ (is_array(old('classroom_ids')) && in_array($classroom->id, old('classroom_ids'))) || old('classroom_id') == $classroom->id ? 'checked' : '' }}
-                                            class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                                            class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                        >
                                         <span class="text-xs font-semibold text-slate-800">{{ $classroom->name }}</span>
                                     </label>
                                 @endforeach
@@ -187,7 +188,9 @@
                                         Jam Mulai Ujian (WIB)
                                     </label>
                                     <input type="time" name="start_time" id="start_time" x-model="startTime"
-                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white"
+                                        required
+                                    >
                                     <p class="text-[11px] text-slate-400 mt-1">Jam mulai soal ujian dapat dibuka dan dikerjakan siswa.</p>
                                     @error('start_time')
                                         <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
@@ -199,7 +202,9 @@
                                         Jam Selesai Ujian (WIB)
                                     </label>
                                     <input type="time" name="end_time" id="end_time" x-model="endTime"
-                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white"
+                                        required    
+                                    >
                                     <p class="text-[11px] text-slate-400 mt-1">Batas akhir jam pengerjaan ujian bagi siswa.</p>
                                     @error('end_time')
                                         <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>

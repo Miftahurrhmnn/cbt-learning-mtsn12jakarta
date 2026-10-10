@@ -86,6 +86,30 @@
                             Kelola jadwal ujian, rapat, tenggat tugas, serta simpan catatan khusus dengan warna visual.
                         </p>
                     </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="openCreateModal()" 
+                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-500/20 hover:shadow-lg transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <span>Tambah Catatan Baru</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panduan Warna Catatan -->
+                <div class="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs flex flex-wrap items-center gap-3 text-xs">
+                    <span class="font-bold text-slate-700">Panduan Warna Catatan:</span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100">
+                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span> Umum / Kegiatan
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Ujian / Penilaian
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-700 font-semibold border border-amber-100">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Tenggat / Penting
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 font-semibold border border-rose-100">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Mendesak
+                    </span>
                 </div>
 
                 <!-- Card Kalender Utama -->

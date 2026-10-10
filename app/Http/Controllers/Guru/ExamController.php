@@ -36,9 +36,15 @@ class ExamController extends Controller
             });
         }
 
-        // FITUR FILTER KELAS UNTUK GURU
+        // FITUR FILTER KELAS UNTUK GURU (Mendukung Ujian dengan Banyak Kelas Sasaran)
         if ($request->filled('classroom_id')) {
-            $query->where('classroom_id', $request->classroom_id);
+            $classId = (int)$request->classroom_id;
+            $query->where(function ($q) use ($classId) {
+                $q->where('classroom_id', $classId)
+                  ->orWhereHas('classrooms', function ($cq) use ($classId) {
+                      $cq->where('classrooms.id', $classId);
+                  });
+            });
         }
 
         // FITUR FILTER BERDASARKAN HARI (Mata Pelajaran / Jadwal Ujian)

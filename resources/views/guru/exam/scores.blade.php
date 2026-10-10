@@ -55,10 +55,10 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('guru.ujian.show', $exam->id) }}" 
+                        <a href="{{ route('guru.ujian.index', $exam->id) }}" 
                            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                            <span>Kembali ke Detail</span>
+                            <span>Kembali ke Daftar Ujian</span>
                         </a>
                     </div>
                 </div>

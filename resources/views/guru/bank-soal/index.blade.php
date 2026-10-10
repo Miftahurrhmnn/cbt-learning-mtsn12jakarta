@@ -151,6 +151,9 @@
                                             {{ $exam->subject->name ?? 'Mata Pelajaran' }}
                                         </span>
                                         <div class="flex items-center gap-1.5">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                                {{ $exam->questions_count }} Soal
+                                            </span>
                                             @if($exam->status === 'published')
                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                     Aktif

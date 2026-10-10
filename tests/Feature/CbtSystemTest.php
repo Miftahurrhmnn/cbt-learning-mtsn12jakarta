@@ -453,6 +453,42 @@ class CbtSystemTest extends TestCase
         $responseDay->assertDontSee('Kimia Hari Senin X-A');
     }
 
+    public function test_guru_can_filter_exams_with_multiple_classrooms(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru']);
+        $classXA = Classroom::create(['name' => 'Kelas X-A']);
+        $classXB = Classroom::create(['name' => 'Kelas X-B']);
+        $classXC = Classroom::create(['name' => 'Kelas X-C']);
+        $subject = Subject::create(['name' => 'Aljabar']);
+
+        // Exam multi-classroom: X-A and X-B
+        $examMulti = Exam::create([
+            'title' => 'Ujian Aljabar Bersama',
+            'subject_id' => $subject->id,
+            'classroom_id' => $classXA->id,
+            'user_id' => $guru->id,
+            'duration' => 60,
+            'status' => 'published',
+            'day_of_week' => 'Sabtu',
+        ]);
+        $examMulti->classrooms()->sync([$classXA->id, $classXB->id]);
+
+        // Filter by classroom X-A: should see the exam
+        $responseA = $this->actingAs($guru)->get(route('guru.ujian.index', ['classroom_id' => $classXA->id]));
+        $responseA->assertStatus(200);
+        $responseA->assertSee('Ujian Aljabar Bersama');
+
+        // Filter by classroom X-B: should ALSO see the exam!
+        $responseB = $this->actingAs($guru)->get(route('guru.ujian.index', ['classroom_id' => $classXB->id]));
+        $responseB->assertStatus(200);
+        $responseB->assertSee('Ujian Aljabar Bersama');
+
+        // Filter by classroom X-C: should NOT see the exam
+        $responseC = $this->actingAs($guru)->get(route('guru.ujian.index', ['classroom_id' => $classXC->id]));
+        $responseC->assertStatus(200);
+        $responseC->assertDontSee('Ujian Aljabar Bersama');
+    }
+
     public function test_siswa_can_filter_exams_by_day(): void
     {
         $class = Classroom::create(['name' => 'Kelas X-C']);

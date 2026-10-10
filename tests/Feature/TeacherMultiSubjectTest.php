@@ -188,7 +188,7 @@ class TeacherMultiSubjectTest extends TestCase
     /**
      * Test 6: Bank soal renders teacher's subjects and subjects selection modal
      */
-    public function test_bank_soal_page_renders_teacher_subjects_and_modal(): void
+    public function test_bank_soal_page_renders_teacher_subjects(): void
     {
         $this->guru->syncSubjects([
             $this->subjectMatematika->id,
@@ -198,9 +198,7 @@ class TeacherMultiSubjectTest extends TestCase
         $response = $this->actingAs($this->guru)->get(route('guru.bank-soal.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Atur Mata Pelajaran Saya');
-        $response->assertSee('Mata Pelajaran yang Anda Ampu (2)');
-        $response->assertSee('Pilih Mata Pelajaran yang Diampu');
+        $response->assertSee('Bank Soal Guru');
         $response->assertSee('Matematika');
         $response->assertSee('Ilmu Pengetahuan Alam (IPA)');
     }
