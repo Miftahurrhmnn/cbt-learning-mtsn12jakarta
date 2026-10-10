@@ -100,4 +100,22 @@ class User extends Authenticatable
     {
         return $this->subjects()->where('subjects.id', $subjectId)->exists();
     }
+
+    /**
+     * Tambahkan satu mata pelajaran ke guru jika belum ada
+     */
+    public function assignSubject(int $subjectId): void
+    {
+        if (!$this->teachesSubject($subjectId)) {
+            $this->subjects()->attach($subjectId);
+        }
+    }
+
+    /**
+     * Sinkronisasi daftar mata pelajaran yang diampu guru (bisa lebih dari 1)
+     */
+    public function syncSubjects(array $subjectIds): void
+    {
+        $this->subjects()->sync($subjectIds);
+    }
 }

@@ -72,24 +72,23 @@ class ExamController extends Controller
     }
 
     /**
-     * Tampilkan form pembuatan ujian baru (Hanya pilihan Mapel yang diampu Guru)
+     * Tampilkan form pembuatan ujian baru (Guru bisa memilih mata pelajaran yang diampu atau mapel lain)
      */
     public function create(): View
     {
         $guru = auth()->user();
 
-        // PEMBATASAN MATA PELAJARAN:
-        // Guru hanya bisa memilih mata pelajaran yang telah ditugaskan kepadanya
-        if ($guru->subjects()->exists()) {
-            $subjects = $guru->subjects()->orderBy('name')->get();
-        } else {
-            $subjects = Subject::orderBy('name')->get();
-        }
+        // 1 Guru bisa memiliki lebih dari 1 mata pelajaran
+        $allSubjects = Subject::orderBy('name')->get();
+        $mySubjects = $guru->subjects()->orderBy('name')->get();
+        $mySubjectIds = $mySubjects->pluck('id')->toArray();
 
+        // Guru dapat memilih mata pelajaran sendiri
+        $subjects = $allSubjects;
         $classrooms = Classroom::orderBy('name')->get();
         $daysList = Exam::daysList();
 
-        return view('guru.exam.create', compact('subjects', 'classrooms', 'daysList'));
+        return view('guru.exam.create', compact('subjects', 'allSubjects', 'mySubjects', 'mySubjectIds', 'classrooms', 'daysList'));
     }
 
     /**
@@ -128,13 +127,12 @@ class ExamController extends Controller
             return back()->withInput()->with('error', 'Silakan pilih setidaknya satu kelas sasaran ujian.');
         }
 
-        // VALIDASI KEAMANAN OTORISASI:
-        // Pastikan guru tidak bisa memilih mata pelajaran di luar yang diampunya
-        if ($guru->subjects()->exists()) {
-            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
-            if (!in_array((int)$request->subject_id, $allowedSubjectIds)) {
-                return back()->withInput()->with('error', 'Akses ditolak! Anda hanya berwenang membuat ujian pada mata pelajaran yang Anda ampu.');
-            }
+        // AKSI OTORISASI MULTI-MAPEL GURU:
+        // Guru bisa memilih mata pelajaran sendiri. Jika mapel ini belum ada di daftar mapel yang diampu guru,
+        // otomatis tambahkan sehingga 1 guru bisa memiliki lebih dari 1 mata pelajaran.
+        $subjectId = (int)$request->subject_id;
+        if (!$guru->teachesSubject($subjectId)) {
+            $guru->assignSubject($subjectId);
         }
 
         $token = $request->filled('token') ? strtoupper(trim($request->token)) : Exam::generateToken();
@@ -464,6 +462,9 @@ class ExamController extends Controller
     {
         $guru = auth()->user();
 
+        $allMasterSubjects = Subject::orderBy('name')->get();
+        $mySubjectIds = $guru->subjects()->pluck('subjects.id')->toArray();
+
         // Ambil daftar mata pelajaran yang diampu guru
         if ($guru->subjects()->exists()) {
             $subjects = $guru->subjects()->orderBy('name')->get();
@@ -471,7 +472,7 @@ class ExamController extends Controller
                 ->withCount('questions')
                 ->whereIn('subject_id', $guru->subjects->pluck('id'));
         } else {
-            $subjects = Subject::orderBy('name')->get();
+            $subjects = $allMasterSubjects;
             $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
                 ->withCount('questions')
                 ->where('user_id', $guru->id);
@@ -591,10 +592,33 @@ class ExamController extends Controller
             'totalQuestions', 
             'totalQuestionsGuru',
             'subjects', 
+            'allMasterSubjects',
+            'mySubjectIds',
             'exams', 
             'selectedSubject',
             'selectedExam'
         ));
+    }
+
+    /**
+     * Sinkronisasi mata pelajaran yang diampu oleh guru (1 guru bisa mengampu lebih dari 1 mapel)
+     */
+    public function syncSubjects(Request $request): RedirectResponse
+    {
+        $guru = auth()->user();
+
+        $request->validate([
+            'subject_ids' => 'required|array|min:1',
+            'subject_ids.*' => 'exists:subjects,id',
+        ], [
+            'subject_ids.required' => 'Pilih setidaknya satu mata pelajaran yang Anda ampu.',
+            'subject_ids.min' => 'Pilih setidaknya satu mata pelajaran yang Anda ampu.',
+            'subject_ids.*.exists' => 'Mata pelajaran yang dipilih tidak valid.',
+        ]);
+
+        $guru->syncSubjects($request->input('subject_ids', []));
+
+        return back()->with('success', 'Mata pelajaran yang Anda ampu berhasil diperbarui!');
     }
 
     /**

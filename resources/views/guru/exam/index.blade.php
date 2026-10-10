@@ -24,7 +24,7 @@
             </header>
 
             <!-- Desktop Sticky Sub-Top Header -->
-            <header class="hidden md:flex items-center justify-between px-8 py-4 bg-white/70 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-20">
+            <header class="hidden md:flex items-end justify-end px-8 py-4 bg-white/70 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-20">
                 <div class="flex items-center gap-4">
                     <div class="text-right">
                         <p class="text-xs font-bold text-slate-800">{{ Auth::user()->name }}</p>
@@ -427,11 +427,6 @@
                         </div>
                     @endif
                 </div>
-
-                <!-- Footer Note -->
-                <footer class="pt-4 pb-8 text-center text-xs text-slate-400">
-                    <p>&copy; {{ date('Y') }} CBT MTsN 12 Jakarta | Support by M1FDev</p>
-                </footer>
             </main>
         </div>
     </div>

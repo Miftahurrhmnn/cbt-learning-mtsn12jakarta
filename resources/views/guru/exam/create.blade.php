@@ -64,18 +64,27 @@
 
                         <!-- Mata Pelajaran -->
                         <div>
-                            <label for="subject_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                Mata Pelajaran <span class="text-rose-500">*</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label for="subject_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                    Mata Pelajaran <span class="text-rose-500">*</span>
+                                </label>
+                                <span class="text-[11px] text-slate-400">1 Guru dapat mengampu lebih dari 1 mata pelajaran</span>
+                            </div>
                             <select name="subject_id" id="subject_id" required
                                 class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
                                 <option value="">-- Pilih Mata Pelajaran --</option>
                                 @foreach($subjects as $subject)
+                                    @php
+                                        $isDiampu = in_array($subject->id, $mySubjectIds ?? []);
+                                    @endphp
                                     <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
-                                        <x-heroicon-s-book-open class="h-5 w-5" /> {{ $subject->name }}
+                                        {{ $subject->name }}{{ $isDiampu ? ' (Diampu)' : '' }}
                                     </option>
                                 @endforeach
                             </select>
+                            <p class="text-[11px] text-slate-500 mt-1">
+                                Anda dapat memilih mata pelajaran yang diampu maupun mapel lainnya. Mapel yang dipilih otomatis terhubung ke akun Anda.
+                            </p>
                             @error('subject_id')
                                 <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
                             @enderror
@@ -146,7 +155,9 @@
                                 </template>
                             </label>
                             <input type="date" name="exam_date" id="exam_date" x-model="selectedDate"
-                                class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white">
+                                class="block w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-2xs bg-white"
+                                required
+                                >
                             <p class="text-[11px] text-slate-400">
                                 Cukup pilih tanggal ujian. Sistem akan mendeteksi dan mencatat hari pelaksanaan secara otomatis tanpa perlu input manual.
                             </p>

@@ -58,6 +58,7 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
 
     // Bank Soal Guru
     Route::get('/bank-soal', [GuruExamController::class, 'bankSoal'])->name('bank-soal.index');
+    Route::post('/mata-pelajaran/sync', [GuruExamController::class, 'syncSubjects'])->name('subjects.sync');
 
     // Monitoring Siswa (Real-time aktivitas siswa & analisis jawaban tabel kotak)
     Route::get('/monitoring', [GuruExamController::class, 'monitoringIndex'])->name('monitoring.index');

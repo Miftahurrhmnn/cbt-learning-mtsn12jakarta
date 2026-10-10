@@ -16,8 +16,14 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $subjects = $user->isGuru() ? \App\Models\Subject::orderBy('name')->get() : collect();
+        $mySubjectIds = $user->isGuru() ? $user->subjects()->pluck('subjects.id')->toArray() : [];
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'subjects' => $subjects,
+            'mySubjectIds' => $mySubjectIds,
         ]);
     }
 

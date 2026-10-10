@@ -152,7 +152,7 @@
 </aside>
 
 <!-- ==================== DESKTOP FIXED/STICKY SIDEBAR ==================== -->
-<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-[#030303] text-white z-30 justify-between">
+<aside class="hidden md:flex md:w-72 md:flex-col md:shrink-0 h-screen sticky top-0 bg-[#1B2430] text-white z-30 justify-between">
     <div class="p-6">
         <!-- Brand Header Desktop -->
         <div class="flex items-center gap-3 pb-6 border-b border-slate-100">
@@ -225,7 +225,7 @@
     </div>
 
     <!-- Desktop User Profile & Logout -->
-    <div class="p-4 border-t border-slate-100 bg-[#030303]">
+    <div class="p-4 border-t border-slate-100 bg-[#1B2430]">
         <div class="flex items-center justify-between gap-3 px-2">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white font-extrabold text-sm shadow-xs">

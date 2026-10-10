@@ -1,5 +1,5 @@
 <x-app-layout :hide-nav="true">
-    <div x-data="{ sidebarOpen: false }" class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <div x-data="{ sidebarOpen: false, subjectsModalOpen: false }" class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
 
         <!-- Guru Sidebar Component -->
         <x-guru-sidebar />
@@ -67,7 +67,7 @@
                                 <span>Bank Soal Guru</span>
                             </h1>
                             <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                                Pilih salah satu paket ujian di bawah untuk melihat butir soal serta kunci jawabannya.
+                                Kelola butir soal dan kunci jawaban untuk mata pelajaran yang Anda ampu.
                             </p>
                         </div>
                     </div>
@@ -151,9 +151,6 @@
                                             {{ $exam->subject->name ?? 'Mata Pelajaran' }}
                                         </span>
                                         <div class="flex items-center gap-1.5">
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-slate-100 text-slate-700 border border-slate-200">
-                                                {{ $exam->questions_count }} Soal
-                                            </span>
                                             @if($exam->status === 'published')
                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                     Aktif
@@ -204,7 +201,7 @@
                             </div>
                         @empty
                             <div class="col-span-full p-12 text-center bg-white rounded-3xl border border-slate-200">
-                                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
                                 <h3 class="text-base font-bold text-slate-800">Belum Ada Paket Ujian Terdaftar</h3>
@@ -212,7 +209,7 @@
                                     Silakan buat paket ujian baru terlebih dahulu untuk mulai memasukkan butir soal dan mengelola bank soal.
                                 </p>
                                 <div class="mt-4">
-                                    <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
+                                    <a href="{{ route('guru.ujian.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
                                         <span>+ Buat Ujian Baru</span>
                                     </a>
                                 </div>
@@ -226,7 +223,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                                <span>Bank Soal: {{ $selectedSubject ? $selectedSubject->name : '' }}{{ $selectedExam ? ' - ' . $selectedExam->title : '' }}</span>
+                                <span>Bank Soal</span>
                             </h1>
                             <p class="text-xs sm:text-sm text-slate-500 mt-1">
                                 Menampilkan {{ $totalQuestions }} butir soal serta kunci jawaban yang telah dibuat.
@@ -235,21 +232,10 @@
 
                         <div class="flex items-center gap-2.5 shrink-0">
                             <a href="{{ route('guru.bank-soal.index') }}" 
-                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition active:scale-[0.98]">
-                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                               class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition active:scale-[0.98]">
+                                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                                 <span>Kembali ke Daftar Kartu Ujian</span>
                             </a>
-                            @if($selectedExam)
-                                <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
-                                    <span>Tambah Soal Manual</span>
-                                </a>
-                            @else
-                                <a href="{{ route('guru.ujian.create') }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
-                                    <span>Buat Ujian</span>
-                                </a>
-                            @endif
                         </div>
                     </div>
 
@@ -262,7 +248,7 @@
                             </div>
                             <div>
                                 <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Nama Ujian</span>
-                                <p class="text-sm font-extrabold text-indigo-700 mt-1">{{ $selectedExam->title }}</p>
+                                <p class="text-sm font-extrabold text-slate-900 mt-1">{{ $selectedExam->title }}</p>
                             </div>
                             <div>
                                 <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Target Kelas</span>
@@ -300,7 +286,7 @@
 
                             <!-- Tombol Cari & Reset -->
                             <div class="sm:col-span-1 flex items-center gap-1.5">
-                                <button type="submit" class="w-full p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
+                                <button type="submit" class="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition flex items-center justify-center shadow-xs" title="Cari">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                 </button>
                                 @if(request()->filled('search'))
@@ -316,7 +302,7 @@
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
                         @if($questions->isEmpty())
                             <div class="p-12 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
                                 <h3 class="text-base font-bold text-slate-900">Belum Ada Butir Soal Terdaftar</h3>
@@ -329,7 +315,7 @@
                                 </p>
                                 <div class="mt-4 flex items-center justify-center gap-3">
                                     @if($selectedExam)
-                                        <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                                        <a href="{{ route('guru.ujian.soal.create', $selectedExam->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">
                                             <span>Tambah Soal Manual</span>
                                         </a>
                                         <a href="{{ route('guru.ujian.show', $selectedExam->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
