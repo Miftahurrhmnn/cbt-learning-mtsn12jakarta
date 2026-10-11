@@ -21,17 +21,25 @@ class ExamSession extends Model
         'violation_count',
         'last_violation_at',
         'is_cheating_detected',
+        'is_locked',
+        'locked_at',
+        'unlocked_at',
+        'unlocked_by',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'last_violation_at' => 'datetime',
+        'locked_at' => 'datetime',
+        'unlocked_at' => 'datetime',
         'score' => 'decimal:2',
         'total_questions' => 'integer',
         'correct_answers' => 'integer',
         'violation_count' => 'integer',
         'is_cheating_detected' => 'boolean',
+        'is_locked' => 'boolean',
+        'unlocked_by' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -85,8 +93,29 @@ class ExamSession extends Model
         return max(0, (int) $diff);
     }
 
+    public function unlockedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'unlocked_by');
+    }
+
     public function isCheating(): bool
     {
-        return $this->violation_count >= 4 || $this->is_cheating_detected;
+        return $this->violation_count >= 4 || $this->is_cheating_detected || (bool)$this->is_locked;
+    }
+
+    public function isLocked(): bool
+    {
+        return (bool)$this->is_locked || $this->violation_count >= 4;
+    }
+
+    public function unlock(?int $guruId = null): void
+    {
+        $this->update([
+            'is_locked' => false,
+            'violation_count' => 0,
+            'is_cheating_detected' => false,
+            'unlocked_at' => Carbon::now(),
+            'unlocked_by' => $guruId,
+        ]);
     }
 }

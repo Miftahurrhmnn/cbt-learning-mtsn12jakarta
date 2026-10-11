@@ -69,6 +69,7 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
     // Monitoring Siswa (Real-time aktivitas siswa & analisis jawaban tabel kotak)
     Route::get('/monitoring', [GuruExamController::class, 'monitoringIndex'])->name('monitoring.index');
     Route::get('/monitoring/sesi/{sessionId}', [GuruExamController::class, 'monitoringDetail'])->name('monitoring.detail');
+    Route::post('/monitoring/sesi/{sessionId}/unlock', [GuruExamController::class, 'unlockSession'])->name('monitoring.unlock');
 
     // Daftar Hadir Siswa Realtime
     Route::get('/daftar-hadir', [GuruExamController::class, 'attendance'])->name('attendance.index');
@@ -110,6 +111,9 @@ Route::middleware(['auth', 'is_siswa'])->prefix('siswa')->name('siswa.')->group(
 
     Route::post('/ujian/{id}/log-pelanggaran', [SiswaExamController::class, 'logViolation'])
         ->name('ujian.log_violation');
+
+    Route::get('/ujian/{id}/status-kunci', [SiswaExamController::class, 'checkLockStatus'])
+        ->name('ujian.check_lock_status');
 
     Route::post('/ujian/{id}/selesai', [SiswaExamController::class, 'finish'])
         ->name('ujian.selesai');

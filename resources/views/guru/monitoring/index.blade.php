@@ -241,12 +241,14 @@
                                             @endif
                                         </td>
 
-                                        <!-- Integritas Ujian (Anti-Cheat) -->
+                                        <!-- Integritas Ujian (Anti-Cheat & Status Terkunci) -->
                                         <td class="py-4 px-4 text-center">
-                                            @if($session->violation_count >= 4 || $session->is_cheating_detected)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">
-                                                    <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
-                                                    Terdeteksi Curang ({{ $session->violation_count }}x)
+                                            @if($session->isLocked())
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border-2 border-rose-400 shadow-xs" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali dan saat ini ujiannya TERKUNCI">
+                                                    <svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    <span>Terkunci ({{ $session->violation_count }}x)</span>
                                                 </span>
                                             @elseif($session->violation_count > 0)
                                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300" title="Siswa keluar dari layar ujian {{ $session->violation_count }} kali">
@@ -282,13 +284,29 @@
                                             @endif
                                         </td>
 
-                                        <!-- Aksi: Detail Analisis Jawaban Siswa -->
-                                        <td class="py-4 px-4 sm:px-6 text-right">
-                                            <a href="{{ route('guru.monitoring.detail', $session->id) }}" 
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition shadow-2xs">
-                                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                                                <span>Jawaban</span>
-                                            </a>
+                                        <!-- Aksi: Detail Analisis & Buka Kunci Siswa -->
+                                        <td class="py-4 px-4 sm:px-6 text-right whitespace-nowrap">
+                                            <div class="inline-flex items-center gap-2">
+                                                @if($session->isLocked() && $session->status === 'ongoing')
+                                                    <form method="POST" action="{{ route('guru.monitoring.unlock', $session->id) }}" class="inline" onsubmit="return confirm('Buka kunci ujian untuk siswa {{ addslashes($user->name ?? 'Siswa') }}? Siswa akan dapat melanjutkan pengerjaan ujian.');">
+                                                        @csrf
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+                                                                title="Buka Kunci Akses Ujian Siswa">
+                                                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                                            </svg>
+                                                            <span>Buka Kunci</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                <a href="{{ route('guru.monitoring.detail', $session->id) }}" 
+                                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition shadow-2xs">
+                                                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                                    <span>Jawaban</span>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

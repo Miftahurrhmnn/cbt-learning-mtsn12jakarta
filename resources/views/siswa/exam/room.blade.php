@@ -45,9 +45,13 @@
         initialRemainingSeconds: {{ $remainingSeconds }},
         initialViolationCount: {{ $session->violation_count ?? 0 }},
         initialIsCheating: {{ ($session->isCheating() || ($session->violation_count ?? 0) >= 4) ? 'true' : 'false' }},
+        initialIsLocked: {{ ($isLocked ?? false) ? 'true' : 'false' }},
+        teacherName: '{{ addslashes($exam->teacher->name ?? "Guru Pengawas") }}',
+        teacherEmail: '{{ addslashes($exam->teacher->email ?? "") }}',
         saveUrl: '{{ route('siswa.ujian.simpan_jawaban', $exam->id) }}',
         finishUrl: '{{ route('siswa.ujian.selesai', $exam->id) }}',
-        violationUrl: '{{ route('siswa.ujian.log_violation', $exam->id) }}'
+        violationUrl: '{{ route('siswa.ujian.log_violation', $exam->id) }}',
+        checkLockUrl: '{{ route('siswa.ujian.check_lock_status', $exam->id) }}'
     })"
     x-init="initExam()">
 
@@ -470,8 +474,87 @@
         </div>
     </div>
 
-    <!-- ==================== MODAL ALARM & PERINGATAN KECURANGAN ==================== -->
-    <div x-show="showViolationModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+    <!-- ==================== MODAL UJIAN TERKUNCI (4x KECURANGAN) ==================== -->
+    <div x-show="isLocked" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl"></div>
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+            <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border-4 border-rose-600 space-y-5 animate-shake">
+                
+                <!-- Gembok Terkunci Icon -->
+                <div class="relative mx-auto w-20 h-20 flex items-center justify-center">
+                    <span class="absolute inset-0 rounded-full bg-rose-500/20 animate-ping"></span>
+                    <div class="w-16 h-16 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-600/40">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Judul & Keterangan Terkunci -->
+                <div class="space-y-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-300 inline-block animate-pulse">
+                        SISTEM UJIAN TERKUNCI
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-black text-rose-600 tracking-tight">
+                        AKSES UJIAN ANDA TERKUNCI!
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                        Anda terdeteksi melakukan percobaan keluar dari layar ujian / beralih tab browser sebanyak <strong class="text-rose-600 font-bold" x-text="violationCount >= 4 ? violationCount : 4"></strong> kali.
+                        Sistem keamanan CBT telah mengunci akses ujian Anda dan Anda tidak dapat melanjutkan menjawab soal.
+                    </p>
+                </div>
+
+                <!-- Timer Tetap Berjalan Realtime -->
+                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-1">
+                    <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-400">
+                        <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>WAKTU UJIAN TETAP BERJALAN:</span>
+                    </div>
+                    <div class="text-3xl font-mono font-black text-white tracking-widest" x-text="formattedTime"></div>
+                    <p class="text-[11px] text-slate-400">
+                        Waktu pengerjaan tidak berhenti saat ujian terkunci. Segera hubungi guru agar waktu ujian Anda tidak habis.
+                    </p>
+                </div>
+
+                <!-- Info Guru Pembuat Ujian -->
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-left space-y-2 text-xs">
+                    <p class="font-bold text-slate-800">Syarat Membuka Kunci Ujian:</p>
+                    <p class="text-slate-600 leading-relaxed">
+                        Silakan segera melapor kepada <strong>Guru yang membuat ujian ini</strong> untuk membuka kembali akses pengerjaan Anda:
+                    </p>
+                    <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="font-black text-slate-900" x-text="teacherName"></p>
+                            <p class="text-[11px] font-mono text-slate-400" x-text="teacherEmail"></p>
+                        </div>
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
+                            Guru Pengawas
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tombol Cek Status Realtime -->
+                <div class="space-y-2 pt-1">
+                    <button type="button" @click="checkLockFromServer()" :disabled="isCheckingLock"
+                        class="w-full py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                        <svg class="w-4 h-4" :class="isCheckingLock ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span x-text="isCheckingLock ? 'Sedang Memeriksa...' : 'Cek Status Buka Kunci (Refresh)'"></span>
+                    </button>
+                    <p class="text-[10px] text-slate-400">
+                        Sistem juga otomatis mengecek status setiap beberapa detik saat guru membuka kunci.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL ALARM & PERINGATAN KECURANGAN (1-3x) ==================== -->
+    <div x-show="showViolationModal && !isLocked" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-rose-950/90 backdrop-blur-md transition-opacity"></div>
         <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border-4 border-rose-500 space-y-5 animate-pulse-short">
@@ -504,31 +587,16 @@
                     </p>
                 </div>
 
-                <!-- Indikator Pelanggaran & Status Curang (>= 4x) -->
-                <template x-if="violationCount >= 4 || isCheating">
-                    <div class="p-4 bg-rose-100 border-2 border-rose-500 rounded-2xl text-left space-y-2">
-                        <div class="flex items-center gap-2 text-rose-900 font-black text-sm">
-                            <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            <span>STATUS: TERDETEKSI CURANG (<span x-text="violationCount"></span>x KELUAR)</span>
-                        </div>
-                        <p class="text-xs text-rose-800 leading-relaxed">
-                            Perhatian Serius! Anda telah keluar dari layar ujian sebanyak <strong x-text="violationCount"></strong> kali (mencapai batas toleransi 4 kali). 
-                            <strong>Sistem telah menandai dan melaporkan Anda sebagai TERDETEKSI CURANG pada monitor Guru!</strong>
-                        </p>
+                <!-- Indikator Pelanggaran (1-3x) -->
+                <div class="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-left space-y-1.5 text-xs text-amber-900">
+                    <div class="flex items-center justify-between font-bold">
+                        <span>Percobaan Ke: <strong class="text-rose-600 text-sm" x-text="violationCount"></strong> / 4 Toleransi</span>
+                        <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-black text-[10px]" x-text="'Sisa: ' + Math.max(0, 4 - violationCount) + 'x'"></span>
                     </div>
-                </template>
-
-                <template x-if="violationCount > 0 && violationCount < 4 && !isCheating">
-                    <div class="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-left space-y-1.5 text-xs text-amber-900">
-                        <div class="flex items-center justify-between font-bold">
-                            <span>Pelanggaran Ke: <strong class="text-rose-600 text-sm" x-text="violationCount"></strong> / 3 Toleransi</span>
-                            <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-black text-[10px]" x-text="'Sisa: ' + (4 - violationCount) + 'x'"></span>
-                        </div>
-                        <p class="text-slate-600">
-                            Peringatan! Jika Anda keluar hingga <strong>4 kali</strong>, sistem akan otomatis mengunci status <strong>"TERDETEKSI CURANG"</strong> pada monitoring Guru.
-                        </p>
-                    </div>
-                </template>
+                    <p class="text-slate-600">
+                        Peringatan Keras! Jika Anda keluar hingga <strong class="text-rose-600">4 kali</strong>, sistem akan otomatis <strong>MENGUNCI UJIAN</strong> dan Anda tidak dapat melanjutkan ujian sebelum dibuka oleh Guru.
+                    </p>
+                </div>
 
                 <!-- Tombol Kembali ke Ujian -->
                 <button type="button" @click="dismissViolationModal()"
@@ -556,6 +624,12 @@
                 // State Integritas & Anti-Cheat
                 violationCount: config.initialViolationCount || 0,
                 isCheating: config.initialIsCheating || false,
+                isLocked: config.initialIsLocked || false,
+                teacherName: config.teacherName || 'Guru Pengawas',
+                teacherEmail: config.teacherEmail || '',
+                checkLockUrl: config.checkLockUrl || '',
+                isCheckingLock: false,
+                pollLockInterval: null,
                 currentViolationReason: '',
                 wakeLock: null,
                 isFullscreen: false,
@@ -617,6 +691,11 @@
                 // Inisialisasi Ujian & Event Listener Keamanan Anti-Cheat
                 initExam() {
                     this.initTimer();
+
+                    // Jika sesi saat dimuat sudah dalam status terkunci, mulai polling cek buka kunci
+                    if (this.isLocked) {
+                        this.startLockPolling();
+                    }
 
                     // 1. Kunci Tombol Navigasi Bawaan HP (Android Back Button & Gesture Gesek iPhone/Android)
                     this.lockNavigationHistory();
@@ -845,6 +924,7 @@
 
                 // Menutup Modal Peringatan & Kembali Masuk Fullscreen
                 dismissViolationModal() {
+                    if (this.isLocked) return;
                     this.stopAlarmSound();
                     this.showViolationModal = false;
                     this.currentViolationReason = '';
@@ -853,6 +933,57 @@
                     try {
                         window.history.pushState({ cbt: 'locked_active' }, document.title, window.location.href);
                     } catch (e) {}
+                },
+
+                // Polling otomatis untuk mendeteksi saat Guru membuka kunci ujian
+                startLockPolling() {
+                    this.stopLockPolling();
+                    this.pollLockInterval = setInterval(() => {
+                        this.checkLockFromServer(true);
+                    }, 4000);
+                },
+
+                stopLockPolling() {
+                    if (this.pollLockInterval) {
+                        clearInterval(this.pollLockInterval);
+                        this.pollLockInterval = null;
+                    }
+                },
+
+                // Cek status buka kunci dari server
+                async checkLockFromServer(isSilent = false) {
+                    if (!this.checkLockUrl) return;
+                    if (!isSilent) this.isCheckingLock = true;
+
+                    try {
+                        const response = await fetch(this.checkLockUrl, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.success) {
+                            if (typeof data.remaining_seconds === 'number') {
+                                this.remainingSeconds = data.remaining_seconds;
+                            }
+
+                            // Jika sebelumnya terkunci dan sekarang dibuka oleh Guru
+                            if (data.is_locked === false && this.isLocked) {
+                                this.isLocked = false;
+                                this.showViolationModal = false;
+                                this.violationCount = data.violation_count || 0;
+                                this.stopLockPolling();
+                                this.stopAlarmSound();
+                                alert('Akses ujian Anda telah dibuka kembali oleh Guru! Silakan lanjutkan mengerjakan soal.');
+                                this.enterFullscreen();
+                                this.requestWakeLock();
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Gagal mengecek status kunci:', err);
+                    } finally {
+                        if (!isSilent) this.isCheckingLock = false;
+                    }
                 },
 
                 // Handler Pencatatan Pelanggaran
@@ -865,9 +996,11 @@
                     this.lastViolationTimestamp = now;
                     this.currentViolationReason = reason;
 
-                    // Tampilkan modal dan mainkan sirene alarm
-                    this.showViolationModal = true;
-                    this.playAlarmSound();
+                    // Tampilkan modal dan mainkan sirene alarm jika belum terkunci
+                    if (!this.isLocked) {
+                        this.showViolationModal = true;
+                        this.playAlarmSound();
+                    }
 
                     // Kirim log pelanggaran ke backend server
                     try {
@@ -887,12 +1020,20 @@
                             if (data.is_cheating_detected || this.violationCount >= 4) {
                                 this.isCheating = true;
                             }
+                            if (data.is_locked || this.violationCount >= 4) {
+                                this.isLocked = true;
+                                this.showViolationModal = false;
+                                this.startLockPolling();
+                            }
                         }
                     } catch (error) {
                         console.error('Gagal mengirim log pelanggaran:', error);
                         this.violationCount++;
                         if (this.violationCount >= 4) {
                             this.isCheating = true;
+                            this.isLocked = true;
+                            this.showViolationModal = false;
+                            this.startLockPolling();
                         }
                     }
                 },
@@ -933,6 +1074,11 @@
                 },
 
                 async selectAnswer(questionId, selectedOption) {
+                    if (this.isLocked) {
+                        alert('Ujian Anda sedang terkunci! Silakan hubungi Guru pembuat ujian untuk membuka kunci akses.');
+                        return;
+                    }
+
                     // Update state lokal seketika: kotak seketika berubah warna dari merah jadi hijau!
                     this.answers[questionId] = selectedOption;
                     this.isSaving = true;
@@ -953,6 +1099,13 @@
                         });
 
                         const data = await response.json();
+                        if (response.status === 403 || data.is_locked) {
+                            this.isLocked = true;
+                            this.startLockPolling();
+                            alert(data.error || 'Akses ujian Anda telah terkunci karena pelanggaran integritas.');
+                            return;
+                        }
+
                         if (response.ok && data.success) {
                             this.saveStatus = true;
                             setTimeout(() => { this.saveStatus = false; }, 2000);

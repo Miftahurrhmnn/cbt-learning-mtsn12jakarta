@@ -758,6 +758,27 @@ class ExamController extends Controller
     }
 
     /**
+     * Buka Kunci Akses Ujian Siswa (Un-lock Sesi Ujian karena Kecurangan/Keluar Tab)
+     * Hanya guru pembuat ujian (atau admin) yang berwenang membuka kunci akses siswa
+     */
+    public function unlockSession(int $sessionId): RedirectResponse
+    {
+        $guru = auth()->user();
+        $session = ExamSession::with(['exam', 'user'])->findOrFail($sessionId);
+
+        // Otorisasi: Pastikan guru yang sedang login adalah pembuat ujian ini
+        if ($session->exam->user_id !== $guru->id && !$guru->isAdmin()) {
+            abort(403, 'Akses ditolak! Anda hanya berwenang membuka kunci ujian yang Anda buat sendiri.');
+        }
+
+        $session->unlock($guru->id);
+
+        $studentName = $session->user->name ?? 'Siswa';
+        return redirect()->back()
+            ->with('success', "Akses ujian untuk {$studentName} berhasil dibuka kembali. Siswa dapat melanjutkan pengerjaan ujian.");
+    }
+
+    /**
      * Rekapitulasi Nilai Siswa untuk Ujian Terpilih
      * Syarat: Jika siswa belum selesai, nilai TIDAK KELUAR di sistem guru
      */

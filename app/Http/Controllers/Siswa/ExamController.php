@@ -80,7 +80,7 @@ class ExamController extends Controller
     public function show(int $id): View|RedirectResponse
     {
         $user = Auth::user();
-        $exam = Exam::with(['subject', 'classroom'])->findOrFail($id);
+        $exam = Exam::with(['subject', 'classroom', 'teacher'])->findOrFail($id);
 
         // VALIDASI KELAS: Cegah akses jika kelas siswa tidak cocok dengan kelas sasaran ujian
         if (!$exam->allowsClassroom($user->classroom_id)) {
@@ -153,7 +153,9 @@ class ExamController extends Controller
             ->pluck('selected_answer', 'question_id')
             ->toArray();
 
-        return view('siswa.exam.room', compact('exam', 'session', 'questions', 'userAnswers', 'remainingSeconds'));
+        $isLocked = $session->isLocked();
+
+        return view('siswa.exam.room', compact('exam', 'session', 'questions', 'userAnswers', 'remainingSeconds', 'isLocked'));
     }
 
     public function token(int $id): View|RedirectResponse
@@ -246,6 +248,14 @@ class ExamController extends Controller
             return response()->json(['error' => 'Sesi ujian tidak valid atau telah selesai.'], 403);
         }
 
+        // KEAMANAN ANTI-CHEAT: Jika ujian terkunci (4x keluar tab), tolak penyimpanan jawaban!
+        if ($session->isLocked()) {
+            return response()->json([
+                'error' => 'Ujian Anda telah TERKUNCI karena terdeteksi keluar dari layar ujian sebanyak 4 kali. Silakan hubungi Guru pembuat ujian untuk membuka akses.',
+                'is_locked' => true,
+            ], 403);
+        }
+
         if ($session->remaining_seconds <= 0) {
             $this->finalizeExamSession($session, $exam);
             return response()->json(['error' => 'Waktu ujian telah habis.', 'timeout' => true], 403);
@@ -287,6 +297,7 @@ class ExamController extends Controller
 
     /**
      * Catat Pelanggaran Integritas Ujian (Keluar Tab / Buka Aplikasi Lain / Keluar Fullscreen)
+     * Jika mencapai 4 kali, sesi ujian otomatis dikunci (is_locked = true).
      */
     public function logViolation(Request $request, int $id): JsonResponse
     {
@@ -305,17 +316,46 @@ class ExamController extends Controller
         $session->increment('violation_count');
         $session->last_violation_at = Carbon::now();
 
+        // KETIKA MENCAPAI 4x PERCOBAAN KELUAR TAB / LAYAR: KUNCI UJIAN
         if ($session->violation_count >= 4) {
             $session->is_cheating_detected = true;
+            $session->is_locked = true;
+            $session->locked_at = Carbon::now();
         }
 
         $session->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Pelanggaran meninggalkan layar ujian dicatat oleh pengawas.',
+            'message' => $session->is_locked 
+                ? 'Ujian Anda telah TERKUNCI karena terdeteksi meninggalkan layar ujian sebanyak 4 kali. Hubungi guru pembuat ujian untuk membuka kunci.' 
+                : 'Peringatan: Percobaan keluar dari layar ujian telah dicatat.',
             'violation_count' => $session->violation_count,
             'is_cheating_detected' => (bool)$session->is_cheating_detected,
+            'is_locked' => (bool)$session->isLocked(),
+        ]);
+    }
+
+    /**
+     * Endpoint realtime cek status apakah kunci ujian sudah dibuka oleh Guru
+     */
+    public function checkLockStatus(int $id): JsonResponse
+    {
+        $userId = Auth::id();
+        $session = ExamSession::where('user_id', $userId)
+            ->where('exam_id', $id)
+            ->first();
+
+        if (!$session) {
+            return response()->json(['is_locked' => false, 'status' => 'not_found']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_locked' => $session->isLocked(),
+            'violation_count' => $session->violation_count,
+            'remaining_seconds' => $session->remaining_seconds,
+            'is_completed' => $session->isCompleted(),
         ]);
     }
 
@@ -333,6 +373,12 @@ class ExamController extends Controller
 
         if ($session->isCompleted()) {
             return redirect()->route('siswa.ujian.hasil', $exam->id);
+        }
+
+        // Jika sedang terkunci, tidak diizinkan menyelesaikan secara manual
+        if ($session->isLocked()) {
+            return redirect()->route('siswa.ujian.show', $exam->id)
+                ->with('error', 'Ujian Anda sedang TERKUNCI karena terdeteksi keluar dari layar ujian sebanyak 4 kali. Hubungi guru pembuat ujian untuk membuka kunci.');
         }
 
         /*

@@ -149,6 +149,18 @@
                                         <span class="block text-xs text-rose-700/80 mt-1 font-mono">Pelanggaran terakhir tercatat pada: {{ $session->last_violation_at->format('d/m/Y H:i:s') }} WIB</span>
                                     @endif
                                 </p>
+
+                                @if($session->isLocked() && $session->status === 'ongoing')
+                                    <form method="POST" action="{{ route('guru.monitoring.unlock', $session->id) }}" class="pt-2" onsubmit="return confirm('Buka kunci akses ujian untuk siswa {{ addslashes($userName) }}? Siswa akan dapat melanjutkan ujian.');">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition cursor-pointer active:scale-95">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                            </svg>
+                                            <span>Buka Kunci Akses Ujian Siswa</span>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>

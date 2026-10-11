@@ -204,7 +204,7 @@ class AntiCheatExamTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Terdeteksi Curang');
-        $response->assertSee('Terdeteksi Curang (4x)');
+        $response->assertSee('Terkunci (4x)');
         $response->assertSee('Tertib (0x)');
         $response->assertSee('Integritas Ujian');
     }
