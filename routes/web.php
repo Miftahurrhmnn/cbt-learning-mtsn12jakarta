@@ -11,7 +11,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Role-based dashboard redirect
@@ -29,6 +29,11 @@ Route::get('/dashboard', function () {
 // ==================== ADMIN ROUTES (KHUSUS ROLE ADMIN) ====================
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    // Menu & Fitur Import Siswa (Excel & CSV)
+    Route::get('siswa/import', [\App\Http\Controllers\Admin\StudentController::class, 'import'])->name('siswa.import');
+    Route::post('siswa/import', [\App\Http\Controllers\Admin\StudentController::class, 'processImport'])->name('siswa.process-import');
+    Route::get('siswa/template/{type}', [\App\Http\Controllers\Admin\StudentController::class, 'downloadTemplate'])->name('siswa.template');
 
     Route::resource('siswa', \App\Http\Controllers\Admin\StudentController::class);
     Route::resource('guru', \App\Http\Controllers\Admin\TeacherController::class);
@@ -64,6 +69,10 @@ Route::middleware(['auth', 'is_guru'])->prefix('guru')->name('guru.')->group(fun
     // Monitoring Siswa (Real-time aktivitas siswa & analisis jawaban tabel kotak)
     Route::get('/monitoring', [GuruExamController::class, 'monitoringIndex'])->name('monitoring.index');
     Route::get('/monitoring/sesi/{sessionId}', [GuruExamController::class, 'monitoringDetail'])->name('monitoring.detail');
+
+    // Daftar Hadir Siswa Realtime
+    Route::get('/daftar-hadir', [GuruExamController::class, 'attendance'])->name('attendance.index');
+    Route::get('/daftar-hadir/data', [GuruExamController::class, 'attendanceData'])->name('attendance.data');
 
     Route::controller(FullCalenderController::class)->group(function(){
         Route::get('/fullcalender', 'index')->name('fullcalendar.index');

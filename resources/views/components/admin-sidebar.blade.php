@@ -18,7 +18,8 @@
     $isCreateGuruActive = request()->routeIs('admin.guru.create');
     $isGuruIndexActive = request()->routeIs('admin.guru.index') || (request()->routeIs('admin.guru.*') && !$isCreateGuruActive);
     $isCreateSiswaActive = request()->routeIs('admin.siswa.create');
-    $isSiswaIndexActive = request()->routeIs('admin.siswa.index') || (request()->routeIs('admin.siswa.*') && !$isCreateSiswaActive);
+    $isImportSiswaActive = request()->routeIs('admin.siswa.import');
+    $isSiswaIndexActive = request()->routeIs('admin.siswa.index') || (request()->routeIs('admin.siswa.*') && !$isCreateSiswaActive && !$isImportSiswaActive);
     $isProfileActive = request()->routeIs('profile.*');
 
     // Inisial 2 Huruf Admin
@@ -132,6 +133,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                 </svg>
                 <span>Tambah Siswa</span>
+            </a>
+
+            <!-- Import Siswa (MENU TERPISAH) -->
+            <a href="{{ route('admin.siswa.import') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isImportSiswaActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isImportSiswaActive ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <span>Import Siswa (Excel/CSV)</span>
             </a>
 
             <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 pt-3">Pengaturan</p>
@@ -252,6 +262,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                 </svg>
                 <span>Tambah Siswa</span>
+            </a>
+
+            <!-- Import Siswa Excel/CSV (MENU TERPISAH) -->
+            <a href="{{ route('admin.siswa.import') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isImportSiswaActive ? 'bg-blue-500 text-white shadow-xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isImportSiswaActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <span>Import Siswa (Excel/CSV)</span>
             </a>
         </nav>
     </div>

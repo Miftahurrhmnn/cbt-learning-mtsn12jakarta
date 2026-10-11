@@ -108,6 +108,14 @@ class DatabaseSeeder extends Seeder
                 'role' => 'guru',
             ]
         );
+        $guru11 = User::updateOrCreate(
+            ['email' => 'ruslaini@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Dr. Ruslaini, M.M., M.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
 
         // Update user guru@gmail.com jika ada dari percobaan sebelumnya
         User::where('email', 'guru@gmail.com')->update(['role' => 'guru']);

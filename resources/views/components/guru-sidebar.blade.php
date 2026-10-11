@@ -20,9 +20,10 @@
     $isCreateActive = request()->routeIs('guru.ujian.create');
     $isBankSoalActive = request()->routeIs('guru.bank-soal.*');
     $isMonitoringActive = request()->routeIs('guru.monitoring.*');
+    $isAttendanceActive = request()->routeIs('guru.attendance.*');
     $isCalendarActive = request()->routeIs('guru.fullcalendar.*');
     $isProfileActive = request()->routeIs('profile.*');
-    $isDaftarUjianActive = !$isCreateActive && !$isBankSoalActive && !$isMonitoringActive && !$isProfileActive && !$isCalendarActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard'));
+    $isDaftarUjianActive = !$isCreateActive && !$isBankSoalActive && !$isMonitoringActive && !$isAttendanceActive && !$isProfileActive && !$isCalendarActive && (request()->routeIs('guru.ujian.*') || request()->routeIs('guru.dashboard'));
 
     // Inisial 2 Huruf Guru
     $nameParts = preg_split('/\s+/', trim($guruUser->name ?? 'Guru'));
@@ -121,6 +122,21 @@
                 </svg>
                 <span>Monitoring Siswa</span>
             </a>
+
+            <!-- Daftar Hadir Siswa Realtime -->
+            <a href="{{ route('guru.attendance.index') }}" 
+               class="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isAttendanceActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold' }}">
+                <svg class="w-5 h-5 {{ $isAttendanceActive ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <div class="flex items-center justify-between w-full">
+                    <span>Daftar Hadir</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Live
+                    </span>
+                </div>
+            </a>
         </nav>
     </div>
 
@@ -208,6 +224,21 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
                 <span>Monitoring Siswa</span>
+            </a>
+
+            <!-- Daftar Hadir Siswa Realtime -->
+            <a href="{{ route('guru.attendance.index') }}" 
+               class="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-150 {{ $isAttendanceActive ? 'bg-blue-500 text-white shadow-2xs' : 'text-white hover:bg-blue-500 hover:text-white font-semibold' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 {{ $isAttendanceActive ? 'text-white' : 'text-slate-50' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    <span>Daftar Hadir</span>
+                </div>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black {{ $isAttendanceActive ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-300' }}">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Live
+                </span>
             </a>
 
             <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 pt-4">Penjadwalan</p>

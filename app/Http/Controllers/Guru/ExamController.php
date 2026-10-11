@@ -8,7 +8,9 @@ use App\Models\Exam;
 use App\Models\ExamSession;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Models\User;
 use App\Services\DocxQuestionService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -774,5 +776,276 @@ class ExamController extends Controller
             ->get();
 
         return view('guru.exam.scores', compact('exam', 'sessions'));
+    }
+
+    /**
+     * Halaman Menu Daftar Hadir Siswa yang Masuk ke Ujian (Realtime)
+     */
+    public function attendance(Request $request): View
+    {
+        $guru = auth()->user();
+
+        // Ambil daftar ujian yang dibuat oleh guru yang sedang login
+        $exams = Exam::with(['subject', 'classroom', 'classrooms'])
+            ->where('user_id', $guru->id)
+            ->orderBy('title')
+            ->get();
+
+        $classrooms = Classroom::orderBy('name')->get();
+
+        // Hitung atau ambil data awal daftar hadir
+        $data = $this->getAttendanceRecords($request, $guru);
+
+        return view('guru.attendance.index', array_merge($data, [
+            'exams' => $exams,
+            'classrooms' => $classrooms,
+        ]));
+    }
+
+    /**
+     * Endpoint API JSON Realtime untuk Polling Auto-Refresh Daftar Hadir Siswa
+     */
+    public function attendanceData(Request $request): JsonResponse
+    {
+        $guru = auth()->user();
+        $data = $this->getAttendanceRecords($request, $guru);
+
+        return response()->json([
+            'success' => true,
+            'stats' => [
+                'total_target' => $data['totalTargetStudents'],
+                'total_hadir' => $data['totalHadir'],
+                'total_belum_hadir' => $data['totalBelumHadir'],
+                'percent' => $data['attendancePercent'],
+            ],
+            'rows' => $data['records'],
+            'updated_at' => now()->format('H:i:s'),
+        ]);
+    }
+
+    /**
+     * Helper internal untuk mengumpulkan data daftar hadir siswa secara komprehensif
+     */
+    private function getAttendanceRecords(Request $request, User $guru): array
+    {
+        $selectedExamId = $request->filled('exam_id') ? (int)$request->exam_id : null;
+        $selectedClassroomId = $request->filled('classroom_id') ? (int)$request->classroom_id : null;
+        $search = $request->filled('search') ? trim($request->search) : null;
+        $filterStatus = $request->filled('status') ? trim($request->status) : null;
+
+        // Ambil semua ujian yang dibuat oleh guru ini
+        $myExamsQuery = Exam::with(['classroom', 'classrooms'])->where('user_id', $guru->id);
+        if ($selectedExamId) {
+            $myExamsQuery->where('id', $selectedExamId);
+        }
+        $myExams = $myExamsQuery->get();
+        $myExamIds = $myExams->pluck('id')->toArray();
+
+        // Kumpulkan pasangan (exam, classroom_id) dan daftar seluruh kelas sasaran ujian guru
+        $targetClassroomIds = collect();
+        $examClassroomsMap = []; // [exam_id => Collection of classroom_ids]
+
+        foreach ($myExams as $exam) {
+            $clsIds = collect();
+            if ($exam->classroom_id) {
+                $clsIds->push($exam->classroom_id);
+            }
+            foreach ($exam->classrooms as $pivotCls) {
+                $clsIds->push($pivotCls->id);
+            }
+            $clsIds = $clsIds->unique()->filter()->values();
+            $examClassroomsMap[$exam->id] = $clsIds;
+            $targetClassroomIds = $targetClassroomIds->merge($clsIds);
+        }
+        $targetClassroomIds = $targetClassroomIds->unique()->values();
+
+        // 1. Ambil seluruh sesi ujian siswa yang relevan (Ujian milik guru ini)
+        $sessionsQuery = ExamSession::with(['user.classroom', 'exam.classroom', 'exam.classrooms'])
+            ->whereIn('exam_id', $myExamIds);
+
+        if ($selectedClassroomId) {
+            $sessionsQuery->whereHas('user', function ($uq) use ($selectedClassroomId) {
+                $uq->where('classroom_id', $selectedClassroomId);
+            });
+        }
+
+        if ($search) {
+            $sessionsQuery->whereHas('user', function ($uq) use ($search) {
+                $uq->where('name', 'like', "%{$search}%")
+                   ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        $sessions = $sessionsQuery->latest('start_time')->get();
+
+        // Petakan sesi per student_id dan exam_id
+        $sessionsByStudentAndExam = [];
+        foreach ($sessions as $ses) {
+            $sessionsByStudentAndExam[$ses->user_id][$ses->exam_id] = $ses;
+        }
+
+        // 2. Kumpulkan seluruh siswa sasaran
+        $studentsQuery = User::where('role', 'siswa')->with('classroom');
+
+        if ($selectedClassroomId) {
+            $studentsQuery->where('classroom_id', $selectedClassroomId);
+        } elseif ($targetClassroomIds->isNotEmpty()) {
+            $studentsQuery->whereIn('classroom_id', $targetClassroomIds);
+        }
+
+        if ($search) {
+            $studentsQuery->where(function ($sq) use ($search) {
+                $sq->where('name', 'like', "%{$search}%")
+                   ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        $allTargetStudents = $studentsQuery->orderBy('name')->get();
+
+        $records = [];
+        $no = 1;
+
+        if ($selectedExamId && $myExams->isNotEmpty()) {
+            // Skenario A: 1 Ujian Spesifik Dipilih
+            $activeExam = $myExams->first();
+            $allowedClassIds = $examClassroomsMap[$activeExam->id] ?? collect();
+
+            foreach ($allTargetStudents as $student) {
+                // Pastikan kelas siswa cocok dengan sasaran ujian ini
+                if ($allowedClassIds->isNotEmpty() && !$allowedClassIds->contains($student->classroom_id)) {
+                    continue;
+                }
+
+                $ses = $sessionsByStudentAndExam[$student->id][$activeExam->id] ?? null;
+                $isHadir = $ses !== null && !empty($ses->start_time);
+
+                if ($filterStatus === 'hadir' && !$isHadir) continue;
+                if ($filterStatus === 'belum_hadir' && $isHadir) continue;
+
+                $jamMasuk = $isHadir ? $ses->start_time->format('H:i:s') : '-';
+                $tanggalMasuk = $isHadir ? $ses->start_time->format('d/m/Y') : '-';
+
+                $records[] = [
+                    'no' => $no++,
+                    'student_id' => $student->id,
+                    'exam_id' => $activeExam->id,
+                    'row_key' => $student->id . '_' . $activeExam->id,
+                    'name' => $student->name,
+                    'nisn' => $student->nisn ?? '-',
+                    'classroom' => $student->classroom->name ?? '-',
+                    'exam_title' => $activeExam->title,
+                    'jam_masuk' => $jamMasuk,
+                    'tanggal_masuk' => $tanggalMasuk,
+                    'is_hadir' => $isHadir,
+                    'status_label' => $isHadir ? 'Hadir' : 'Belum Hadir',
+                    'session_status' => $ses ? $ses->status : null,
+                ];
+            }
+        } else {
+            // Skenario B: Filter "Semua Ujian" (Tampilkan status setiap siswa untuk ujian-ujian yang ditujukan kepadanya)
+            $activeExam = null;
+
+            // Buat baris kehadiran per (Siswa, Ujian Sasaran)
+            foreach ($allTargetStudents as $student) {
+                $studentClassId = $student->classroom_id;
+
+                // Cari ujian-ujian guru ini yang ditujukan untuk kelas siswa ini
+                $eligibleExams = $myExams->filter(function ($ex) use ($studentClassId, $examClassroomsMap) {
+                    $clsList = $examClassroomsMap[$ex->id] ?? collect();
+                    return $clsList->isEmpty() || $clsList->contains($studentClassId);
+                });
+
+                if ($eligibleExams->isEmpty()) {
+                    // Jika siswa ini tidak memiliki ujian spesifik kelas, tapi ada di kelas sasaran guru
+                    $hasAnySession = isset($sessionsByStudentAndExam[$student->id]);
+                    if ($hasAnySession) {
+                        foreach ($sessionsByStudentAndExam[$student->id] as $sesExamId => $ses) {
+                            $isHadir = true;
+                            if ($filterStatus === 'belum_hadir') continue;
+
+                            $records[] = [
+                                'no' => $no++,
+                                'student_id' => $student->id,
+                                'exam_id' => $sesExamId,
+                                'row_key' => $student->id . '_' . $sesExamId,
+                                'name' => $student->name,
+                                'nisn' => $student->nisn ?? '-',
+                                'classroom' => $student->classroom->name ?? '-',
+                                'exam_title' => $ses->exam->title ?? '-',
+                                'jam_masuk' => $ses->start_time ? $ses->start_time->format('H:i:s') : '-',
+                                'tanggal_masuk' => $ses->start_time ? $ses->start_time->format('d/m/Y') : '-',
+                                'is_hadir' => true,
+                                'status_label' => 'Hadir',
+                                'session_status' => $ses->status,
+                            ];
+                        }
+                    } else {
+                        if ($filterStatus === 'hadir') continue;
+
+                        $records[] = [
+                            'no' => $no++,
+                            'student_id' => $student->id,
+                            'exam_id' => 0,
+                            'row_key' => $student->id . '_0',
+                            'name' => $student->name,
+                            'nisn' => $student->nisn ?? '-',
+                            'classroom' => $student->classroom->name ?? '-',
+                            'exam_title' => 'Semua Ujian',
+                            'jam_masuk' => '-',
+                            'tanggal_masuk' => '-',
+                            'is_hadir' => false,
+                            'status_label' => 'Belum Hadir',
+                            'session_status' => null,
+                        ];
+                    }
+                } else {
+                    foreach ($eligibleExams as $ex) {
+                        $ses = $sessionsByStudentAndExam[$student->id][$ex->id] ?? null;
+                        $isHadir = $ses !== null && !empty($ses->start_time);
+
+                        if ($filterStatus === 'hadir' && !$isHadir) continue;
+                        if ($filterStatus === 'belum_hadir' && $isHadir) continue;
+
+                        $jamMasuk = $isHadir ? $ses->start_time->format('H:i:s') : '-';
+                        $tanggalMasuk = $isHadir ? $ses->start_time->format('d/m/Y') : '-';
+
+                        $records[] = [
+                            'no' => $no++,
+                            'student_id' => $student->id,
+                            'exam_id' => $ex->id,
+                            'row_key' => $student->id . '_' . $ex->id,
+                            'name' => $student->name,
+                            'nisn' => $student->nisn ?? '-',
+                            'classroom' => $student->classroom->name ?? '-',
+                            'exam_title' => $ex->title,
+                            'jam_masuk' => $jamMasuk,
+                            'tanggal_masuk' => $tanggalMasuk,
+                            'is_hadir' => $isHadir,
+                            'status_label' => $isHadir ? 'Hadir' : 'Belum Hadir',
+                            'session_status' => $ses ? $ses->status : null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Statistik
+        $totalTargetStudents = count($records);
+        $totalHadir = collect($records)->where('is_hadir', true)->count();
+        $totalBelumHadir = collect($records)->where('is_hadir', false)->count();
+        $attendancePercent = $totalTargetStudents > 0 
+            ? round(($totalHadir / $totalTargetStudents) * 100, 1) 
+            : 0;
+
+        return [
+            'records' => $records,
+            'selectedExamId' => $selectedExamId,
+            'selectedClassroomId' => $selectedClassroomId,
+            'activeExam' => $activeExam,
+            'totalTargetStudents' => $totalTargetStudents,
+            'totalHadir' => $totalHadir,
+            'totalBelumHadir' => $totalBelumHadir,
+            'attendancePercent' => $attendancePercent,
+        ];
     }
 }
