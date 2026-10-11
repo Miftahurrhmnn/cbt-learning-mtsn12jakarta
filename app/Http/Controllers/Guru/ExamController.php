@@ -27,14 +27,8 @@ class ExamController extends Controller
         $query = Exam::with(['subject', 'classroom', 'classrooms', 'teacher'])
             ->withCount(['questions', 'sessions']);
 
-        // Jika guru memiliki mata pelajaran yang diampu, hanya tampilkan ujian mapel tersebut
-        if ($guru->subjects()->exists()) {
-            $subjectIds = $guru->subjects->pluck('id')->toArray();
-            $query->where(function ($q) use ($guru, $subjectIds) {
-                $q->where('user_id', $guru->id)
-                  ->orWhereIn('subject_id', $subjectIds);
-            });
-        }
+        // Logika kepemilikan ujian: Setiap guru hanya dapat melihat dan mengelola ujian yang dibuatnya sendiri
+        $query->where('user_id', $guru->id);
 
         // FITUR FILTER KELAS UNTUK GURU (Mendukung Ujian dengan Banyak Kelas Sasaran)
         if ($request->filled('classroom_id')) {
@@ -208,7 +202,12 @@ class ExamController extends Controller
      */
     public function show(int $id): View
     {
+        $guru = auth()->user();
         $exam = Exam::with(['subject', 'classroom', 'classrooms', 'questions'])->findOrFail($id);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang melihat ujian ini.');
+        }
 
         return view('guru.exam.show', compact('exam'));
     }
@@ -218,7 +217,12 @@ class ExamController extends Controller
      */
     public function toggleStatus(int $id): RedirectResponse
     {
+        $guru = auth()->user();
         $exam = Exam::findOrFail($id);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang mengubah status ujian ini.');
+        }
 
         if ($exam->status === 'published') {
             $exam->status = 'draft';
@@ -243,7 +247,12 @@ class ExamController extends Controller
      */
     public function questionCreate(int $examId): View
     {
+        $guru = auth()->user();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($examId);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang menginput soal pada ujian ini.');
+        }
 
         return view('guru.question.create', compact('exam'));
     }
@@ -253,7 +262,12 @@ class ExamController extends Controller
      */
     public function questionStore(Request $request, int $examId): RedirectResponse
     {
+        $guru = auth()->user();
         $exam = Exam::findOrFail($examId);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang menambahkan soal pada ujian ini.');
+        }
 
         $request->validate([
             'question_text' => 'required|string',
@@ -306,13 +320,10 @@ class ExamController extends Controller
         $guru = auth()->user();
         $exam = Exam::findOrFail($examId);
 
-        // Validasi Otorisasi: Pastikan guru berhak mengelola ujian ini
-        if ($guru->subjects()->exists()) {
-            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
-            if ($exam->user_id !== $guru->id && !in_array((int)$exam->subject_id, $allowedSubjectIds)) {
-                return redirect()->route('guru.ujian.show', $examId)
-                    ->with('error', 'Akses ditolak! Anda tidak memiliki izin untuk mengimpor soal pada ujian mata pelajaran ini.');
-            }
+        // Validasi Otorisasi: Hanya guru pemilik ujian yang dapat mengimpor soal
+        if ($exam->user_id !== $guru->id) {
+            return redirect()->route('guru.ujian.index')
+                ->with('error', 'Akses ditolak! Anda tidak memiliki izin untuk mengimpor soal pada ujian ini.');
         }
 
         $request->validate([
@@ -343,11 +354,17 @@ class ExamController extends Controller
 
     /**
      * Hapus soal
-
      */
     public function questionDestroy(int $id): RedirectResponse
     {
-        $question = Question::findOrFail($id);
+        $guru = auth()->user();
+        $question = Question::with('exam')->findOrFail($id);
+        $exam = $question->exam;
+
+        if ($exam && $exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang menghapus soal pada ujian ini.');
+        }
+
         $examId = $question->exam_id;
 
         if ($question->image && Storage::disk('public')->exists($question->image)) {
@@ -365,7 +382,12 @@ class ExamController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
+        $guru = auth()->user();
         $exam = Exam::findOrFail($id);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang menghapus ujian ini.');
+        }
 
         // Hapus file gambar soal terkait jika ada
         foreach ($exam->questions as $q) {
@@ -389,12 +411,9 @@ class ExamController extends Controller
         $question = Question::with(['exam.subject', 'exam.classroom'])->findOrFail($id);
         $exam = $question->exam;
 
-        // Validasi Otorisasi Guru
-        if ($exam && $guru->subjects()->exists()) {
-            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
-            if ($exam->user_id !== $guru->id && !in_array((int)$exam->subject_id, $allowedSubjectIds)) {
-                abort(403, 'Akses ditolak! Anda tidak berwenang mengedit soal ini.');
-            }
+        // Validasi Otorisasi Guru: Hanya pemilik ujian yang dapat mengedit soal
+        if ($exam && $exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang mengedit soal ini.');
         }
 
         return view('guru.question.edit', compact('question', 'exam'));
@@ -409,12 +428,9 @@ class ExamController extends Controller
         $question = Question::findOrFail($id);
         $exam = $question->exam;
 
-        // Validasi Otorisasi Guru
-        if ($exam && $guru->subjects()->exists()) {
-            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
-            if ($exam->user_id !== $guru->id && !in_array((int)$exam->subject_id, $allowedSubjectIds)) {
-                abort(403, 'Akses ditolak! Anda tidak berwenang memperbarui soal ini.');
-            }
+        // Validasi Otorisasi Guru: Hanya pemilik ujian yang dapat memperbarui soal
+        if ($exam && $exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang memperbarui soal ini.');
         }
 
         $request->validate([
@@ -474,15 +490,14 @@ class ExamController extends Controller
         // Ambil daftar mata pelajaran yang diampu guru
         if ($guru->subjects()->exists()) {
             $subjects = $guru->subjects()->orderBy('name')->get();
-            $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
-                ->withCount('questions')
-                ->whereIn('subject_id', $guru->subjects->pluck('id'));
         } else {
             $subjects = $allMasterSubjects;
-            $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
-                ->withCount('questions')
-                ->where('user_id', $guru->id);
         }
+
+        // Daftar ujian yang dibuat oleh guru ini saja
+        $examsQuery = Exam::with(['subject', 'classrooms', 'classroom'])
+            ->withCount('questions')
+            ->where('user_id', $guru->id);
 
         // Filter Ujian berdasarkan Mapel jika dipilih
         if ($request->filled('filter_subject_id')) {
@@ -502,38 +517,20 @@ class ExamController extends Controller
 
         $exams = $examsQuery->latest()->get();
 
-        // Hitung total butir soal dan ujian per mata pelajaran
+        // Hitung total butir soal dan ujian milik guru ini per mata pelajaran
         foreach ($subjects as $subject) {
-            $subject->questions_count = Question::where(function ($q) use ($subject, $guru) {
-                $q->where('subject_id', $subject->id)
-                  ->orWhereHas('exam', function ($eq) use ($subject, $guru) {
-                      $eq->where('subject_id', $subject->id);
-                      if (!$guru->subjects()->exists()) {
-                          $eq->where('user_id', $guru->id);
-                      }
-                  });
+            $subject->questions_count = Question::whereHas('exam', function ($eq) use ($subject, $guru) {
+                $eq->where('user_id', $guru->id)->where('subject_id', $subject->id);
             })->count();
 
-            $subject->exams_count = Exam::where('subject_id', $subject->id)
-                ->where(function ($eq) use ($guru) {
-                    if (!$guru->subjects()->exists()) {
-                        $eq->where('user_id', $guru->id);
-                    }
-                })->count();
+            $subject->exams_count = Exam::where('user_id', $guru->id)
+                ->where('subject_id', $subject->id)
+                ->count();
         }
 
-        // Total seluruh butir soal milik guru
-        $totalQuestionsGuru = Question::where(function ($q) use ($guru) {
-            if ($guru->subjects()->exists()) {
-                $q->whereIn('subject_id', $guru->subjects->pluck('id'))
-                  ->orWhereHas('exam', function ($eq) use ($guru) {
-                      $eq->whereIn('subject_id', $guru->subjects->pluck('id'));
-                  });
-            } else {
-                $q->whereHas('exam', function ($eq) use ($guru) {
-                    $eq->where('user_id', $guru->id);
-                });
-            }
+        // Total seluruh butir soal milik guru ini
+        $totalQuestionsGuru = Question::whereHas('exam', function ($eq) use ($guru) {
+            $eq->where('user_id', $guru->id);
         })->count();
 
         // Cek apakah ada ujian atau mapel spesifik yang dipilih untuk melihat butir soal
@@ -541,7 +538,9 @@ class ExamController extends Controller
         $selectedSubject = null;
 
         if ($request->filled('exam_id')) {
-            $selectedExam = Exam::with(['subject', 'classrooms', 'classroom'])->find($request->exam_id);
+            $selectedExam = Exam::with(['subject', 'classrooms', 'classroom'])
+                ->where('user_id', $guru->id)
+                ->find($request->exam_id);
             if ($selectedExam) {
                 $selectedSubject = $selectedExam->subject;
             }
@@ -550,32 +549,18 @@ class ExamController extends Controller
                 ?? Subject::find($request->subject_id);
         }
 
-        $query = Question::with(['exam.subject', 'exam.classroom', 'subject']);
+        $query = Question::with(['exam.subject', 'exam.classroom', 'subject'])
+            ->whereHas('exam', function ($eq) use ($guru) {
+                $eq->where('user_id', $guru->id);
+            });
 
         if ($selectedExam) {
             $query->where('exam_id', $selectedExam->id);
         } elseif ($selectedSubject) {
             $subId = $selectedSubject->id;
-            $query->where(function ($q) use ($subId) {
-                $q->where('subject_id', $subId)
-                  ->orWhereHas('exam', function ($eq) use ($subId) {
-                      $eq->where('subject_id', $subId);
-                  });
+            $query->whereHas('exam', function ($eq) use ($subId) {
+                $eq->where('subject_id', $subId);
             });
-        } else {
-            if ($guru->subjects()->exists()) {
-                $subjectIds = $guru->subjects->pluck('id')->toArray();
-                $query->where(function ($q) use ($guru, $subjectIds) {
-                    $q->whereHas('exam', function ($eq) use ($guru, $subjectIds) {
-                        $eq->where('user_id', $guru->id)
-                           ->orWhereIn('subject_id', $subjectIds);
-                    })->orWhereIn('subject_id', $subjectIds);
-                });
-            } else {
-                $query->whereHas('exam', function ($eq) use ($guru) {
-                    $eq->where('user_id', $guru->id);
-                });
-            }
         }
 
         // Pencarian Teks Soal / Opsi
@@ -636,13 +621,7 @@ class ExamController extends Controller
 
         $sessionsQuery = ExamSession::with(['user.classroom', 'exam.subject', 'exam.classroom'])
             ->whereHas('exam', function ($eq) use ($guru) {
-                if ($guru->subjects()->exists()) {
-                    $subjectIds = $guru->subjects->pluck('id')->toArray();
-                    $eq->where('user_id', $guru->id)
-                       ->orWhereIn('subject_id', $subjectIds);
-                } else {
-                    $eq->where('user_id', $guru->id);
-                }
+                $eq->where('user_id', $guru->id);
             });
 
         // Filter Ujian
@@ -702,11 +681,7 @@ class ExamController extends Controller
 
         $sessions = $sessionsQuery->latest()->paginate(15)->withQueryString();
 
-        if ($guru->subjects()->exists()) {
-            $exams = Exam::whereIn('subject_id', $guru->subjects->pluck('id'))->orderBy('title')->get();
-        } else {
-            $exams = Exam::where('user_id', $guru->id)->orderBy('title')->get();
-        }
+        $exams = Exam::where('user_id', $guru->id)->orderBy('title')->get();
         $classrooms = Classroom::orderBy('name')->get();
 
         return view('guru.monitoring.index', compact('sessions', 'totalOngoing', 'totalCompleted', 'totalCheating', 'avgScore', 'exams', 'classrooms'));
@@ -721,12 +696,9 @@ class ExamController extends Controller
         $session = ExamSession::with(['user.classroom', 'exam.subject', 'exam.classroom', 'answers.question'])->findOrFail($sessionId);
         $exam = $session->exam;
 
-        // Validasi Otorisasi Guru
-        if ($exam && $guru->subjects()->exists()) {
-            $allowedSubjectIds = $guru->subjects->pluck('id')->toArray();
-            if ($exam->user_id !== $guru->id && !in_array((int)$exam->subject_id, $allowedSubjectIds)) {
-                abort(403, 'Akses ditolak!');
-            }
+        // Validasi Otorisasi Guru: Hanya guru pembuat ujian yang berwenang
+        if ($exam && $exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang melihat detail monitoring ujian ini.');
         }
 
         // Ambil semua butir soal ujian
@@ -789,7 +761,12 @@ class ExamController extends Controller
      */
     public function scores(int $examId): View
     {
+        $guru = auth()->user();
         $exam = Exam::with(['subject', 'classroom'])->findOrFail($examId);
+
+        if ($exam->user_id !== $guru->id) {
+            abort(403, 'Akses ditolak! Anda tidak berwenang melihat rekapitulasi nilai ujian ini.');
+        }
 
         $sessions = ExamSession::with('user')
             ->where('exam_id', $examId)

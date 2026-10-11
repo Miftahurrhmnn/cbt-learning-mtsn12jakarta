@@ -181,6 +181,7 @@ class CbtSystemTest extends TestCase
             'title' => 'Ujian Fisika Dasar',
             'subject_id' => $subject->id,
             'classroom_id' => $classroom->id,
+            'user_id' => $guru->id,
             'duration' => 60,
             'status' => 'published',
         ]);

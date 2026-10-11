@@ -174,7 +174,7 @@
                         value="{{ old('email') }}" 
                         required 
                         autofocus 
-                        placeholder="Username / Email"
+                        placeholder="Email"
                         class="w-full py-3 pr-3.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-transparent border-0 focus:ring-0 focus:outline-none"
                     >
                 </div>
@@ -193,7 +193,7 @@
                         name="password" 
                         id="password"
                         required 
-                        placeholder="••••••••••••"
+                        placeholder="Password"
                         class="w-full py-3 pr-10 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-transparent border-0 focus:ring-0 focus:outline-none"
                     >
 

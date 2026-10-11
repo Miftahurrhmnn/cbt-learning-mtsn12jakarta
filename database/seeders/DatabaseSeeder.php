@@ -28,20 +28,82 @@ class DatabaseSeeder extends Seeder
         );
 
         // 1. Akun Guru & Siswa
-        $guru = User::updateOrCreate(
-            ['email' => 'guru@cbt.test'],
+        $guru1 = User::updateOrCreate(
+            ['email' => 'emarohimah@teacher.mtsn12.sch.id'],
             [
-                'name' => 'Bapak Budi, S.Pd. (Guru)',
+                'name' => 'Ema Rohimah, S.Pd.',
                 'password' => Hash::make('password'),
                 'role' => 'guru',
             ]
         );
-
-        // Akun Guru IPA (untuk verifikasi pembatasan mapel)
-        $guruIPA = User::updateOrCreate(
-            ['email' => 'guru.ipa@cbt.test'],
+        $guru2 = User::updateOrCreate(
+            ['email' => 'nuranisah@teacher.mtsn12.sch.id'],
             [
-                'name' => 'Ibu Siti Aminah, M.Pd. (Guru IPA)',
+                'name' => 'Hj. Nur Anisah, M.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru3 = User::updateOrCreate(
+            ['email' => 'rahman@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Rahman, S.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru4 = User::updateOrCreate(
+            ['email' => 'itanovitasari@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Ita Novitasari, S.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru5 = User::updateOrCreate(
+            ['email' => 'arifsulaiman@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Arif Sulaiman, S.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru6 = User::updateOrCreate(
+            ['email' => 'ekanursabila@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Prisillia Eka Nursabila',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru7 = User::updateOrCreate(
+            ['email' => 'hazami@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Hazami, M.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru8 = User::updateOrCreate(
+            ['email' => 'seftiharneli@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Sefti Harneli, M.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru9 = User::updateOrCreate(
+            ['email' => 'karyati@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'Karyati, M.Pd.',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        $guru10 = User::updateOrCreate(
+            ['email' => 'buchori@teacher.mtsn12.sch.id'],
+            [
+                'name' => 'H. Buchori, S.Ag.',
                 'password' => Hash::make('password'),
                 'role' => 'guru',
             ]
@@ -70,96 +132,15 @@ class DatabaseSeeder extends Seeder
         $mapelMatematika = Subject::firstOrCreate(['name' => 'Matematika']);
         $mapelBIndo = Subject::firstOrCreate(['name' => 'Bahasa Indonesia']);
         $mapelIPA = Subject::firstOrCreate(['name' => 'Ilmu Pengetahuan Alam (IPA)']);
+        $mapelIPS = Subject::firstOrCreate(['name' => 'Ilmu Pengetahuan Sosial (IPS)']);
+        $mapelAgama = Subject::firstOrCreate(['name' => 'Pendidikan Agama Islam (PAI)']);
 
-        // Tugaskan Guru ke Mata Pelajaran Masing-Masing
-        // Bapak Budi & Miftah HANYA mengajar Matematika
-        $guru->subjects()->sync([$mapelMatematika->id]);
-
-        // Ibu Siti HANYA mengajar IPA
-        $guruIPA->subjects()->sync([$mapelIPA->id]);
-
-        // 4. Contoh Ujian yang sudah Aktif (Published) dengan Token
-        $examMatematika = Exam::firstOrCreate(
-            [
-                'subject_id' => $mapelMatematika->id,
-                'classroom_id' => $kelasXA->id,
-            ],
-            [
-                'user_id' => $guru->id,
-                'title' => 'Penilaian Harian Matematika Dasar',
-                'duration' => 60, // 1 Jam
-                'status' => 'published',
-                'token' => 'MTK24',
-            ]
-        );
-
-        // Pastikan token dan user_id terisi jika ujian sudah ada sebelumnya
-        if (empty($examMatematika->token) || empty($examMatematika->user_id)) {
-            $examMatematika->update([
-                'user_id' => $guru->id,
-                'token' => 'MTK24',
-            ]);
+        if (isset($guru3)) {
+            $guru3->subjects()->sync([$mapelMatematika->id]);
         }
 
-        // 5. Soal-Soal Ujian
-        $sampleQuestions = [
-            [
-                'question_text' => 'Berapakah hasil dari 25 + 15 x 2 ?',
-                'option_a' => '80',
-                'option_b' => '55',
-                'option_c' => '65',
-                'option_d' => '70',
-                'correct_answer' => 'B',
-            ],
-            [
-                'question_text' => 'Jika sebuah segitiga memiliki alas 10 cm dan tinggi 8 cm, berapa luas segitiga tersebut?',
-                'option_a' => '40 cm²',
-                'option_b' => '80 cm²',
-                'option_c' => '20 cm²',
-                'option_d' => '60 cm²',
-                'correct_answer' => 'A',
-            ],
-            [
-                'question_text' => 'Berapakah nilai x yang memenuhi persamaan 3x - 5 = 16 ?',
-                'option_a' => '5',
-                'option_b' => '6',
-                'option_c' => '7',
-                'option_d' => '8',
-                'correct_answer' => 'C',
-            ],
-            [
-                'question_text' => 'Berapa persen nilai 15 dari 60?',
-                'option_a' => '20%',
-                'option_b' => '25%',
-                'option_c' => '30%',
-                'option_d' => '35%',
-                'correct_answer' => 'B',
-            ],
-            [
-                'question_text' => 'Sebuah kubus memiliki panjang rusuk 6 cm. Berapakah volume kubus tersebut?',
-                'option_a' => '36 cm³',
-                'option_b' => '144 cm³',
-                'option_c' => '216 cm³',
-                'option_d' => '256 cm³',
-                'correct_answer' => 'C',
-            ],
-        ];
-
-        foreach ($sampleQuestions as $q) {
-            Question::firstOrCreate(
-                [
-                    'exam_id' => $examMatematika->id,
-                    'question_text' => $q['question_text'],
-                ],
-                [
-                    'subject_id' => $mapelMatematika->id,
-                    'option_a' => $q['option_a'],
-                    'option_b' => $q['option_b'],
-                    'option_c' => $q['option_c'],
-                    'option_d' => $q['option_d'],
-                    'correct_answer' => $q['correct_answer'],
-                ]
-            );
+        if (isset($guru10)) {
+            $guru10->subjects()->sync([$mapelAgama->id]);
         }
     }
 }
