@@ -6,10 +6,7 @@
     @endphp
 
     <div x-data="{ 
-            activeTab: 'home', 
-            mobileMenuOpen: false, 
             tokenModalOpen: false,
-            profileModalOpen: false,
             inputTokenExamId: '{{ $activeExams->first()?->id ?? '' }}',
             inputTokenCode: ''
          }" 
@@ -393,92 +390,29 @@
             </div>
         </div>
 
-        <!-- ==================== MODAL PROFIL SISWA ==================== -->
-        <div x-show="profileModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" @click="profileModalOpen = false">
-            <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4" @click.stop>
-                <div class="w-16 h-16 rounded-full bg-[#266210] text-white flex items-center justify-center mx-auto text-xl font-black shadow-md">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
-                </div>
-
-                <div>
-                    <h3 class="font-extrabold text-base text-slate-900">{{ Auth::user()->name }}</h3>
-                    <p class="text-xs text-slate-500 font-mono mt-0.5">{{ Auth::user()->email }}</p>
-                </div>
-
-                <div class="bg-slate-50 rounded-2xl p-4 text-left text-xs space-y-2 border border-slate-100">
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">NISN / No. Induk:</span>
-                        <strong class="text-slate-700 font-mono">{{ Auth::user()->nisn ?? '-' }}</strong>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Kelas:</span>
-                        <strong class="text-slate-700">{{ Auth::user()->classroom->name ?? 'Belum Ditentukan' }}</strong>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Sekolah:</span>
-                        <strong class="text-slate-700">MTsN 12 Jakarta</strong>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex items-center gap-2">
-                    <form method="POST" action="{{ route('logout') }}" class="w-full inline">
-                        @csrf
-                        <button type="submit" class="w-full py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">
-                            Log Out
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== MODERN FLOATING BOTTOM APP NAVIGATION DOCK ==================== -->
-<!-- ==================== FLOATING BOTTOM NAVIGATION DOCK (4 MENU) ==================== -->
+<!-- ==================== FLOATING BOTTOM NAVIGATION DOCK (BERANDA & PROFIL) ==================== -->
 <nav class="fixed bottom-4 inset-x-0 z-50 px-4 pointer-events-none">
-    <div class="max-w-md mx-auto bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 rounded-full p-1.5 flex items-center justify-between pointer-events-auto transition-all duration-300">
+    <div class="max-w-xs mx-auto bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 rounded-full p-1.5 flex items-center justify-around pointer-events-auto transition-all duration-300">
         
         <!-- 1. Beranda -->
         @php $isHome = request()->routeIs('siswa.dashboard'); @endphp
         <a href="{{ route('siswa.dashboard') }}" 
-           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isHome ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
+           class="relative flex items-center justify-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 font-bold text-xs select-none {{ $isHome ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
             </svg>
-            @if($isHome)
-                <span class="tracking-wide">Beranda</span>
-            @endif
+            <span>Beranda</span>
         </a>
 
-        <!-- 2. Jadwal Ujian -->
-        @php $isJadwal = request()->routeIs('siswa.jadwal'); @endphp
-        <a href="" 
-           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isJadwal ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            @if($isJadwal)
-                <span class="tracking-wide">Jadwal</span>
-            @endif
-        </a>
-
-        <!-- 3. Hasil / Nilai -->
-        @php $isHasil = request()->routeIs('siswa.hasil'); @endphp
-        <a href="" 
-           class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none {{ $isHasil ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-            @if($isHasil)
-                <span class="tracking-wide">Nilai</span>
-            @endif
-        </a>
-
-        <!-- 4. Profil Siswa -->
-        <button @click="profileModalOpen = true" 
-                class="relative flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 font-semibold text-xs active:scale-90 select-none text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 cursor-pointer">
+        <!-- 2. Profil Siswa (Halaman Terpisah) -->
+        @php $isProfile = request()->routeIs('profile.edit'); @endphp
+        <a href="{{ route('profile.edit') }}" 
+           class="relative flex items-center justify-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 font-bold text-xs select-none {{ $isProfile ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-        </button>
+            <span>Profil</span>
+        </a>
 
     </div>
 </nav>
