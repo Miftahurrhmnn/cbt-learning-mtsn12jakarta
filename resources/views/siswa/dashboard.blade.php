@@ -116,6 +116,7 @@
                         <div>
                             <span class="text-[10px] uppercase font-black tracking-widest text-white/90">Ujian Sedang Berlangsung</span>
                             <h4 class="text-sm font-bold">{{ $ongoingSession->exam->title ?? $ongoingSession->exam->subject->name }}</h4>
+                            <p class="text-[11px] text-white/80 font-medium">Guru: {{ $ongoingSession->exam->teacher->name ?? 'Guru Pengampu' }}</p>
                         </div>
                     </div>
                     <a href="{{ route('siswa.ujian.show', $ongoingSession->exam_id) }}" 
@@ -281,6 +282,21 @@
                                             <div class="flex items-center gap-1.5">
                                                 <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                 <span><strong>{{ $exam->questions_count }}</strong> Soal</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Detail Guru Pembuat Ujian -->
+                                        <div class="mt-2.5 p-2 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <span class="text-[10px] text-slate-400 block font-medium leading-none mb-0.5">Guru Pembuat:</span>
+                                                <p class="text-xs font-bold text-slate-800 truncate leading-tight" title="{{ $exam->teacher->name ?? 'Guru CBT' }}">
+                                                    {{ $exam->teacher->name ?? 'Guru CBT' }}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>

@@ -13,6 +13,7 @@ use App\Services\DocxQuestionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -240,6 +241,7 @@ class ExamController extends Controller
         }
 
         $exam->save();
+        Exam::clearExamCache($exam->id);
 
         return back()->with('success', $message);
     }
@@ -298,6 +300,8 @@ class ExamController extends Controller
             'correct_answer' => $request->correct_answer,
         ]);
 
+        Exam::clearExamCache($exam->id);
+
         return redirect()->route('guru.ujian.show', $exam->id)
             ->with('success', 'Soal baru berhasil ditambahkan ke ujian!');
     }
@@ -349,6 +353,8 @@ class ExamController extends Controller
             $flashMessage .= ' (Catatan: ' . count($result['errors']) . ' baris dilewati karena format tidak lengkap).';
         }
 
+        Exam::clearExamCache($examId);
+
         return redirect()->route('guru.ujian.show', $examId)
             ->with('success', $flashMessage)
             ->with('import_warnings', $result['errors'] ?? []);
@@ -374,6 +380,8 @@ class ExamController extends Controller
         }
 
         $question->delete();
+
+        Exam::clearExamCache($examId);
 
         return redirect()->route('guru.ujian.show', $examId)
             ->with('success', 'Soal berhasil dihapus.');
@@ -473,6 +481,10 @@ class ExamController extends Controller
             'option_d' => $request->option_d,
             'correct_answer' => $request->correct_answer,
         ]);
+
+        if ($exam) {
+            Exam::clearExamCache($exam->id);
+        }
 
         $targetUrl = $exam ? route('guru.ujian.show', $exam->id) : route('guru.bank-soal.index');
         return redirect($targetUrl)->with('success', 'Soal berhasil diperbarui dan disimpan!');
@@ -829,7 +841,8 @@ class ExamController extends Controller
     public function attendanceData(Request $request): JsonResponse
     {
         $guru = auth()->user();
-        $data = $this->getAttendanceRecords($request, $guru);
+        $cacheKey = "att_g_{$guru->id}_e_" . ($request->exam_id ?? 'all') . "_c_" . ($request->classroom_id ?? 'all') . "_s_" . md5($request->search ?? '') . "_st_" . ($request->status ?? 'all');
+        $data = Cache::remember($cacheKey, 3, fn() => $this->getAttendanceRecords($request, $guru));
 
         return response()->json([
             'success' => true,

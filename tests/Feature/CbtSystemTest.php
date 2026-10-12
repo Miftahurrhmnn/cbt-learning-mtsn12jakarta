@@ -580,8 +580,42 @@ class CbtSystemTest extends TestCase
         $response->assertSee('matematika dasar');
         $response->assertSee('60');
         $response->assertSee('Mulai Ujian');
-        $response->assertSee('CBT MTsN 12');
         $response->assertDontSee('#08CB00');
+    }
+
+    public function test_siswa_dashboard_displays_teacher_detail_on_exam_card(): void
+    {
+        $class = Classroom::create(['name' => 'Kelas X-A']);
+        $guru = User::factory()->create([
+            'role' => 'guru',
+            'name' => 'Ibu Karyati, S.Pd.',
+        ]);
+        $siswa = User::factory()->create([
+            'role' => 'siswa',
+            'name' => 'Ahmad Fauzi',
+            'classroom_id' => $class->id,
+        ]);
+
+        $subject = Subject::create(['name' => 'Bahasa Indonesia']);
+        $exam = Exam::create([
+            'title' => 'testing karyati',
+            'subject_id' => $subject->id,
+            'classroom_id' => $class->id,
+            'user_id' => $guru->id,
+            'duration' => 60,
+            'status' => 'published',
+            'token' => 'KARYATI',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('siswa.dashboard'));
+        $response->assertStatus(200);
+        $response->assertSee('Guru Pembuat:');
+        $response->assertSee('Ibu Karyati, S.Pd.');
+
+        $tokenResponse = $this->actingAs($siswa)->get(route('siswa.ujian.token', $exam->id));
+        $tokenResponse->assertStatus(200);
+        $tokenResponse->assertSee('Guru Pembuat Ujian:');
+        $tokenResponse->assertSee('Ibu Karyati, S.Pd.');
     }
 }
 

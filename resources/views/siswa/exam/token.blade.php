@@ -166,6 +166,19 @@
                                 <span>Jumlah: <strong class="text-slate-800 font-semibold">{{ $exam->questions_count ?? $exam->questions->count() }}</strong> Soal</span>
                             </div>
                         </div>
+
+                        <!-- Detail Guru Pembuat Ujian -->
+                        <div class="pt-2 border-t border-slate-200/60 flex items-center gap-2 text-xs">
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] text-slate-400 block font-medium leading-none mb-0.5">Guru Pembuat Ujian:</span>
+                                <strong class="text-slate-800 font-bold truncate block">{{ $exam->teacher->name ?? 'Guru Pengampu' }}</strong>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Form Input Token -->

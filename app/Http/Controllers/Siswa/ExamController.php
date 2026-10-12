@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessStudentAnswerJob;
 use App\Models\Exam;
 use App\Models\ExamAnswer;
 use App\Models\ExamSession;
@@ -12,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ExamController extends Controller
@@ -26,7 +28,7 @@ class ExamController extends Controller
 
         // PEMBATASAN KELAS SISWA:
         // Tampilkan ujian yang statusnya 'published' dan kelas siswa diizinkan mengakses ujian ini
-        $activeExamsQuery = Exam::with(['subject', 'classroom', 'classrooms'])
+        $activeExamsQuery = Exam::with(['subject', 'classroom', 'classrooms', 'teacher'])
             ->where('status', 'published')
             ->withCount('questions');
 
@@ -59,10 +61,18 @@ class ExamController extends Controller
             });
         }
 
-        $activeExams = $activeExamsQuery->latest()->get();
+        // HIGH CONCURRENCY CACHE (500+ User): Cache query ujian aktif dashboard per kelas/filter
+        $userClassId = (int)$user->classroom_id;
+        $dayParam = $request->filled('day') ? $request->day : 'all';
+        $searchHash = $request->filled('search') ? md5($request->search) : 'none';
+        $cacheKey = "siswa_dashboard_exams_c{$userClassId}_d{$dayParam}_s{$searchHash}";
+
+        $activeExams = Cache::remember($cacheKey, 30, function () use ($activeExamsQuery) {
+            return $activeExamsQuery->latest()->get();
+        });
 
         // Sesi ujian yang pernah diikuti siswa ini
-        $mySessions = ExamSession::with(['exam.subject', 'exam.classroom'])
+        $mySessions = ExamSession::with(['exam.subject', 'exam.classroom', 'exam.teacher'])
             ->where('user_id', $user->id)
             ->latest()
             ->get()
@@ -131,17 +141,20 @@ class ExamController extends Controller
                 ->with('info', 'Waktu ujian telah berakhir dan jawaban Anda telah disimpan otomatis.');
         }
 
-        // KEAMANAN ANTI-CHEAT: Jangan sertakan kolom correct_answer ke browser siswa!
-        $questions = Question::where('exam_id', $exam->id)
-            ->orWhere(function ($query) use ($exam) {
-                $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
-            })
-            ->select(['id', 'exam_id', 'subject_id', 'question_text', 'image', 'option_a', 'option_b', 'option_c', 'option_d'])
-            ->orderBy('id')
-            ->get();
+        // KEAMANAN ANTI-CHEAT & HIGH CONCURRENCY CACHE (500+ User):
+        // Jangan sertakan kolom correct_answer ke browser siswa, dan cache butir soal publik di memory/Redis
+        $questions = Cache::remember("exam_questions_public_{$exam->id}", 600, function () use ($exam) {
+            $qs = Question::where('exam_id', $exam->id)
+                ->orWhere(function ($query) use ($exam) {
+                    $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
+                })
+                ->select(['id', 'exam_id', 'subject_id', 'question_text', 'image', 'option_a', 'option_b', 'option_c', 'option_d'])
+                ->orderBy('id')
+                ->get();
 
-        // Pastikan atribut correct_answer benar-benar tersembunyi
-        $questions->makeHidden(['correct_answer']);
+            $qs->makeHidden(['correct_answer']);
+            return $qs;
+        });
 
         if ($questions->isEmpty()) {
             return redirect()->route('siswa.dashboard')
@@ -262,35 +275,69 @@ class ExamController extends Controller
         }
 
         $request->validate([
-            'question_id' => 'required|exists:questions,id',
+            'question_id' => 'required|integer',
             'selected_answer' => 'required|in:A,B,C,D',
         ]);
 
-        $question = Question::findOrFail($request->question_id);
+        $questionId = (int)$request->question_id;
+
+        // HIGH-CONCURRENCY CACHE (500+ User):
+        // Validasi dan hitung kebenaran via in-memory cache/Redis tanpa query berulang ke database
+        $questionsMap = Cache::remember("exam_questions_map_{$exam->id}", 600, function () use ($exam) {
+            return Question::where('exam_id', $exam->id)
+                ->orWhere(function ($query) use ($exam) {
+                    $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
+                })
+                ->select(['id', 'exam_id', 'subject_id', 'correct_answer'])
+                ->get()
+                ->keyBy('id');
+        });
+
+        $question = $questionsMap->get($questionId);
+
+        // Fallback jika butir soal baru saja ditambahkan dan belum ada di cache
+        if (!$question) {
+            $question = Question::find($questionId);
+            if ($question && ($question->exam_id === $exam->id || ($question->exam_id === null && $question->subject_id === $exam->subject_id))) {
+                Exam::clearExamCache($exam->id);
+            } else {
+                return response()->json(['error' => 'Soal tidak valid untuk ujian ini.'], 422);
+            }
+        }
 
         // Validasi integritas: pastikan soal terkait dengan ujian/mapel yang benar
-        if ($question->exam_id && $question->exam_id !== $exam->id) {
+        if ($question->exam_id && (int)$question->exam_id !== (int)$exam->id) {
             return response()->json(['error' => 'Soal tidak valid untuk ujian ini.'], 422);
         }
 
         // Kalkulasi kebenaran dilakukan di backend PHP, bukan di browser siswa
-        $isCorrect = (strtoupper(trim($question->correct_answer)) === strtoupper(trim($request->selected_answer)));
+        $isCorrect = (strtoupper(trim((string)$question->correct_answer)) === strtoupper(trim((string)$request->selected_answer)));
 
-        ExamAnswer::updateOrCreate(
+        // Simpan jawaban siswa secara atomic dan instan dengan upsert unik (sub-millisecond)
+        ExamAnswer::upsert(
             [
-                'exam_session_id' => $session->id,
-                'question_id' => $question->id,
+                [
+                    'exam_session_id' => $session->id,
+                    'question_id' => $questionId,
+                    'selected_answer' => $request->selected_answer,
+                    'is_correct' => $isCorrect,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
             ],
-            [
-                'selected_answer' => $request->selected_answer,
-                'is_correct' => $isCorrect,
-            ]
+            ['exam_session_id', 'question_id'],
+            ['selected_answer', 'is_correct', 'updated_at']
         );
+
+        // Antrikan tugas di background queue jika worker/Redis aktif
+        if (config('queue.default') !== 'sync') {
+            ProcessStudentAnswerJob::dispatch($session->id, $questionId, $request->selected_answer, $isCorrect);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Jawaban berhasil disimpan.',
-            'question_id' => $question->id,
+            'question_id' => $questionId,
             'selected_answer' => $request->selected_answer,
         ]);
     }
@@ -504,13 +551,13 @@ class ExamController extends Controller
      */
     private function finalizeExamSession(ExamSession $session, Exam $exam): void
     {
-        $questions = Question::where('exam_id', $exam->id)
-            ->orWhere(function ($query) use ($exam) {
-                $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
-            })
-            ->get();
-
-        $totalQuestions = $questions->count();
+        $totalQuestions = Cache::remember("exam_questions_count_{$exam->id}", 600, function () use ($exam) {
+            return Question::where('exam_id', $exam->id)
+                ->orWhere(function ($query) use ($exam) {
+                    $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
+                })
+                ->count();
+        });
 
         $correctCount = ExamAnswer::where('exam_session_id', $session->id)
             ->where('is_correct', true)

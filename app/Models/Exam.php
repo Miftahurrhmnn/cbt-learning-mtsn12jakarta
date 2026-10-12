@@ -316,4 +316,18 @@ class Exam extends Model
 
         return strtoupper(trim((string)$inputToken)) === strtoupper(trim($this->token));
     }
+
+    /**
+     * Clear all high-concurrency caches associated with this exam.
+     */
+    public static function clearExamCache(?int $examId = null): void
+    {
+        if ($examId) {
+            \Illuminate\Support\Facades\Cache::forget("exam_questions_public_{$examId}");
+            \Illuminate\Support\Facades\Cache::forget("exam_questions_map_{$examId}");
+            \Illuminate\Support\Facades\Cache::forget("exam_questions_count_{$examId}");
+            \Illuminate\Support\Facades\Cache::forget("exam_details_{$examId}");
+        }
+        \Illuminate\Support\Facades\Cache::forget('published_exams_summary');
+    }
 }

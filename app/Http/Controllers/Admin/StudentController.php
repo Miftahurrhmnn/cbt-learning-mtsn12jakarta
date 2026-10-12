@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessStudentImportChunkJob;
 use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -285,6 +287,8 @@ class StudentController extends Controller
         $errorList = [];
         $rowNum = 1;
 
+        // 1. Validasi & normalisasi data baris terlebih dahulu
+        $validStudents = [];
         foreach ($rows as $row) {
             $rowNum++;
 
@@ -323,69 +327,152 @@ class StudentController extends Controller
                 continue;
             }
 
-            // Penanganan Kelas (buat otomatis jika belum ada)
-            $classroomId = null;
-            if ($className !== '') {
-                $classroom = Classroom::firstOrCreate(['name' => $className]);
-                $classroomId = $classroom->id;
-            }
+            $validStudents[] = [
+                'rowNum' => $rowNum,
+                'name' => $name,
+                'nisn' => $nisn,
+                'classroom' => $className,
+                'email' => $email,
+                'password' => $password,
+            ];
+        }
 
-            // Cek apakah email bentrok dengan akun Admin atau Guru
-            $existingNonStudent = User::where('email', $email)
-                ->whereIn('role', ['admin', 'guru'])
-                ->first();
-            if ($existingNonStudent) {
-                $errorList[] = "Baris #{$rowNum}: Email {$email} sudah digunakan oleh akun {$existingNonStudent->role}.";
+        if (empty($validStudents) && count($errorList) > 0) {
+            return redirect()->route('admin.siswa.import')
+                ->withErrors(['import_errors' => $errorList])
+                ->with('error', 'Tidak ada data siswa yang valid untuk diimpor.');
+        }
+
+        // 2. Pre-load non-student emails untuk validasi konflik role (1 query)
+        $emailsToCheck = array_column($validStudents, 'email');
+        $nonStudentEmails = User::whereIn('email', $emailsToCheck)
+            ->whereIn('role', ['admin', 'guru'])
+            ->pluck('role', 'email')
+            ->toArray();
+
+        $studentsToProcess = [];
+        foreach ($validStudents as $student) {
+            if (isset($nonStudentEmails[$student['email']])) {
+                $errorList[] = "Baris #{$student['rowNum']}: Email {$student['email']} sudah digunakan oleh akun {$nonStudentEmails[$student['email']]}.";
                 continue;
             }
+            $studentsToProcess[] = $student;
+        }
 
-            // Cek apakah siswa sudah ada di database (berdasarkan NISN atau Email)
-            $existingStudent = null;
-            if ($nisn !== '') {
-                $existingStudent = User::where('role', 'siswa')->where('nisn', $nisn)->first();
-            }
-            if (!$existingStudent) {
-                $existingStudent = User::where('role', 'siswa')->where('email', $email)->first();
+        // 3. Jika data sangat besar (> 1000 baris) dan tidak di lingkungan pengujian testing, kirim ke Redis Queue
+        if (count($studentsToProcess) > 1000 && !app()->runningUnitTests()) {
+            $chunks = array_chunk($studentsToProcess, 200);
+            foreach ($chunks as $chunk) {
+                ProcessStudentImportChunkJob::dispatch($chunk)->onQueue('default');
             }
 
-            if ($existingStudent) {
-                $updateData = [
-                    'name' => $name,
-                    'classroom_id' => $classroomId ?? $existingStudent->classroom_id,
-                ];
-                if ($nisn !== '') {
-                    $updateData['nisn'] = $nisn;
+            return redirect()->route('admin.siswa.index')
+                ->with('success', "Sebanyak " . count($studentsToProcess) . " data siswa sedang diproses di antrean latar belakang (Redis Queue). Data akan muncul secara bertahap.");
+        }
+
+        // 4. Proses batching cepat dalam database transaction (0 bottleneck)
+        // Pre-load semua kelas unik (1 query)
+        $uniqueClassNames = array_unique(array_filter(array_column($studentsToProcess, 'classroom')));
+        $classroomMap = [];
+        if (!empty($uniqueClassNames)) {
+            $existingClasses = Classroom::whereIn('name', $uniqueClassNames)->pluck('id', 'name')->toArray();
+            foreach ($uniqueClassNames as $cName) {
+                if (isset($existingClasses[$cName])) {
+                    $classroomMap[$cName] = $existingClasses[$cName];
+                } else {
+                    $newClass = Classroom::firstOrCreate(['name' => $cName]);
+                    $classroomMap[$cName] = $newClass->id;
                 }
-                if ($email !== '' && $existingStudent->email !== $email) {
-                    $emailTaken = User::where('email', $email)->where('id', '!=', $existingStudent->id)->exists();
-                    if (!$emailTaken) {
+            }
+        }
+
+        // Pre-load existing students berdasarkan NISN dan Email sekaligus (2 queries efisien)
+        $allNisns = array_filter(array_column($studentsToProcess, 'nisn'));
+        $allEmails = array_column($studentsToProcess, 'email');
+
+        $existingStudentsByNisn = [];
+        if (!empty($allNisns)) {
+            $existingStudentsByNisn = User::where('role', 'siswa')
+                ->whereIn('nisn', $allNisns)
+                ->get()
+                ->keyBy('nisn');
+        }
+
+        $existingStudentsByEmail = [];
+        if (!empty($allEmails)) {
+            $existingStudentsByEmail = User::where('role', 'siswa')
+                ->whereIn('email', $allEmails)
+                ->get()
+                ->keyBy('email');
+        }
+
+        // Pre-calculate hash password umum untuk performa tinggi
+        $cachedHashPassword = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($studentsToProcess as $student) {
+                $name = $student['name'];
+                $nisn = $student['nisn'] ?: null;
+                $email = $student['email'];
+                $className = $student['classroom'];
+                $rawPassword = $student['password'];
+                $classroomId = $className !== '' && isset($classroomMap[$className]) ? $classroomMap[$className] : null;
+
+                $existing = null;
+                if ($nisn && isset($existingStudentsByNisn[$nisn])) {
+                    $existing = $existingStudentsByNisn[$nisn];
+                } elseif (isset($existingStudentsByEmail[$email])) {
+                    $existing = $existingStudentsByEmail[$email];
+                }
+
+                if ($existing) {
+                    $updateData = [
+                        'name' => $name,
+                        'classroom_id' => $classroomId ?? $existing->classroom_id,
+                    ];
+                    if ($nisn) {
+                        $updateData['nisn'] = $nisn;
+                    }
+                    if ($email !== '' && $existing->email !== $email) {
                         $updateData['email'] = $email;
                     }
-                }
-                if ($password !== '') {
-                    $updateData['password'] = Hash::make($password);
-                }
-                $existingStudent->update($updateData);
-                $updatedCount++;
-            } else {
-                // Siswa baru
-                $emailExists = User::where('email', $email)->exists();
-                if ($emailExists) {
-                    $email = ($nisn ?: 'siswa') . '_' . rand(10, 99) . '@siswa.mtsn12.sch.id';
-                }
+                    if ($rawPassword !== '') {
+                        if (!isset($cachedHashPassword[$rawPassword])) {
+                            $cachedHashPassword[$rawPassword] = Hash::make($rawPassword);
+                        }
+                        $updateData['password'] = $cachedHashPassword[$rawPassword];
+                    }
+                    $existing->update($updateData);
+                    $updatedCount++;
+                } else {
+                    $passToUse = $rawPassword !== '' ? $rawPassword : ($nisn ?: 'password');
+                    if (!isset($cachedHashPassword[$passToUse])) {
+                        $cachedHashPassword[$passToUse] = Hash::make($passToUse);
+                    }
 
-                $passToUse = $password !== '' ? $password : ($nisn !== '' ? $nisn : 'password');
+                    $newUser = User::create([
+                        'name' => $name,
+                        'email' => $email,
+                        'nisn' => $nisn,
+                        'classroom_id' => $classroomId,
+                        'password' => $cachedHashPassword[$passToUse],
+                        'role' => 'siswa',
+                    ]);
 
-                User::create([
-                    'name' => $name,
-                    'email' => $email,
-                    'nisn' => $nisn ?: null,
-                    'classroom_id' => $classroomId,
-                    'password' => Hash::make($passToUse),
-                    'role' => 'siswa',
-                ]);
-                $insertedCount++;
+                    if ($nisn) {
+                        $existingStudentsByNisn[$nisn] = $newUser;
+                    }
+                    $existingStudentsByEmail[$email] = $newUser;
+                    $insertedCount++;
+                }
             }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->route('admin.siswa.import')
+                ->withErrors(['file' => 'Terjadi kesalahan transaksi database saat mengimpor: ' . $e->getMessage()]);
         }
 
         $totalProcessed = $insertedCount + $updatedCount;

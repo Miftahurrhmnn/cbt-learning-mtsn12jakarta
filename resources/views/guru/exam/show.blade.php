@@ -128,10 +128,11 @@
                 </div>
 
                 <!-- Penjelasan Hak Akses Kelas Siswa -->
-                <div class="p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center gap-3 text-xs text-indigo-900 shadow-2xs">
-                    <svg class="w-5 h-5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="p-4 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-2xl flex items-center gap-3 text-xs shadow-2xs">
+                    <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <div>
                         <strong class="font-bold">Penjelasan Hak Akses Kelas Siswa:</strong>
+                        <br/>
                         Ujian ini secara khusus dapat diakses oleh siswa di <strong>{{ $exam->all_classroom_names }}</strong>. Siswa dari kelas selain ini tidak akan dapat memasukkan token maupun membuka ruang ujian.
                     </div>
                 </div>
