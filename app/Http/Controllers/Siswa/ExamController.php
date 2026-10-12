@@ -313,25 +313,25 @@ class ExamController extends Controller
         // Kalkulasi kebenaran dilakukan di backend PHP, bukan di browser siswa
         $isCorrect = (strtoupper(trim((string)$question->correct_answer)) === strtoupper(trim((string)$request->selected_answer)));
 
-        // Simpan jawaban siswa secara atomic dan instan dengan upsert unik (sub-millisecond)
-        ExamAnswer::upsert(
-            [
-                [
-                    'exam_session_id' => $session->id,
-                    'question_id' => $questionId,
-                    'selected_answer' => $request->selected_answer,
-                    'is_correct' => $isCorrect,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            ],
-            ['exam_session_id', 'question_id'],
-            ['selected_answer', 'is_correct', 'updated_at']
-        );
-
-        // Antrikan tugas di background queue jika worker/Redis aktif
+        // Simpan jawaban siswa: jika Redis Queue aktif, serahkan langsung ke queue worker agar HTTP response super cepat (<5ms)
         if (config('queue.default') !== 'sync') {
             ProcessStudentAnswerJob::dispatch($session->id, $questionId, $request->selected_answer, $isCorrect);
+        } else {
+            // Fallback sync upsert instan
+            ExamAnswer::upsert(
+                [
+                    [
+                        'exam_session_id' => $session->id,
+                        'question_id' => $questionId,
+                        'selected_answer' => $request->selected_answer,
+                        'is_correct' => $isCorrect,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                ],
+                ['exam_session_id', 'question_id'],
+                ['selected_answer', 'is_correct', 'updated_at']
+            );
         }
 
         return response()->json([
