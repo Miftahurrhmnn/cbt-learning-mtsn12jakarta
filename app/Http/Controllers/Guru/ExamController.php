@@ -13,6 +13,7 @@ use App\Services\DocxQuestionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -842,7 +843,13 @@ class ExamController extends Controller
     public function attendanceData(Request $request): JsonResponse
     {
         $guru = auth()->user();
-        $cacheKey = "att_g_{$guru->id}_e_" . ($request->exam_id ?? 'all') . "_c_" . ($request->classroom_id ?? 'all') . "_s_" . md5($request->search ?? '') . "_st_" . ($request->status ?? 'all');
+        $cacheKey = "att_g_{$guru->id}_e_" . ($request->exam_id ?? 'all') 
+            . "_c_" . ($request->classroom_id ?? 'all') 
+            . "_s_" . md5($request->search ?? '') 
+            . "_st_" . ($request->status ?? 'all')
+            . "_p_" . ($request->page ?? '1')
+            . "_pp_" . ($request->per_page ?? '15');
+
         $data = Cache::remember($cacheKey, 3, fn() => $this->getAttendanceRecords($request, $guru));
 
         return response()->json([
@@ -854,13 +861,15 @@ class ExamController extends Controller
                 'percent' => $data['attendancePercent'],
             ],
             'rows' => $data['records'],
+            'pagination' => $data['pagination'],
             'updated_at' => now()->format('H:i:s'),
         ]);
     }
 
     /**
-     * Helper internal untuk mengumpulkan data daftar hadir siswa secara efisien & unik per siswa
-     * Menghilangkan duplikasi siswa jika guru memiliki lebih dari 1 ujian
+     * Helper internal untuk mengumpulkan data daftar hadir siswa secara efisien & ber-paginasi
+     * Menggunakan Selective Columns, SQL Aggregates, Eager Loading terarah, dan Pagination
+     * Mencegah pemuatan seluruh data siswa sekaligus ke memori dan mengeliminasi N+1 queries.
      */
     private function getAttendanceRecords(Request $request, User $guru): array
     {
@@ -868,6 +877,10 @@ class ExamController extends Controller
         $selectedClassroomId = $request->filled('classroom_id') ? (int)$request->classroom_id : null;
         $search = $request->filled('search') ? trim($request->search) : null;
         $filterStatus = $request->filled('status') ? trim($request->status) : null;
+        $perPage = (int)$request->input('per_page', 15);
+        if ($perPage < 5 || $perPage > 100) {
+            $perPage = 15;
+        }
 
         // 1. Ambil seluruh ujian milik guru ini dengan relasi kelas sasaran (Eager Loading Ringan)
         $myExamsQuery = Exam::select(['id', 'title', 'classroom_id', 'user_id'])
@@ -880,10 +893,24 @@ class ExamController extends Controller
 
         $myExams = $myExamsQuery->get();
 
-        // Jika guru belum memiliki ujian, kembalikan data kosong tanpa eksekusi query lanjutan
+        // Jika guru belum memiliki ujian, kembalikan paginator kosong tanpa query lanjutan
         if ($myExams->isEmpty()) {
+            $emptyPaginator = new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+
             return [
                 'records' => [],
+                'paginatedStudents' => $emptyPaginator,
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => 0,
+                    'to' => 0,
+                    'total' => 0,
+                    'per_page' => $perPage,
+                ],
                 'selectedExamId' => $selectedExamId,
                 'selectedClassroomId' => $selectedClassroomId,
                 'activeExam' => null,
@@ -891,11 +918,12 @@ class ExamController extends Controller
                 'totalHadir' => 0,
                 'totalBelumHadir' => 0,
                 'attendancePercent' => 0,
+                'perPage' => $perPage,
             ];
         }
 
         $myExamsById = [];
-        $examClassroomsMap = []; // [exam_id => [classroom_id => true]]
+        $examClassroomsMap = [];
         $targetClassroomIds = [];
 
         foreach ($myExams as $exam) {
@@ -912,44 +940,102 @@ class ExamController extends Controller
             $examClassroomsMap[$exam->id] = $clsMap;
         }
 
+        $myExamIds = array_keys($myExamsById);
         $allTargetClassroomIds = array_keys($targetClassroomIds);
 
-        // 2. Ambil sesi ujian siswa yang relevan (Hanya kolom esensial, tanpa hydrate User & Exam berulang)
-        $myExamIds = array_keys($myExamsById);
-        $sessionsQuery = ExamSession::select(['id', 'user_id', 'exam_id', 'start_time', 'status'])
-            ->whereIn('exam_id', $myExamIds);
+        // Jika ujian guru belum memiliki kelas target yang di-assign
+        if (empty($allTargetClassroomIds)) {
+            $emptyPaginator = new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
 
-        if ($selectedClassroomId) {
-            $sessionsQuery->whereHas('user', function ($uq) use ($selectedClassroomId) {
-                $uq->where('classroom_id', $selectedClassroomId);
-            });
+            return [
+                'records' => [],
+                'paginatedStudents' => $emptyPaginator,
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => 0,
+                    'to' => 0,
+                    'total' => 0,
+                    'per_page' => $perPage,
+                ],
+                'selectedExamId' => $selectedExamId,
+                'selectedClassroomId' => $selectedClassroomId,
+                'activeExam' => $selectedExamId ? ($myExamsById[$selectedExamId] ?? null) : null,
+                'totalTargetStudents' => 0,
+                'totalHadir' => 0,
+                'totalBelumHadir' => 0,
+                'attendancePercent' => 0,
+                'perPage' => $perPage,
+            ];
         }
 
+        // Tentukan kelas sasaran yang efektif
+        if ($selectedClassroomId) {
+            // Jika filter ujian aktif dan kelas yang dipilih bukan sasaran ujian tersebut
+            if (!in_array($selectedClassroomId, $allTargetClassroomIds)) {
+                $emptyPaginator = new LengthAwarePaginator([], 0, $perPage, 1, [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]);
+
+                return [
+                    'records' => [],
+                    'paginatedStudents' => $emptyPaginator,
+                    'pagination' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'from' => 0,
+                        'to' => 0,
+                        'total' => 0,
+                        'per_page' => $perPage,
+                    ],
+                    'selectedExamId' => $selectedExamId,
+                    'selectedClassroomId' => $selectedClassroomId,
+                    'activeExam' => $selectedExamId ? ($myExamsById[$selectedExamId] ?? null) : null,
+                    'totalTargetStudents' => 0,
+                    'totalHadir' => 0,
+                    'totalBelumHadir' => 0,
+                    'attendancePercent' => 0,
+                    'perPage' => $perPage,
+                ];
+            }
+            $effectiveClassroomIds = [$selectedClassroomId];
+        } else {
+            $effectiveClassroomIds = $allTargetClassroomIds;
+        }
+
+        // 2. Hitung statistik keseluruhan via SQL Aggregates (Ringan & Cepat, tanpa load seluruh records siswa)
+        $baseStatsQuery = User::where('role', 'siswa')
+            ->whereIn('classroom_id', $effectiveClassroomIds);
+
         if ($search) {
-            $sessionsQuery->whereHas('user', function ($uq) use ($search) {
-                $uq->where('name', 'like', "%{$search}%")
+            $baseStatsQuery->where(function ($sq) use ($search) {
+                $sq->where('name', 'like', "%{$search}%")
                    ->orWhere('nisn', 'like', "%{$search}%");
             });
         }
 
-        $sessions = $sessionsQuery->latest('start_time')->get();
+        $totalTargetStudents = (clone $baseStatsQuery)->count();
 
-        // Petakan sesi per siswa (O(1) lookup di memory PHP)
-        $sessionsByStudent = [];
-        foreach ($sessions as $ses) {
-            $sessionsByStudent[$ses->user_id][] = $ses;
-        }
+        // Total Hadir: Siswa yang sudah memulai sesi di salah satu ujian guru ini
+        $totalHadir = (clone $baseStatsQuery)
+            ->whereHas('examSessions', function ($sq) use ($myExamIds) {
+                $sq->whereIn('exam_id', $myExamIds);
+            })
+            ->count();
 
-        // 3. Ambil daftar siswa sasaran (Selective Columns & Eager Loading classroom:id,name)
+        $totalBelumHadir = max(0, $totalTargetStudents - $totalHadir);
+        $attendancePercent = $totalTargetStudents > 0
+            ? round(($totalHadir / $totalTargetStudents) * 100, 1)
+            : 0;
+
+        // 3. Query Siswa ber-Paginasi dengan Eager Loading Selektif (Hindari N+1 & Bottleneck)
         $studentsQuery = User::select(['id', 'name', 'nisn', 'classroom_id'])
-            ->with(['classroom:id,name'])
-            ->where('role', 'siswa');
-
-        if ($selectedClassroomId) {
-            $studentsQuery->where('classroom_id', $selectedClassroomId);
-        } elseif (!empty($allTargetClassroomIds)) {
-            $studentsQuery->whereIn('classroom_id', $allTargetClassroomIds);
-        }
+            ->where('role', 'siswa')
+            ->whereIn('classroom_id', $effectiveClassroomIds);
 
         if ($search) {
             $studentsQuery->where(function ($sq) use ($search) {
@@ -958,97 +1044,68 @@ class ExamController extends Controller
             });
         }
 
-        $allTargetStudents = $studentsQuery->orderBy('name')->get();
+        // Filter status hadir / belum hadir langsung di level SQL query
+        if ($filterStatus === 'hadir') {
+            $studentsQuery->whereHas('examSessions', function ($sq) use ($myExamIds) {
+                $sq->whereIn('exam_id', $myExamIds);
+            });
+        } elseif ($filterStatus === 'belum_hadir') {
+            $studentsQuery->whereDoesntHave('examSessions', function ($sq) use ($myExamIds) {
+                $sq->whereIn('exam_id', $myExamIds);
+            });
+        }
 
-        // 4. Bangun daftar hadir: TEPAT 1 SISWA = 1 BARIS (Tidak ada duplikasi baris!)
+        // Eager Loading terarah: hanya kolom esensial, tanpa query N+1
+        $studentsQuery->with([
+            'classroom:id,name',
+            'examSessions' => function ($sq) use ($myExamIds) {
+                $sq->whereIn('exam_id', $myExamIds)
+                   ->select(['id', 'user_id', 'exam_id', 'start_time', 'status'])
+                   ->latest('start_time');
+            }
+        ]);
+
+        $page = (int)$request->input('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        $paginatedStudents = $studentsQuery->orderBy('name', 'asc')
+            ->paginate($perPage, ['*'], 'page', $page)
+            ->withQueryString();
+
+        // 4. Petakan HANYA siswa pada halaman aktif (misal 15 baris)
         $records = [];
-        $no = 1;
-        $activeExam = $selectedExamId ? ($myExamsById[$selectedExamId] ?? null) : null;
+        $startNumber = $paginatedStudents->firstItem() ?? 1;
 
-        foreach ($allTargetStudents as $student) {
-            $studentClassId = $student->classroom_id;
-            $assignedExamTitles = [];
-            $isEligible = false;
+        foreach ($paginatedStudents as $index => $student) {
+            $matchedSession = $student->examSessions->first();
+            $isHadir = $matchedSession !== null && !empty($matchedSession->start_time);
 
             if ($selectedExamId) {
-                // Filter 1 Ujian: Pastikan kelas siswa menjadi sasaran ujian tersebut
-                $targetClsMap = $examClassroomsMap[$selectedExamId] ?? [];
-                if (empty($targetClsMap) || isset($targetClsMap[$studentClassId])) {
-                    $isEligible = true;
-                    $assignedExamTitles[] = $myExamsById[$selectedExamId]->title;
-                }
+                $examTitleDisplay = $myExamsById[$selectedExamId]->title ?? '-';
+            } elseif ($matchedSession && isset($myExamsById[$matchedSession->exam_id])) {
+                $examTitleDisplay = $myExamsById[$matchedSession->exam_id]->title ?? '-';
             } else {
-                // Semua Ujian: Kumpulkan seluruh ujian guru ini yang ditujukan ke kelas siswa
+                $assignedTitles = [];
+                $studentClassId = $student->classroom_id;
                 foreach ($myExamsById as $exId => $ex) {
                     $targetClsMap = $examClassroomsMap[$exId] ?? [];
                     if (empty($targetClsMap) || isset($targetClsMap[$studentClassId])) {
-                        $isEligible = true;
-                        $assignedExamTitles[] = $ex->title;
+                        $assignedTitles[] = $ex->title;
                     }
                 }
-            }
-
-            // Jika ujian memiliki target kelas khusus dan siswa tidak termasuk di dalamnya, lewati
-            if (!$isEligible) {
-                continue;
-            }
-
-            // Periksa sesi ujian siswa
-            $studentSessions = $sessionsByStudent[$student->id] ?? [];
-            $matchedSession = null;
-            $attendedExamTitles = [];
-
-            if ($selectedExamId) {
-                // Filter 1 Ujian: Ambil sesi pada ujian yang dipilih
-                foreach ($studentSessions as $ses) {
-                    if ($ses->exam_id === $selectedExamId) {
-                        $matchedSession = $ses;
-                        $attendedExamTitles[] = $myExamsById[$selectedExamId]->title ?? '-';
-                        break;
-                    }
-                }
-            } else {
-                // Semua Ujian: Cari sesi ujian yang sudah dimasuki oleh siswa
-                foreach ($studentSessions as $ses) {
-                    if (isset($myExamsById[$ses->exam_id])) {
-                        if (!$matchedSession) {
-                            $matchedSession = $ses; // Sesi pertama/terbaru
-                        }
-                        $title = $myExamsById[$ses->exam_id]->title ?? '-';
-                        if (!in_array($title, $attendedExamTitles)) {
-                            $attendedExamTitles[] = $title;
-                        }
-                    }
-                }
-            }
-
-            $isHadir = $matchedSession !== null && !empty($matchedSession->start_time);
-
-            // Filter status hadir / belum hadir
-            if ($filterStatus === 'hadir' && !$isHadir) continue;
-            if ($filterStatus === 'belum_hadir' && $isHadir) continue;
-
-            // Tentukan label Nama Ujian yang presisi
-            if ($selectedExamId) {
-                $examTitleDisplay = $myExamsById[$selectedExamId]->title ?? '-';
-            } elseif (!empty($attendedExamTitles)) {
-                // Siswa sudah hadir: Tampilkan nama ujian yang dimasuki siswa
-                $examTitleDisplay = implode(', ', $attendedExamTitles);
-            } elseif (!empty($assignedExamTitles)) {
-                // Siswa belum hadir: Tampilkan nama ujian sasaran kelasnya
-                $examTitleDisplay = implode(', ', $assignedExamTitles);
-            } else {
-                $examTitleDisplay = '-';
+                $examTitleDisplay = !empty($assignedTitles) ? implode(', ', $assignedTitles) : '-';
             }
 
             $jamMasuk = $isHadir ? $matchedSession->start_time->format('H:i:s') : '-';
             $tanggalMasuk = $isHadir ? $matchedSession->start_time->format('d/m/Y') : '-';
 
             $records[] = [
-                'no' => $no++,
+                'no' => $startNumber + $index,
                 'student_id' => $student->id,
                 'exam_id' => $matchedSession ? $matchedSession->exam_id : ($selectedExamId ?? 0),
-                'row_key' => (string)$student->id, // Unik 1 baris per siswa
+                'row_key' => (string)$student->id,
                 'name' => $student->name,
                 'nisn' => $student->nisn ?? '-',
                 'classroom' => $student->classroom->name ?? '-',
@@ -1061,23 +1118,27 @@ class ExamController extends Controller
             ];
         }
 
-        // Statistik Kehadiran
-        $totalTargetStudents = count($records);
-        $totalHadir = collect($records)->where('is_hadir', true)->count();
-        $totalBelumHadir = collect($records)->where('is_hadir', false)->count();
-        $attendancePercent = $totalTargetStudents > 0 
-            ? round(($totalHadir / $totalTargetStudents) * 100, 1) 
-            : 0;
+        $paginationMeta = [
+            'current_page' => $paginatedStudents->currentPage(),
+            'last_page' => $paginatedStudents->lastPage(),
+            'from' => $paginatedStudents->firstItem() ?? 0,
+            'to' => $paginatedStudents->lastItem() ?? 0,
+            'total' => $paginatedStudents->total(),
+            'per_page' => $paginatedStudents->perPage(),
+        ];
 
         return [
             'records' => $records,
+            'paginatedStudents' => $paginatedStudents,
+            'pagination' => $paginationMeta,
             'selectedExamId' => $selectedExamId,
             'selectedClassroomId' => $selectedClassroomId,
-            'activeExam' => $activeExam,
+            'activeExam' => $selectedExamId ? ($myExamsById[$selectedExamId] ?? null) : null,
             'totalTargetStudents' => $totalTargetStudents,
             'totalHadir' => $totalHadir,
             'totalBelumHadir' => $totalBelumHadir,
             'attendancePercent' => $attendancePercent,
+            'perPage' => $perPage,
         ];
     }
 }

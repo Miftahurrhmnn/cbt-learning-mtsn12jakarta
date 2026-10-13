@@ -137,11 +137,12 @@
                 <!-- Filter & Search Toolbar -->
                 <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-2xs space-y-4">
                     <form method="GET" action="{{ route('guru.attendance.index') }}" id="filterForm" @submit="onFormSubmit($event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                        <input type="hidden" name="page" :value="filters.page">
                         
                         <!-- Filter Pilih Ujian -->
-                        <div class="sm:col-span-4">
+                        <div class="sm:col-span-3">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Pilih Ujian Anda</label>
-                            <select name="exam_id" x-model="filters.exam_id" @change="fetchAttendanceData(false)"
+                            <select name="exam_id" x-model="filters.exam_id" @change="onFilterChange()"
                                     class="w-full py-2.5 px-3.5 rounded-2xl border border-slate-200 text-xs font-semibold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-slate-50/50">
                                 <option value="">-- Semua Ujian Guru --</option>
                                 @foreach($exams as $ex)
@@ -155,7 +156,7 @@
                         <!-- Filter Kelas Siswa -->
                         <div class="sm:col-span-3">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Filter Kelas</label>
-                            <select name="classroom_id" x-model="filters.classroom_id" @change="fetchAttendanceData(false)"
+                            <select name="classroom_id" x-model="filters.classroom_id" @change="onFilterChange()"
                                     class="w-full py-2.5 px-3.5 rounded-2xl border border-slate-200 text-xs font-semibold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-slate-50/50">
                                 <option value="">-- Semua Kelas --</option>
                                 @foreach($classrooms as $cls)
@@ -169,7 +170,7 @@
                         <!-- Filter Status Hadir / Belum Hadir -->
                         <div class="sm:col-span-2">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Status Hadir</label>
-                            <select name="status" x-model="filters.status" @change="fetchAttendanceData(false)"
+                            <select name="status" x-model="filters.status" @change="onFilterChange()"
                                     class="w-full py-2.5 px-3.5 rounded-2xl border border-slate-200 text-xs font-semibold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-slate-50/50">
                                 <option value="">Semua</option>
                                 <option value="hadir" {{ request('status') === 'hadir' ? 'selected' : '' }}>Hadir</option>
@@ -178,16 +179,28 @@
                         </div>
 
                         <!-- Pencarian Nama / NISN -->
-                        <div class="sm:col-span-3">
+                        <div class="sm:col-span-2">
                             <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Cari Siswa</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                 </span>
-                                <input type="text" name="search" x-model="filters.search" @input.debounce.400ms="fetchAttendanceData(false)"
+                                <input type="text" name="search" x-model="filters.search" @input.debounce.400ms="onFilterChange()"
                                        value="{{ request('search') }}" placeholder="Ketik nama atau NISN..."
-                                       class="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                                       class="w-full pl-10 pr-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
                             </div>
+                        </div>
+
+                        <!-- Pilihan Jumlah Baris Per Halaman -->
+                        <div class="sm:col-span-2">
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Per Halaman</label>
+                            <select name="per_page" x-model="filters.per_page" @change="onFilterChange()"
+                                    class="w-full py-2.5 px-3.5 rounded-2xl border border-slate-200 text-xs font-semibold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition bg-slate-50/50">
+                                <option value="10">10 Baris</option>
+                                <option value="15">15 Baris</option>
+                                <option value="25">25 Baris</option>
+                                <option value="50">50 Baris</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -199,8 +212,8 @@
                             <h3 class="font-extrabold text-sm sm:text-base text-slate-900">
                                 Data Kehadiran Masuk Ruang Ujian
                             </h3>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700" x-text="records.length + ' Baris'">
-                                {{ count($records) }} Baris
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700" x-text="'Hal ' + pagination.current_page + ' dari ' + pagination.last_page + ' (' + pagination.total + ' Siswa)'">
+                                Hal {{ $pagination['current_page'] }} dari {{ $pagination['last_page'] }} ({{ $pagination['total'] }} Siswa)
                             </span>
                         </div>
                         <div class="flex items-center gap-2 text-xs text-slate-400">
@@ -287,6 +300,51 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Footer Pagination Controls (Responsive & Realtime Seamless) -->
+                    <div class="px-6 py-4 border-t border-slate-100 bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <!-- Informasi Baris Data -->
+                        <div class="text-xs text-slate-500 font-medium">
+                            Menampilkan <span class="font-bold text-slate-900" x-text="pagination.from">{{ $pagination['from'] }}</span> sampai <span class="font-bold text-slate-900" x-text="pagination.to">{{ $pagination['to'] }}</span> dari <span class="font-bold text-slate-900" x-text="pagination.total">{{ $pagination['total'] }}</span> siswa sasaran
+                        </div>
+
+                        <!-- Tombol Paginasi -->
+                        <div class="flex items-center gap-1.5" x-show="pagination.last_page > 1">
+                            <!-- Tombol Previous -->
+                            <button type="button" @click="goToPage(pagination.current_page - 1)"
+                                    :disabled="pagination.current_page <= 1"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                <span class="hidden sm:inline">Sebelumnya</span>
+                            </button>
+
+                            <!-- Nomor-nomor Halaman Pintar -->
+                            <div class="flex items-center gap-1">
+                                <template x-for="p in getPageNumbers()" :key="p">
+                                    <div>
+                                        <template x-if="p === '...'">
+                                            <span class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold">...</span>
+                                        </template>
+                                        <template x-if="p !== '...'">
+                                            <button type="button" @click="goToPage(p)"
+                                                    :class="pagination.current_page === p ? 'bg-blue-600 text-white font-black shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-bold'"
+                                                    class="w-8 h-8 rounded-xl text-xs flex items-center justify-center transition cursor-pointer"
+                                                    x-text="p">
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Tombol Next -->
+                            <button type="button" @click="goToPage(pagination.current_page + 1)"
+                                    :disabled="pagination.current_page >= pagination.last_page"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs cursor-pointer">
+                                <span class="hidden sm:inline">Berikutnya</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </main>
@@ -306,8 +364,11 @@
                     exam_id: '{{ $selectedExamId ?? "" }}',
                     classroom_id: '{{ $selectedClassroomId ?? "" }}',
                     status: '{{ request("status") ?? "" }}',
-                    search: '{{ request("search") ?? "" }}'
+                    search: '{{ request("search") ?? "" }}',
+                    page: {{ $pagination['current_page'] ?? 1 }},
+                    per_page: {{ $pagination['per_page'] ?? 15 }}
                 },
+                pagination: @json($pagination),
                 stats: {
                     total_target: {{ $totalTargetStudents }},
                     total_hadir: {{ $totalHadir }},
@@ -353,9 +414,45 @@
                     }
                 },
 
+                onFilterChange() {
+                    this.filters.page = 1;
+                    this.fetchAttendanceData(false);
+                },
+
                 onFormSubmit(e) {
                     e.preventDefault();
+                    this.filters.page = 1;
                     this.fetchAttendanceData(true);
+                },
+
+                goToPage(p) {
+                    if (p < 1 || p > this.pagination.last_page || p === this.pagination.current_page) return;
+                    this.filters.page = p;
+                    this.fetchAttendanceData(true);
+                },
+
+                getPageNumbers() {
+                    const current = this.pagination.current_page;
+                    const last = this.pagination.last_page;
+                    if (last <= 7) {
+                        const pages = [];
+                        for (let i = 1; i <= last; i++) pages.push(i);
+                        return pages;
+                    }
+                    const pages = [1];
+                    if (current > 3) {
+                        pages.push('...');
+                    }
+                    const start = Math.max(2, current - 1);
+                    const end = Math.min(last - 1, current + 1);
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    if (current < last - 2) {
+                        pages.push('...');
+                    }
+                    pages.push(last);
+                    return pages;
                 },
 
                 async fetchAttendanceData(manual = false) {
@@ -366,7 +463,9 @@
                         exam_id: this.filters.exam_id,
                         classroom_id: this.filters.classroom_id,
                         status: this.filters.status,
-                        search: this.filters.search
+                        search: this.filters.search,
+                        page: this.filters.page,
+                        per_page: this.filters.per_page
                     });
 
                     try {
@@ -382,8 +481,13 @@
                             if (result.success) {
                                 this.stats = result.stats;
                                 this.records = result.rows;
+                                this.pagination = result.pagination;
                                 this.lastUpdated = result.updated_at;
                                 this.renderTable(result.rows);
+
+                                // Update URL query string secara dinamis tanpa reload halaman
+                                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                                window.history.replaceState({ path: newUrl }, '', newUrl);
                             }
                         }
                     } catch (error) {

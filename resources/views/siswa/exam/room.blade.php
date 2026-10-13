@@ -396,8 +396,9 @@
 
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
                     <template x-if="unansweredCount === 0">
-                        <form :action="finishUrl" method="POST" @submit="isSubmitting = true; stopAlarmSound()" class="w-full sm:w-auto">
+                        <form :action="finishUrl" method="POST" @submit="submitFinishExam($event)" class="w-full sm:w-auto">
                             @csrf
+                            <input type="hidden" name="submitted_answers" :value="JSON.stringify(answers)">
                             <button type="submit"
                                 class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-700 transition">
                                 Ya, Kirim & Selesaikan
@@ -711,14 +712,20 @@
 
                     // Cek status Fullscreen awal
                     this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+                    const hasConfirmedFullscreen = sessionStorage.getItem('cbt_fullscreen_confirmed_' + this.examId) === 'true';
                     if (!this.isFullscreen) {
-                        this.showFullscreenPromptModal = true;
+                        if (!hasConfirmedFullscreen) {
+                            this.showFullscreenPromptModal = true;
+                        } else if (!this.isSubmitting && !this.showFinishModal) {
+                            this.handleViolation('Keluar dari mode layar penuh atau jendela browser ujian');
+                        }
                     }
 
                     // 5. Deteksi Fullscreen Change (Tekan Esc / F11 / Gesture untuk keluar layar penuh)
                     const onFullscreenChange = () => {
+                        if (this.isSubmitting) return;
                         this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-                        if (!this.isFullscreen && !this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
+                        if (!this.isFullscreen && !this.showFinishModal && !this.showFullscreenPromptModal) {
                             this.handleViolation('Keluar dari mode layar penuh (fullscreen)');
                         }
                     };
@@ -728,7 +735,8 @@
 
                     // 6. Deteksi Beralih Tab / Minimalkan Browser / Buka Aplikasi Lain (Visibility Change)
                     document.addEventListener('visibilitychange', () => {
-                        if (document.hidden && !this.showFinishModal && !this.isSubmitting) {
+                        if (this.isSubmitting) return;
+                        if (document.hidden && !this.showFinishModal) {
                             this.handleViolation('Beralih tab browser, meminimalkan jendela ujian, atau membuka aplikasi lain');
                         } else if (!document.hidden) {
                             this.requestWakeLock();
@@ -740,7 +748,8 @@
 
                     // 7. Deteksi Membuka Aplikasi Lain / Klik di Luar Browser (Window Blur)
                     window.addEventListener('blur', () => {
-                        if (!this.showFinishModal && !this.showFullscreenPromptModal && !this.isSubmitting) {
+                        if (this.isSubmitting) return;
+                        if (!this.showFinishModal && !this.showFullscreenPromptModal) {
                             this.handleViolation('Kehilangan fokus layar ujian (membuka split-screen / floating app)');
                         }
                     });
@@ -843,9 +852,12 @@
                     }
                 },
 
-                // Mengaktifkan Fullscreen dari Dialog Awal
+                // Mengaktifkan Fullscreen dari Dialog Awal (Hanya 1x di awal ujian)
                 startFullscreenExam() {
                     this.showFullscreenPromptModal = false;
+                    try {
+                        sessionStorage.setItem('cbt_fullscreen_confirmed_' + this.examId, 'true');
+                    } catch (e) {}
                     this.enterFullscreen();
                     this.initAudioContext();
                     this.requestWakeLock();
@@ -1120,18 +1132,39 @@
                     }
                 },
 
+                submitFinishExam(event) {
+                    this.isSubmitting = true;
+                    this.stopAlarmSound();
+                    try {
+                        sessionStorage.removeItem('cbt_fullscreen_confirmed_' + this.examId);
+                    } catch (e) {}
+                    window.onbeforeunload = null;
+                },
+
                 autoSubmit() {
                     this.isSubmitting = true;
                     this.stopAlarmSound();
+                    try {
+                        sessionStorage.removeItem('cbt_fullscreen_confirmed_' + this.examId);
+                    } catch (e) {}
+                    window.onbeforeunload = null;
                     alert('Waktu ujian telah berakhir! Ujian Anda akan diselesaikan otomatis.');
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = this.finishUrl;
+                    
                     const token = document.createElement('input');
                     token.type = 'hidden';
                     token.name = '_token';
                     token.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     form.appendChild(token);
+
+                    const answersInput = document.createElement('input');
+                    answersInput.type = 'hidden';
+                    answersInput.name = 'submitted_answers';
+                    answersInput.value = JSON.stringify(this.answers);
+                    form.appendChild(answersInput);
+
                     document.body.appendChild(form);
                     form.submit();
                 },

@@ -35,9 +35,9 @@ $exam = Exam::updateOrCreate(
         'status' => 'published',
         'token' => 'SIMUL60', // Token 7 karakter: SIMUL60
         'day_of_week' => null, // Bebas hari apa saja
-        'exam_date' => date('Y-m-d'),
-        'start_time' => '00:00', // Terbuka sepanjang hari
-        'end_time' => '23:59',
+        'exam_date' => null, // Fleksibel kapan saja (tidak kadaluwarsa)
+        'start_time' => null, // Fleksibel
+        'end_time' => null,
     ]
 );
 

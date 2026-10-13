@@ -313,26 +313,21 @@ class ExamController extends Controller
         // Kalkulasi kebenaran dilakukan di backend PHP, bukan di browser siswa
         $isCorrect = (strtoupper(trim((string)$question->correct_answer)) === strtoupper(trim((string)$request->selected_answer)));
 
-        // Simpan jawaban siswa: jika Redis Queue aktif, serahkan langsung ke queue worker agar HTTP response super cepat (<5ms)
-        if (config('queue.default') !== 'sync') {
-            ProcessStudentAnswerJob::dispatch($session->id, $questionId, $request->selected_answer, $isCorrect);
-        } else {
-            // Fallback sync upsert instan
-            ExamAnswer::upsert(
+        // Simpan jawaban siswa secara langsung dan aman (Synchronous atomic upsert) ke database MySQL
+        ExamAnswer::upsert(
+            [
                 [
-                    [
-                        'exam_session_id' => $session->id,
-                        'question_id' => $questionId,
-                        'selected_answer' => $request->selected_answer,
-                        'is_correct' => $isCorrect,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
-                ],
-                ['exam_session_id', 'question_id'],
-                ['selected_answer', 'is_correct', 'updated_at']
-            );
-        }
+                    'exam_session_id' => $session->id,
+                    'question_id' => $questionId,
+                    'selected_answer' => $request->selected_answer,
+                    'is_correct' => $isCorrect,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            ],
+            ['exam_session_id', 'question_id'],
+            ['selected_answer', 'is_correct', 'updated_at']
+        );
 
         return response()->json([
             'success' => true,
@@ -428,77 +423,49 @@ class ExamController extends Controller
                 ->with('error', 'Ujian Anda sedang TERKUNCI karena terdeteksi keluar dari layar ujian sebanyak 4 kali. Hubungi guru pembuat ujian untuk membuka kunci.');
         }
 
-        /*
-        * Ambil soal yang sama dengan soal yang ditampilkan
-        * pada halaman ruang ujian.
-        */
-        $questions = Question::where('exam_id', $exam->id)
-            ->orWhere(function ($query) use ($exam) {
-                $query->whereNull('exam_id')
-                    ->where('subject_id', $exam->subject_id);
-            })
-            ->select(['id'])
-            ->orderBy('id')
-            ->get();
+        // Simpan jawaban tambahan dari payload submit jika dikirimkan oleh browser
+        if ($request->filled('submitted_answers')) {
+            $submittedAnswers = json_decode($request->submitted_answers, true);
+            if (is_array($submittedAnswers) && !empty($submittedAnswers)) {
+                $questionsMap = Cache::remember("exam_questions_map_{$exam->id}", 600, function () use ($exam) {
+                    return Question::where('exam_id', $exam->id)
+                        ->orWhere(function ($query) use ($exam) {
+                            $query->whereNull('exam_id')->where('subject_id', $exam->subject_id);
+                        })
+                        ->select(['id', 'exam_id', 'subject_id', 'correct_answer'])
+                        ->get()
+                        ->keyBy('id');
+                });
 
-        /*
-        * Jika tidak ada soal, jangan lanjutkan proses
-        * penyelesaian ujian.
-        */
-        if ($questions->isEmpty()) {
-            return redirect()->route('siswa.dashboard')
-                ->with('error', 'Belum ada soal yang tersedia untuk ujian ini.');
+                $bulkAnswers = [];
+                $now = now();
+                foreach ($submittedAnswers as $qId => $selectedOption) {
+                    $qId = (int)$qId;
+                    if (!in_array($selectedOption, ['A', 'B', 'C', 'D'])) continue;
+                    $q = $questionsMap->get($qId);
+                    if ($q) {
+                        $isCorrect = (strtoupper(trim((string)$q->correct_answer)) === strtoupper(trim((string)$selectedOption)));
+                        $bulkAnswers[] = [
+                            'exam_session_id' => $session->id,
+                            'question_id' => $qId,
+                            'selected_answer' => $selectedOption,
+                            'is_correct' => $isCorrect,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    }
+                }
+                if (!empty($bulkAnswers)) {
+                    ExamAnswer::upsert(
+                        $bulkAnswers,
+                        ['exam_session_id', 'question_id'],
+                        ['selected_answer', 'is_correct', 'updated_at']
+                    );
+                }
+            }
         }
 
-        /*
-        * Ambil ID soal yang memang termasuk dalam ujian ini.
-        */
-        $questionIds = $questions->pluck('id');
-
-        /*
-        * Hitung berapa soal yang sudah dijawab siswa.
-        *
-        * Hanya jawaban untuk soal yang benar-benar termasuk
-        * dalam ujian ini yang dihitung.
-        */
-        $answeredCount = ExamAnswer::where('exam_session_id', $session->id)
-            ->whereIn('question_id', $questionIds)
-            ->whereNotNull('selected_answer')
-            ->where('selected_answer', '!=', '')
-            ->count();
-
-        $totalQuestions = $questions->count();
-
-        $unansweredCount = $totalQuestions - $answeredCount;
-
-
-        /*
-        * Cek apakah waktu ujian masih tersedia.
-        *
-        * Jika waktu masih ada, siswa wajib menjawab
-        * seluruh soal sebelum dapat menyelesaikan ujian.
-        *
-        * Jika waktu sudah habis, ujian tetap boleh
-        * difinalisasi secara otomatis.
-        */
-        $remainingSeconds = $session->remaining_seconds;
-
-        if ($remainingSeconds > 0 && $unansweredCount > 0) {
-            return redirect()
-                ->route('siswa.ujian.show', $exam->id)
-                ->with(
-                    'error',
-                    "Ujian belum dapat diselesaikan. Masih ada {$unansweredCount} soal yang belum dijawab."
-                );
-        }
-
-
-        /*
-        * Semua soal sudah dijawab atau waktu ujian
-        * sudah habis.
-        *
-        * Lanjutkan proses perhitungan nilai.
-        */
+        // Finalisasi sesi ujian & kalkulasi nilai secara pasti
         $this->finalizeExamSession($session, $exam);
 
         return redirect()->route('siswa.ujian.hasil', $exam->id)
