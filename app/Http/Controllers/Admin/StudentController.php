@@ -155,9 +155,9 @@ class StudentController extends Controller
     public function downloadTemplate(string $type)
     {
         $sampleData = [
-            ['Ahmad Fauzi', '0081234567', 'Kelas X-A', 'ahmad@siswa.mtsn12.sch.id', 'password123'],
-            ['Siti Nurhaliza', '0087654321', 'Kelas X-B', 'siti@siswa.mtsn12.sch.id', 'password123'],
-            ['Budi Santoso', '0089988776', 'Kelas X-A', '', ''],
+            ['Ahmad Fauzi', '0081234567', '7A', 'ahmad@siswa.mtsn12.sch.id', 'password123'],
+            ['Siti Nurhaliza', '0087654321', '7B', 'siti@siswa.mtsn12.sch.id', 'password123'],
+            ['Budi Santoso', '0089988776', '8A', '', ''],
         ];
 
         if ($type === 'csv') {

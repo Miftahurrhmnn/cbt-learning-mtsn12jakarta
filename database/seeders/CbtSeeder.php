@@ -18,7 +18,7 @@ class CbtSeeder extends Seeder
     public function run(): void
     {
         $subject = Subject::create(['name' => 'Matematika']);
-        $classroom = Classroom::create(['name' => 'Kelas X-A']);
+        $classroom = Classroom::firstOrCreate(['name' => '7A']);
 
         $exam = Exam::create([
             'subject_id' => $subject->id,

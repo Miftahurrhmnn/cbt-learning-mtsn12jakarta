@@ -39,7 +39,7 @@
                             {{ Auth::user()->nisn ?? '17/310790/SV/456738' }}
                         </p>
                         <p class="text-[11px] font-medium text-white/75 truncate mt-0.5">
-                            {{ Auth::user()->classroom->name ?? 'Kelas X-A' }}
+                            {{ Auth::user()->classroom->name ?? '7A' }}
                         </p>
                     </div>
                 </div>

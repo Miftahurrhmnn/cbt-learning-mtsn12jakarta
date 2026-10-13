@@ -121,16 +121,19 @@ class DatabaseSeeder extends Seeder
         User::where('email', 'guru@gmail.com')->update(['role' => 'guru']);
 
         // Data Master Kelas
-        $kelasXA = Classroom::firstOrCreate(['name' => 'Kelas X-A']);
-        $kelasXB = Classroom::firstOrCreate(['name' => 'Kelas X-B']);
-        $kelasXIA = Classroom::firstOrCreate(['name' => 'Kelas XI-A']);
+        $kelas7A = Classroom::firstOrCreate(['name' => '7A']);
+        $kelas7B = Classroom::firstOrCreate(['name' => '7B']);
+        $kelas8A = Classroom::firstOrCreate(['name' => '8A']);
+        $kelas8B = Classroom::firstOrCreate(['name' => '8B']);
+        $kelas9A = Classroom::firstOrCreate(['name' => '9A']);
+        $kelas9B = Classroom::firstOrCreate(['name' => '9B']);
 
         $siswa = User::updateOrCreate(
             ['email' => 'siswa@cbt.test'],
             [
                 'name' => 'Ahmad Fauzi (Siswa)',
                 'nisn' => '41524110008',
-                'classroom_id' => $kelasXA->id,
+                'classroom_id' => $kelas7A->id,
                 'password' => Hash::make('password'),
                 'role' => 'siswa',
             ]
