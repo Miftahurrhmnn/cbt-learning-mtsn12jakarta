@@ -58,9 +58,9 @@
                 <!-- Stats Overview Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Sedang Mengerjakan -->
-                    <div class="p-5 bg-amber-700 rounded-3xl shadow-2xs flex items-center gap-4 relative overflow-hidden">
-                        <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0">
-                            <svg class="w-6 h-6 animate-spin text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="p-5 bg-amber-600 border border-amber-500 rounded-3xl shadow-2xs flex items-center gap-4 relative overflow-hidden">
+                        <div class="w-12 h-12 bg-white/20 rounded-2xl text-white flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
@@ -71,8 +71,8 @@
                     </div>
 
                     <!-- Selesai Ujian -->
-                    <div class="p-5 bg-emerald-700 rounded-3xl shadow-2xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div class="p-5 bg-emerald-600 rounded-3xl border border-emerald-500 shadow-2xs flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div>
@@ -82,8 +82,8 @@
                     </div>
 
                     <!-- Terdeteksi Curang (Anti-Cheat) -->
-                    <div class="p-5 bg-rose-700 rounded-3xl shadow-2xs flex items-center gap-4 relative overflow-hidden">
-                        <div class="w-12 h-12 rounded-2xl {{ $totalCheating > 0 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500' }} flex items-center justify-center shrink-0">
+                    <div class="p-5 bg-rose-600 rounded-3xl border border-rose-500 shadow-2xs flex items-center gap-4 relative overflow-hidden">
+                        <div class="w-12 h-12 rounded-2xl {{ $totalCheating > 0 ? 'bg-rose-/10 text-rose-600' : 'bg-slate-100 text-slate-500' }} flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
